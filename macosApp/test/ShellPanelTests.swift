@@ -90,4 +90,46 @@ final class ShellPanelTests: XCTestCase {
         panel.cancelOperation(nil)
         XCTAssertTrue(cancelled)
     }
+
+    /// 键盘上的 Escape 走 `keyDown`，与 `cancelOperation` 是两条入口。
+    /// 面板是 `.nonactivatingPanel`，键盘事件只能从这条入口进来。
+    func testEscapeKeyDownAsksTheControllerToCollapse() throws {
+        let panel = HubPanel(rect: testRect)
+        defer { panel.orderOut(nil) }
+
+        var cancelled = false
+        panel.onCancel = { cancelled = true }
+
+        panel.keyDown(with: try keyEvent(keyCode: 53))
+        XCTAssertTrue(cancelled)
+    }
+
+    /// 别的按键不该被当成 Escape。
+    func testAnotherKeyDoesNotAskTheControllerToCollapse() throws {
+        let panel = HubPanel(rect: testRect)
+        defer { panel.orderOut(nil) }
+
+        var cancelled = false
+        panel.onCancel = { cancelled = true }
+
+        panel.keyDown(with: try keyEvent(keyCode: 0))
+        XCTAssertFalse(cancelled, "只有 Escape 走 onCancel")
+    }
+
+    private func keyEvent(keyCode: UInt16) throws -> NSEvent {
+        try XCTUnwrap(
+            NSEvent.keyEvent(
+                with: .keyDown,
+                location: .zero,
+                modifierFlags: [],
+                timestamp: 0,
+                windowNumber: 0,
+                context: nil,
+                characters: "",
+                charactersIgnoringModifiers: "",
+                isARepeat: false,
+                keyCode: keyCode
+            )
+        )
+    }
 }

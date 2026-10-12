@@ -288,10 +288,8 @@ final class NotchShellController {
         // Escape 先清搜索：用户在搜索时按 Escape 想关掉结果，不是收起整个面板。
         panel.onCancel = { [weak self] in
             guard let self else { return }
-            if self.chrome.searchText.isEmpty {
+            if !self.chrome.handleEscape() {
                 self.requestCollapse()
-            } else {
-                self.chrome.clearSearch()
             }
         }
 

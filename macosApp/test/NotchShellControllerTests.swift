@@ -8,8 +8,8 @@ import XCTest
 /// 所以不需要真的移动用户的鼠标。见 `NotchShellController.init(pointerLocation:)`。
 ///
 /// 注意：面板的 tracking area 仍然接真实的鼠标事件。测试运行期间如果指针
-/// 恰好移进或移出热区与面板，可能插入额外事件。测试的等待窗口都短于
-/// 500 毫秒的收起延迟，所以这类干扰不会改变断言结果。
+/// 恰好移进或移出热区与面板，会插入额外事件，断言因此可能失败。
+/// 跑这个套件时不要动鼠标。
 ///
 /// 指针与期望值都从 `ScreenGeometry` 推导，不写死屏幕坐标。
 /// 面板几何随屏幕变化：刘海屏贴顶边，非刘海屏让开菜单栏；窄屏收窄宽度。
@@ -38,10 +38,23 @@ final class NotchShellControllerTests: XCTestCase {
         return NotchShellController(pointerLocation: { point })
     }
 
-    private func wait(_ seconds: TimeInterval) {
-        let done = expectation(description: "等待 \(seconds) 秒")
-        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) { done.fulfill() }
-        wait(for: [done], timeout: seconds + 2)
+    /// 等到条件成立。
+    ///
+    /// 不用固定等待。机器被别的编译占满时，动画计时器与等待窗口一起延后，
+    /// 固定等待会报出与实现无关的失败，本机已经误报过三次。
+    /// 轮询仍然有上限：状态一直不成立时照样失败。
+    private func waitUntil(
+        _ message: String,
+        timeout: TimeInterval = 3,
+        file: StaticString = #filePath,
+        line: UInt = #line,
+        _ condition: () -> Bool
+    ) {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !condition(), Date() < deadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.02))
+        }
+        XCTAssertTrue(condition(), message, file: file, line: line)
     }
 
     // MARK: - 启动
@@ -88,8 +101,7 @@ final class NotchShellControllerTests: XCTestCase {
         XCTAssertTrue(controller.isHubPanelOnScreen, "HOVER 时面板就应该在屏幕上")
 
         // 展开动画结束后进入 OPEN，指针在面板里所以紧接着进入 ACTIVE。
-        wait(HubMotion.expand + 0.2)
-        XCTAssertEqual(controller.state, .active)
+        waitUntil("展开后应该进入 ACTIVE") { controller.state == .active }
     }
 
     func testRequestingCollapseReturnsToHidden() throws {
@@ -98,14 +110,12 @@ final class NotchShellControllerTests: XCTestCase {
         defer { controller.stop() }
 
         controller.show()
-        wait(HubMotion.expand + 0.2)
-        XCTAssertEqual(controller.state, .active)
+        waitUntil("展开后应该进入 ACTIVE") { controller.state == .active }
 
         controller.requestCollapse()
         XCTAssertEqual(controller.state, .exit)
 
-        wait(HubMotion.collapse + 0.2)
-        XCTAssertEqual(controller.state, .hidden)
+        waitUntil("收起后应该回到 HIDDEN") { controller.state == .hidden }
         XCTAssertFalse(controller.isHubPanelOnScreen, "收起后面板应该离开屏幕")
     }
 
@@ -121,8 +131,7 @@ final class NotchShellControllerTests: XCTestCase {
         controller.toggle()
         XCTAssertEqual(controller.state, .exit)
 
-        wait(HubMotion.collapse + 0.2)
-        XCTAssertEqual(controller.state, .hidden)
+        waitUntil("收起后应该回到 HIDDEN") { controller.state == .hidden }
     }
 
     /// 面板出现时指针已经不在面板里，应该立刻收起，不留一个卡住的 Hub。
@@ -135,8 +144,7 @@ final class NotchShellControllerTests: XCTestCase {
         // 面板出现后立刻自查指针位置，发现不在面板里就走 EXIT。
         XCTAssertEqual(controller.state, .exit)
 
-        wait(HubMotion.collapse + 0.2)
-        XCTAssertEqual(controller.state, .hidden)
+        waitUntil("收起后应该回到 HIDDEN") { controller.state == .hidden }
         XCTAssertFalse(controller.isHubPanelOnScreen)
     }
 
@@ -165,11 +173,10 @@ final class NotchShellControllerTests: XCTestCase {
         defer { controller.stop() }
 
         controller.show()
-        wait(HubMotion.expand + 0.2)
+        waitUntil("展开后应该进入 ACTIVE") { controller.state == .active }
         controller.requestCollapse()
-        wait(HubMotion.collapse + 0.3)
+        waitUntil("收起后应该回到 HIDDEN") { controller.state == .hidden }
 
-        XCTAssertEqual(controller.state, .hidden)
         // 状态回到 HIDDEN 后热区重新可用。
         XCTAssertTrue(controller.hotZoneRects.count > 0)
     }
@@ -185,8 +192,7 @@ final class NotchShellControllerTests: XCTestCase {
         XCTAssertEqual(controller.outputState, .collapsed)
 
         controller.show()
-        wait(HubMotion.expand + 0.2)
-        XCTAssertEqual(controller.state, .active)
+        waitUntil("展开后应该进入 ACTIVE") { controller.state == .active }
         XCTAssertEqual(controller.outputState, .ready)
 
         controller.requestCollapse()

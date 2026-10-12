@@ -69,4 +69,15 @@ final class HubChromeModel {
     func clearSearch() {
         searchText = ""
     }
+
+    /// Escape 的两段行为。搜索框有字时先清搜索，没有字时才收起面板。
+    ///
+    /// 返回值表示这一步是否已经处理完。真表示调用方不该收起面板。
+    /// 用户在搜索时按 Escape 想关掉结果，不是收起整个面板。
+    /// 面板收到 Escape 的那一段见 `HubPanel.keyDown`。
+    func handleEscape() -> Bool {
+        guard !searchText.isEmpty else { return false }
+        clearSearch()
+        return true
+    }
 }
