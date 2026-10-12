@@ -10,19 +10,31 @@ import XCTest
 /// 注意：面板的 tracking area 仍然接真实的鼠标事件。测试运行期间如果指针
 /// 恰好移进或移出热区与面板，可能插入额外事件。测试的等待窗口都短于
 /// 500 毫秒的收起延迟，所以这类干扰不会改变断言结果。
+///
+/// 指针与期望值都从 `ScreenGeometry` 推导，不写死屏幕坐标。
+/// 面板几何随屏幕变化：刘海屏贴顶边，非刘海屏让开菜单栏；窄屏收窄宽度。
+/// CI 运行器是 1024 × 768 的无刘海屏，写死坐标的断言在那里会失败。
 @MainActor
 final class NotchShellControllerTests: XCTestCase {
-    /// 指针固定在主屏顶部中央。那里一定落在 Hub 面板矩形内。
-    private func controllerWithPointerAtTopCenter() throws -> NotchShellController {
+    /// 展开态 Hub 面板在屏幕坐标里的矩形。
+    ///
+    /// 指针位置与宽度期望都由它推导，这样断言与实现看的是同一份几何。
+    private func hubPanelRect() throws -> CGRect {
         let screen = try XCTUnwrap(NSScreen.main)
-        let point = CGPoint(x: screen.frame.midX, y: screen.frame.maxY - 4)
+        return ScreenGeometry(screen: screen).expandedRect
+    }
+
+    /// 指针固定在 Hub 面板内部靠上处。那里一定落在面板矩形内。
+    private func controllerWithPointerInsideHub() throws -> NotchShellController {
+        let rect = try hubPanelRect()
+        let point = CGPoint(x: rect.midX, y: rect.maxY - 4)
         return NotchShellController(pointerLocation: { point })
     }
 
-    /// 指针固定在屏幕正中央。那里在 Hub 面板矩形之外。
+    /// 指针固定在面板正下方。那里在面板矩形之外，也在热区之外。
     private func controllerWithPointerAway() throws -> NotchShellController {
-        let screen = try XCTUnwrap(NSScreen.main)
-        let point = CGPoint(x: screen.frame.midX, y: screen.frame.midY)
+        let rect = try hubPanelRect()
+        let point = CGPoint(x: rect.midX, y: rect.minY - 20)
         return NotchShellController(pointerLocation: { point })
     }
 
@@ -43,7 +55,10 @@ final class NotchShellControllerTests: XCTestCase {
         XCTAssertEqual(controller.hotZoneRects.count, NSScreen.screens.count)
         // 面板先按展开矩形建好，但不在屏幕上。
         XCTAssertFalse(controller.isHubPanelOnScreen)
-        XCTAssertEqual(controller.hubPanelFrame?.width, HubMetrics.cardWidth)
+        // 窄屏上面板比 cardWidth 窄，所以比展开矩形，不比 cardWidth。
+        let expectedWidth = try hubPanelRect().width
+        XCTAssertEqual(controller.hubPanelFrame?.width, expectedWidth)
+        XCTAssertLessThanOrEqual(expectedWidth, HubMetrics.cardWidth)
     }
 
     /// 非刘海屏降级热区：每块屏幕的热区都必须落在该屏幕内，且贴在该屏幕顶部。
@@ -63,7 +78,7 @@ final class NotchShellControllerTests: XCTestCase {
     // MARK: - 展开与收起
 
     func testHoverOpensTheHubThenBecomesActive() throws {
-        let controller = try controllerWithPointerAtTopCenter()
+        let controller = try controllerWithPointerInsideHub()
         controller.start()
         defer { controller.stop() }
 
@@ -78,7 +93,7 @@ final class NotchShellControllerTests: XCTestCase {
     }
 
     func testRequestingCollapseReturnsToHidden() throws {
-        let controller = try controllerWithPointerAtTopCenter()
+        let controller = try controllerWithPointerInsideHub()
         controller.start()
         defer { controller.stop() }
 
@@ -96,7 +111,7 @@ final class NotchShellControllerTests: XCTestCase {
 
     /// §4.4：Control+Option+T 打开或收起。
     func testToggleOpensAndCloses() throws {
-        let controller = try controllerWithPointerAtTopCenter()
+        let controller = try controllerWithPointerInsideHub()
         controller.start()
         defer { controller.stop() }
 
@@ -130,7 +145,7 @@ final class NotchShellControllerTests: XCTestCase {
     /// 面板显示在指针所在屏幕，且锚定顶部中央。
     func testPanelLandsOnThePointerScreen() throws {
         let screen = try XCTUnwrap(NSScreen.main)
-        let controller = try controllerWithPointerAtTopCenter()
+        let controller = try controllerWithPointerInsideHub()
         controller.start()
         defer { controller.stop() }
 
@@ -145,7 +160,7 @@ final class NotchShellControllerTests: XCTestCase {
 
     /// 收起后热区面板回到屏幕上，Hub 让位。
     func testHotZoneComesBackAfterCollapse() throws {
-        let controller = try controllerWithPointerAtTopCenter()
+        let controller = try controllerWithPointerInsideHub()
         controller.start()
         defer { controller.stop() }
 
@@ -163,7 +178,7 @@ final class NotchShellControllerTests: XCTestCase {
 
     /// 内容区状态与面板状态正交。P1 只驱动到 READY。
     func testOutputStateIsCollapsedWhileHiddenAndReadyWhenActive() throws {
-        let controller = try controllerWithPointerAtTopCenter()
+        let controller = try controllerWithPointerInsideHub()
         controller.start()
         defer { controller.stop() }
 
