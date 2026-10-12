@@ -23,6 +23,14 @@ final class ScreenGeometryTests: XCTestCase {
         notch: nil
     )
 
+    /// 一台 1024 × 768 的非刘海屏。CI 运行器的屏幕就是这个尺寸。
+    private let smallNotchless = ScreenGeometry(
+        frame: CGRect(x: 0, y: 0, width: 1024, height: 768),
+        visibleFrame: CGRect(x: 0, y: 0, width: 1024, height: 744),
+        safeAreaTop: 0,
+        notch: nil
+    )
+
     // MARK: - 刘海屏
 
     func testNotchedHotZoneIsTheNotchItself() {
@@ -94,10 +102,41 @@ final class ScreenGeometryTests: XCTestCase {
         XCTAssertFalse(fullScreen.isMenuBarVisible)
     }
 
+    // MARK: - 窄屏与非刘海屏的组合
+
+    /// 窄屏上面板比卡片宽度窄，取「屏幕宽度减 80」。
+    func testSmallScreenNarrowsThePanelBelowTheCardWidth() {
+        XCTAssertEqual(smallNotchless.expandedRect.width, 944)
+        XCTAssertLessThan(smallNotchless.expandedRect.width, HubMetrics.cardWidth)
+    }
+
+    /// 非刘海屏的面板挂在菜单栏下方，所以屏幕顶部中央在面板之外。
+    ///
+    /// 这条是 CI 的失败根因。运行器是无刘海屏，指针放在屏幕顶部中央时
+    /// 落在菜单栏上，不在面板里，于是状态机立刻走 EXIT。
+    /// 控制器测试的指针位置因此必须从展开矩形推导，不能写死屏幕坐标。
+    func testTheScreenTopCenterIsOutsideANotchlessPanel() {
+        let rect = smallNotchless.expandedRect
+        let topCenter = CGPoint(x: smallNotchless.frame.midX, y: smallNotchless.frame.maxY - 4)
+
+        XCTAssertFalse(rect.contains(topCenter), "非刘海屏的面板不该盖住屏幕顶部中央")
+        XCTAssertGreaterThan(topCenter.y, rect.maxY)
+    }
+
+    /// 面板下方要留出屏幕内的空间，指针才能放在面板外。
+    func testThePanelLeavesRoomBelowItOnASmallScreen() {
+        let rect = smallNotchless.expandedRect
+        let below = CGPoint(x: rect.midX, y: rect.minY - 20)
+
+        XCTAssertFalse(rect.contains(below))
+        XCTAssertFalse(smallNotchless.hotZoneRect.contains(below), "面板下方不该落在热区里")
+        XCTAssertTrue(smallNotchless.frame.contains(below), "面板下方的指针位置要留在屏幕内")
+    }
+
     // MARK: - 宽度限制
 
     func testHubWidthRespectsMinimumAndMaximum() {
-        // 宽屏：用页签栏宽度 960。
+        // 宽屏：用卡片宽度 960。
         XCTAssertEqual(HubMetrics.hubWidth(screenWidth: 1728), 960)
         // 窄屏：屏幕宽度减 80 小于 960，取屏幕宽度减 80。
         XCTAssertEqual(HubMetrics.hubWidth(screenWidth: 900), 820)
