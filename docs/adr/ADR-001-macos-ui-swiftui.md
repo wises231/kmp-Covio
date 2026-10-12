@@ -6,6 +6,7 @@
 - 补充：2026-10-12 按 `docs/covio-product-master.md` 第 7.1 节对齐共享层边界。结论见实测 26 到 28
 - 补充：2026-10-12 补记实测 29 与 30：测试宿主不启动运行时；图标是工程资源
 - 补充：2026-10-12 补记实测 31 到 34：Hub 外壳按 macOS 27 版式重做，部署目标提到 26.0；搜索锚点漏挂两处。玻璃的显示效果待真机确认
+- 补充：2026-10-12 补记实测 35 到 37：CI 推送后两次失败。冷缓存下 konanc 找不到；测试写死屏幕坐标，只在有刘海的本机上通过。第三次三个作业全绿，378 条测试
 
 ## 背景
 
@@ -567,6 +568,48 @@ contentHeight(for:)   = interiorHeight + cardPadding * 2
 
 **结论：** 跳转类功能要有一条「目标真的存在」的静态断言。漏挂锚点的缺陷在界面上是无声的。
 
+### 实测 35：konanc 的发现必须排在 Amper 解压之后
+
+首次推送后 `macOS SwiftUI` 作业的 `Build` 步失败。日志：
+
+```
+Cannot find konanc. Looked under .../extract.cache and ~/.konan.
+Command PhaseScriptExecution failed with a nonzero exit code
+```
+
+运行器是刚分配的机器，`~/Library/Caches/JetBrains/Kotlin` 是空的。`konanc` 由 Amper 下载并解压，而 `scripts/build-kmp-framework.sh` 原来先找 `konanc`、再调 Amper 编译。冷缓存下第一步必然失败。本机跑得通，是因为本机早就跑过 `./kotlin build`，缓存是热的。
+
+同一个提交里 `Kotlin` 作业在同一批运行器上跑 `/bin/sh ./kotlin build` 成功，日志里有 `Downloading kotlin-native-prebuilt-2.4.10-macos-aarch64.tar.gz`。所以 Amper 会自己下载工具链，缺的只是顺序。
+
+**改法：** 脚本里把 Amper 编译任务排到工具链发现之前。同一个任务既产出 klib，也把 `konanc` 与 Amper 自带的 JRE 放进共享缓存。
+
+**结论：** 依赖外部工具链的脚本要显式处理冷缓存。本机跑通不构成证据，因为本机的缓存是热的。
+
+### 实测 36：测试写死屏幕坐标，在有刘海的本机上才通过
+
+`konanc` 修好后，`Test` 步失败 11 条，全部在 `NotchShellControllerTests`。两个根因：
+
+| 断言 | 本机 | 运行器 |
+| --- | --- | --- |
+| `hubPanelFrame?.width` 等于 `HubMetrics.cardWidth` | 960 | 944 |
+| 指针固定在「屏幕顶部中央」，注释称「一定落在面板矩形内」 | 面板贴屏幕顶边，成立 | 面板挂菜单栏下方，指针在面板之外 |
+
+运行器屏幕宽 1024 点。`hubWidth(screenWidth:)` 取「卡片宽度 960」与「屏幕宽度减 80」的较小者，得到 944。运行器屏幕也没有刘海，`panelTop` 是 `visibleFrame.maxY` 而不是 `frame.maxY`。于是 `show()` 之后状态机立刻自查指针，判定在面板外，走 EXIT 而不是 HOVER。
+
+**测试写死的两处坐标都只在「有刘海且够宽的屏幕」上成立。** 本机正是这种屏幕，所以 375 条测试在本机全绿。
+
+**改法：** 指针位置与宽度期望都从 `ScreenGeometry(screen:).expandedRect` 推导。`ScreenGeometryTests` 补三条用例，把运行器的屏幕形状（1024 × 768，无刘海）钉下来，其中一条直接断言「屏幕顶部中央在非刘海面板之外」。
+
+**结论：** 断言可以依赖一块屏幕的几何，但不能依赖本机那一块。期望值要从实现用的同一个函数推导。
+
+### 实测 37：三个作业在 CI 上全绿
+
+提交 `5254d0a` 的运行号 `38269856878`：`Kotlin`、`Contract and scripts`、`macOS SwiftUI` 三个作业都是 success。Swift 作业在 `macos-26` 上执行 378 条测试，0 失败。构建阶段从冷缓存开始，Amper 自取工具链。
+
+`macos-26` 标签可用，部署目标 26.0 的测试二进制能在运行器上启动。
+
+**结论：** CI 的 Swift 作业可用了。冷缓存的耗时包含 Kotlin/Native 工具链下载，整个作业约 2 分钟。
+
 ## 后果
 
 ### 正面
@@ -639,8 +682,8 @@ P8（Hub 外壳重做）结案时仍未确认的项目。
 | 搜索框能不能收到键盘输入 | **待真机确认**。`HubPanel.canBecomeKey` 为真，但没有在真机上打过字 | 展开 Hub，在搜索框输入「休眠」，确认有候选结果 |
 | Escape 的两段行为 | **待真机确认** | 搜索框有字时按一次 Escape，确认只清搜索；再按一次，确认面板收起 |
 | 六个页签的页面高度与内容对得上 | **待真机确认**。几何值有测试，但没有渲染过 | 逐个切页签，看卡片高度与内容有没有被裁 |
-| `macos-26` 这个 CI 运行器标签是否可用 | **已结案（文档层面）** | GitHub 文档的 GitHub 托管运行器表里列了 `macos-26`，arm64，macOS 26。`macos-latest` 也指向同一个镜像。真正的作业能不能排上还没看，见下条 |
-| 部署目标 26.0 的测试作业真的在 CI 上跑通 | **未确认**。本机不能跑 GitHub Actions | 推一个提交看 `macOS SwiftUI` 作业的结论 |
+| `macos-26` 这个 CI 运行器标签是否可用 | **已结案** | GitHub 文档的 GitHub 托管运行器表里列了 `macos-26`，arm64，macOS 26。作业真的排上了，见实测 37 |
+| 部署目标 26.0 的测试作业真的在 CI 上跑通 | **已结案**，378 条全绿 | 见实测 35、实测 36、实测 37。运行器是无刘海的 1024 × 768 屏，写死屏幕坐标的断言在那里失败 |
 | 退出按钮的行为 | **待真机确认**。`AppRuntimeTests` 只断言闭包被调用 | 点导航栏底部的退出，确认应用退出且机器状态回到启动前 |
 
 ## 参考
