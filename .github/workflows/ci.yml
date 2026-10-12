@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "feature/**"]
+  pull_request:
+
+jobs:
+  kotlin:
+    name: Kotlin
+    # 需要 Apple Silicon 与 Xcode 16 以上。macos-15 两者都满足。
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: /bin/sh ./kotlin build
+      - name: Test
+        run: /bin/sh ./kotlin test
+
+  checks:
+    name: Contract and scripts
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      # 合同常量是生成文件。改了合同忘了重跑生成器时这一步失败。
+      - name: Design contract constants are current
+        run: python3 -I scripts/generate-contract-constants.py --check
+      # schema 表达不了的跨段规则。放在这里是为了不装 Xcode 也能快速失败。
+      - name: Design contract cross-section rules
+        run: python3 -I scripts/validate-contract.py
+      # 割接脚本的断言需要管理员授权才能跑在真机上。
+      # selftest 在临时目录里跑同一批断言，不需要授权。
+      - name: Helper cutover assertions
+        run: bash scripts/verify-helper-cutover.sh selftest
+
+  macos-swift:
+    name: macOS SwiftUI
+    # 宿主的最低系统版本是 26.0。测试跑在运行器自己的系统上，
+    # 所以运行器必须也是 macOS 26，否则测试二进制无法启动。
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      # Xcode 的 "Build KMP framework" 脚本阶段会自己调 Amper 与 konanc。
+      - name: Build
+        run: bash scripts/build-macos-swift.sh
+      - name: Test
+        run: bash scripts/test-macos-swift.sh

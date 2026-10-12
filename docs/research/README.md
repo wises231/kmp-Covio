@@ -1,0 +1,28 @@
+# Covio 研究归档
+
+## 职责
+
+本目录保存 Covio 的研究、审计、证据和验证资料。
+本目录为研究资料的唯一入口。
+每个研究主题使用一个独立目录。
+每个主题目录使用 `README.md` 作为统一索引。
+主题索引说明前因、背景、过程、结果、预期和实现手段。
+主题索引链接全部子文档和证据链。
+新研究主题按 [AUTHORING.md](AUTHORING.md) 生成。
+
+## 研究主题
+
+| 主题 | 状态 | 索引 |
+| --- | --- | --- |
+| macOS 后台 GUI 自动化与虚拟化控制 | 初稿，可评审 | [README.md](macos-background-gui-automation/README.md) |
+| 跨设备内容读取能力 | 初稿，可评审 | [README.md](cross-device-content-access/README.md) |
+| 跨设备共享暂存工作区 | 初稿，可评审 | [README.md](shared-transfer-workspace/README.md) |
+
+## 归档规则
+
+- 研究报告、证据和验证记录放在同一个主题目录中。
+- `docs/validation/` 不作为独立归档入口。
+- 旧路径不保留跳转页。
+- 链接使用相对路径。
+- 文档使用中文。命令、路径、API 名称和版本号保留原文。
+- 执行验证后更新主题索引和案例状态。

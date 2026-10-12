@@ -1,5 +1,36 @@
 # Covio 0.4.2 (internal test)
 
+> **Warning:** This file still describes 0.4.2.
+> The app version is `0.5.0` in `kmpDomain/src/com/wyz/covio/core/Models.kt`.
+> `scripts/create-release.sh` reads that version.
+> Rewrite this file before the next release.
+> The order is recorded in `docs/covio-macos-swiftui-migration-plan.md` section 13.2.
+>
+> The next release is 0.5.0. It requires macOS 26 or later.
+> The SwiftUI host uses Liquid Glass, and the Hub has a new layout.
+> macOS 14 and macOS 15 are no longer supported. The 0.4.2 text below still says macOS 12.
+>
+> Release notes must say the build passed real-Mac acceptance.
+> That checklist has not run yet, so this text is not rewritten.
+> The pending items are in `docs/adr/ADR-001-macos-ui-swiftui.md`, section 未决事项.
+
+## What 0.5.0 will change
+
+- The macOS interface is SwiftUI. The shared logic is Kotlin Multiplatform, module `kmpDomain`.
+- The Hub has a floating navigation rail on the left and a floating capsule at the top.
+  The rail holds the search box, the six tabs, and a bottom group with the run indicator,
+  settings, language, and quit.
+- The capsule holds the page title and the page actions. On the Settings tab it holds the
+  six section switches.
+- The search box searches settings. Selecting a result jumps to that row and highlights it.
+- The app requires macOS 26 or later.
+- The app adds the clipboard history.
+- `config.json` is compatible with 0.4.2 in both directions.
+
+The details are in `README.md`, section "What is new in 0.5.0".
+
+## Covio 0.4.2 (the text below describes this build)
+
 This is an internal test build.
 It is not a public release.
 
