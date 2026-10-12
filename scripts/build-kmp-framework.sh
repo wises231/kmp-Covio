@@ -102,9 +102,16 @@ klib_path_for() {
     "$SHARED_CACHE/.m2.cache" "$group_path" "$artifact" "$version" "$artifact" "$version"
 }
 
+cd "$ROOT"
+printf 'Compiling %s [%s %s]...\n' "$MODULE" "$PLATFORM" "$BUILD_TYPE"
+# Amper 在这一步把 konanc 与它自带的 JRE 解压到共享缓存。
+# 冷机器上这一步之前缓存是空的，所以下面两处发现必须排在它之后。
+# 顺序写反会让 CI 与刚克隆的机器报「Cannot find konanc」。
+/bin/sh ./kotlin task ":${MODULE}:compile${PLATFORM_ID}${BUILD_TYPE}"
+
 KONANC_BIN="$(find_konanc)" || {
   printf 'Cannot find konanc. Looked under %s/extract.cache and ~/.konan.\n' "$SHARED_CACHE" >&2
-  printf 'Run /bin/sh ./kotlin build first, or set KONANC=/path/to/konanc.\n' >&2
+  printf 'Set KONANC=/path/to/konanc.\n' >&2
   exit 1
 }
 
@@ -116,10 +123,6 @@ export JAVA_HOME="$JAVA_HOME_DIR"
 
 printf 'konanc: %s\n' "$KONANC_BIN"
 printf 'java:   %s\n' "$JAVA_HOME/bin/java"
-
-cd "$ROOT"
-printf 'Compiling %s [%s %s]...\n' "$MODULE" "$PLATFORM" "$BUILD_TYPE"
-/bin/sh ./kotlin task ":${MODULE}:compile${PLATFORM_ID}${BUILD_TYPE}"
 
 if [[ ! -f "$KLIB" ]]; then
   printf 'Missing klib: %s\n' "$KLIB" >&2
