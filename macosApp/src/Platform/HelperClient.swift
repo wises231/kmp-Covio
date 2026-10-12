@@ -1,0 +1,164 @@
+import Foundation
+import kmpDomain
+
+/// 特权 helper 的 Unix 域套接字客户端。
+///
+/// 对应 Compose 版的 `app/src/com/wyz/covio/app/helper/HelperClient.kt`。
+/// 行为差异只有一处：Kotlin 版用非阻塞 channel 加 selector 做超时，
+/// 这里用 `SO_SNDTIMEO` 与 `SO_RCVTIMEO`，由内核负责超时。
+/// 对外语义一致：超时或失败返回 nil，不抛异常。
+///
+/// 线上格式与校验在共享层的 `HelperWire`，两端的客户端发同样的字节。
+final class HelperClient {
+    /// helper 的 socket 路径。`PrivilegedOps` 用它判断「装没装」，
+    /// 测试也用它指向一个临时的假 helper。
+    let socketPath: String
+    private let timeout: TimeInterval
+
+    init(socketPath: String = HelperProtocol.socketPath, timeoutMillis: Int = 2_000) {
+        self.socketPath = socketPath
+        self.timeout = TimeInterval(timeoutMillis) / 1_000
+    }
+
+    func request(command: String, payload: [String: String] = [:]) -> HelperReply? {
+        guard timeout > 0 else { return nil }
+        guard FileManager.default.fileExists(atPath: socketPath) else { return nil }
+
+        let request = HelperRequest(
+            version: HelperProtocol.protocolVersion,
+            requestId: UUID().uuidString,
+            command: command,
+            payload: payload
+        )
+        return transact(HelperWire.shared.encodeRequest(request: request) + "\n")
+    }
+
+    func version() -> String? {
+        guard let reply = request(command: "version"), reply.ok else { return nil }
+        return reply.result?["version"]
+    }
+
+    func setDisableSleep(disabled: Bool) -> Bool {
+        request(command: "setDisableSleep", payload: ["disabled": disabled ? "true" : "false"])?.ok == true
+    }
+
+    func setHibernateMode(mode: Int) -> Bool {
+        request(command: "setHibernateMode", payload: ["mode": String(mode)])?.ok == true
+    }
+
+    // MARK: - 私有
+
+    private func transact(_ line: String) -> HelperReply? {
+        let descriptor = connect()
+        guard descriptor >= 0 else { return nil }
+        defer { close(descriptor) }
+
+        guard UnixSocketIO.writeAll(descriptor, line) else { return nil }
+        guard let response = UnixSocketIO.readLine(
+            descriptor,
+            limit: Int(HelperWire.shared.MAX_REPLY_BYTES)
+        ) else { return nil }
+        return HelperWire.shared.decodeReply(line: response)
+    }
+
+    private func connect() -> Int32 {
+        let descriptor = socket(AF_UNIX, SOCK_STREAM, 0)
+        guard descriptor >= 0 else { return -1 }
+
+        // 秒与微秒分开设，内核到点就返回，不需要自己算 deadline。
+        var limit = timeval(
+            tv_sec: Int(timeout),
+            tv_usec: suseconds_t((timeout - Double(Int(timeout))) * 1_000_000)
+        )
+        let limitSize = socklen_t(MemoryLayout<timeval>.size)
+        setsockopt(descriptor, SOL_SOCKET, SO_SNDTIMEO, &limit, limitSize)
+        setsockopt(descriptor, SOL_SOCKET, SO_RCVTIMEO, &limit, limitSize)
+
+        guard let address = UnixSocketAddress(path: socketPath) else {
+            close(descriptor)
+            return -1
+        }
+        let result = address.withSockaddr { pointer, length in
+            Darwin.connect(descriptor, pointer, length)
+        }
+        guard result == 0 else {
+            close(descriptor)
+            return -1
+        }
+        return descriptor
+    }
+}
+
+/// `sockaddr_un` 的构造与长度计算集中在这里，调用方不用碰 C 指针。
+struct UnixSocketAddress {
+    private var storage: sockaddr_un
+    /// 实际用到的长度。`sun_path` 之后的字节没有意义，不能算进去。
+    private let length: socklen_t
+
+    init?(path: String) {
+        var address = sockaddr_un()
+        address.sun_family = sa_family_t(AF_UNIX)
+        address.sun_len = UInt8(MemoryLayout<sockaddr_un>.size)
+
+        let bytes = Array(path.utf8)
+        let capacity = MemoryLayout.size(ofValue: address.sun_path)
+        // 末尾要留一个字节放结束符。
+        guard bytes.count < capacity else { return nil }
+
+        withUnsafeMutablePointer(to: &address.sun_path) { pointer in
+            pointer.withMemoryRebound(to: CChar.self, capacity: capacity) { buffer in
+                for (index, byte) in bytes.enumerated() {
+                    buffer[index] = CChar(bitPattern: byte)
+                }
+                buffer[bytes.count] = 0
+            }
+        }
+        storage = address
+        let pathOffset = MemoryLayout<sockaddr_un>.offset(of: \.sun_path) ?? 0
+        length = socklen_t(pathOffset + bytes.count + 1)
+    }
+
+    /// 把地址交给 `bind` 或 `connect`。
+    func withSockaddr<T>(_ body: (UnsafePointer<sockaddr>, socklen_t) -> T) -> T {
+        var address = storage
+        return withUnsafePointer(to: &address) { pointer in
+            pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { body($0, length) }
+        }
+    }
+}
+
+/// 套接字上的按行读写。helper 的请求与回复都是单行 JSON。
+enum UnixSocketIO {
+    /// 读到换行或对端关闭为止。返回 nil 表示超过上限。
+    static func readLine(_ descriptor: Int32, limit: Int) -> String? {
+        var output = [UInt8]()
+        var byte: UInt8 = 0
+        while output.count < limit {
+            let count = Darwin.read(descriptor, &byte, 1)
+            if count <= 0 {
+                guard !output.isEmpty else { return nil }
+                return String(bytes: output, encoding: .utf8)
+            }
+            if byte == UInt8(ascii: "\n") {
+                return String(bytes: output, encoding: .utf8)
+            }
+            output.append(byte)
+        }
+        return nil
+    }
+
+    @discardableResult
+    static func writeAll(_ descriptor: Int32, _ text: String) -> Bool {
+        let bytes = Array(text.utf8)
+        var offset = 0
+        while offset < bytes.count {
+            let written = bytes.withUnsafeBytes { buffer -> Int in
+                guard let base = buffer.baseAddress else { return -1 }
+                return Darwin.write(descriptor, base.advanced(by: offset), buffer.count - offset)
+            }
+            if written <= 0 { return false }
+            offset += written
+        }
+        return true
+    }
+}

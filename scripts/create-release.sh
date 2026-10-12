@@ -3,7 +3,14 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DIST="$ROOT/dist"
-VERSION="0.4.2"
+# 版本号只有一个来源：kmpDomain 的 APP_VERSION。
+# 在这里抄一份会漂移，发布脚本就会打出一个与包内版本不同的标签。
+MODELS="$ROOT/kmpDomain/src/com/wyz/covio/core/Models.kt"
+VERSION="$(sed -n 's/^const val APP_VERSION = "\(.*\)"$/\1/p' "$MODELS")"
+if [[ -z "$VERSION" ]]; then
+  printf 'Could not read APP_VERSION from %s\n' "$MODELS" >&2
+  exit 1
+fi
 TAG="v$VERSION"
 DMG="$DIST/Covio-$VERSION.dmg"
 NOTES="$ROOT/RELEASE_NOTES.md"
@@ -20,7 +27,7 @@ if ! gh auth status >/dev/null 2>&1; then
 fi
 
 if [[ ! -f "$DMG" ]]; then
-  printf 'Missing artifact: %s\nRun scripts/package-macos.sh first.\n' "$DMG" >&2
+  printf 'Missing artifact: %s\nRun scripts/package-macos-swift.sh first.\n' "$DMG" >&2
   exit 1
 fi
 

@@ -1,0 +1,93 @@
+import XCTest
+import kmpDomain
+@testable import Covio
+
+/// `IdleSleepTimeoutCache` 的导出断言。
+///
+/// 实现只有一份，在 `kmpDomain` 里，规则本身由
+/// `kmpDomain/test/com/wyz/covio/core/IdleSleepTimeoutCacheTest.kt` 覆盖。
+/// 这个文件留着是当导出冒烟测试：确认 `Long?` 出得来、`companion` 常量读得到。
+///
+/// `pmset -g` 要几十毫秒，`Engine.tick()` 每次调用都会问，所以缓存 60 秒。
+/// 四条断言都同时看结果和读取次数：只看结果分不出「命中缓存」和「又读了一次」。
+final class SleepControllerTests: XCTestCase {
+    private let ttl = IdleSleepTimeoutCache.companion.DEFAULT_TTL_MILLIS
+
+    func testCacheReusesTheTimeoutInsideTheTTL() {
+        var now: Int64 = 10_000
+        var reads = 0
+        let cache = IdleSleepTimeoutCache(
+            clock: { KotlinLong(longLong: now) },
+            timeoutReader: {
+                reads += 1
+                return KotlinLong(longLong: 120)
+            },
+            ttlMillis: ttl
+        )
+
+        XCTAssertEqual(cache.get()?.int64Value, 120)
+        now += 59_999
+        XCTAssertEqual(cache.get()?.int64Value, 120)
+        XCTAssertEqual(reads, 1)
+    }
+
+    func testCacheReadsAgainAfterTheTTL() {
+        var now: Int64 = 10_000
+        var reads = 0
+        let cache = IdleSleepTimeoutCache(
+            clock: { KotlinLong(longLong: now) },
+            timeoutReader: {
+                reads += 1
+                return KotlinLong(longLong: reads == 1 ? 120 : 300)
+            },
+            ttlMillis: ttl
+        )
+
+        XCTAssertEqual(cache.get()?.int64Value, 120)
+        now += 60_000
+        XCTAssertEqual(cache.get()?.int64Value, 300)
+        XCTAssertEqual(reads, 2)
+    }
+
+    func testInvalidateForcesTheNextRead() {
+        var reads = 0
+        let cache = IdleSleepTimeoutCache(
+            clock: { KotlinLong(longLong: 0) },
+            timeoutReader: {
+                reads += 1
+                return KotlinLong(longLong: Int64(reads) * 60)
+            },
+            ttlMillis: ttl
+        )
+
+        XCTAssertEqual(cache.get()?.int64Value, 60)
+        XCTAssertEqual(cache.get()?.int64Value, 60)
+        cache.invalidate()
+        XCTAssertEqual(cache.get()?.int64Value, 120)
+        XCTAssertEqual(reads, 2)
+    }
+
+    /// `pmset` 读不到时是 `nil`，不是异常。
+    /// `nil` 也要缓存，否则每次 `tick()` 都会再起一个进程去撞同一个失败。
+    func testUnavailableTimeoutIsCachedAsUnavailable() {
+        var reads = 0
+        let cache = IdleSleepTimeoutCache(
+            clock: { KotlinLong(longLong: 0) },
+            timeoutReader: {
+                reads += 1
+                return nil
+            },
+            ttlMillis: ttl
+        )
+
+        XCTAssertNil(cache.get())
+        XCTAssertNil(cache.get())
+        XCTAssertEqual(reads, 1)
+    }
+
+    /// TTL 的默认值不导出（ADR-001 实测 18），Swift 侧必须显式传。
+    /// 这条断言守住「显式传的那个值就是 60 秒」。
+    func testTheDefaultTTLIsSixtySeconds() {
+        XCTAssertEqual(ttl, 60_000)
+    }
+}

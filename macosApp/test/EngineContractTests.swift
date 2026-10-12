@@ -1,0 +1,454 @@
+import XCTest
+import kmpDomain
+@testable import Covio
+
+/// 引擎行为基线。
+///
+/// 这是 `kmpDomain/test/com/wyz/covio/core/EngineTest.kt` 的镜像。
+/// 两个文件断言的必须是同一组行为：共享层的 Engine 只有一份实现，
+/// 但调用它的宿主换成了 Swift，所以要证明从 Swift 调用时行为不变。
+///
+/// 逐条对应关系写在每个用例的注释里。Kotlin 那份改了，这里也要改。
+@MainActor
+final class EngineContractTests: XCTestCase {
+
+    // MARK: - 唤醒日志
+
+    /// 对应 `start scans wake log and updates dark wake status`。
+    func testStartScansWakeLogAndUpdatesDarkWakeStatus() {
+        let event = WakeEvent(kind: .dark, atEpochSeconds: 1_000, reason: "RTC")
+        let store = WakeLogStore(WakeLogSnapshot(events: [event], darkWakeCount24h: 1))
+        let fixture = Fixture(wakeLogReader: store)
+        fixture.power.value = BatteryStatus(percent: 80, state: .discharging, remainingSeconds: nil)
+        fixture.engine.start()
+
+        XCTAssertEqual(store.reads, 1)
+        let status = fixture.engine.currentState.darkWake
+        XCTAssertTrue(status.available)
+        XCTAssertEqual(status.lastAtEpochSeconds?.int64Value, 1_000)
+        XCTAssertEqual(status.lastReason, "RTC")
+        XCTAssertEqual(status.count24h, 1)
+    }
+
+    /// 对应 `dark wake does not restore sleep now restrictions`。
+    func testDarkWakeDoesNotRestoreSleepNowRestrictions() {
+        let store = WakeLogStore(
+            WakeLogSnapshot(events: [WakeEvent(kind: .dark, atEpochSeconds: 1_000, reason: "Initial")], darkWakeCount24h: 1)
+        )
+        let fixture = Fixture(wakeLogReader: store)
+        fixture.privileged.installed = true
+        fixture.power.value = BatteryStatus(percent: 80, state: .discharging, remainingSeconds: nil)
+        fixture.engine.start()
+        fixture.engine.setIdleSleepAvailable(available: false)
+        _ = fixture.engine.setLidSleepAvailable(available: false)
+        fixture.engine.sleepNow()
+        XCTAssertTrue(fixture.engine.currentState.idleSleepAvailable)
+        XCTAssertTrue(fixture.engine.currentState.lidSleepAvailable)
+
+        store.snapshot = WakeLogSnapshot(
+            events: [WakeEvent(kind: .dark, atEpochSeconds: 2_000, reason: "RTC")],
+            darkWakeCount24h: 2
+        )
+        fixture.watcher.wake()
+
+        XCTAssertTrue(fixture.engine.currentState.idleSleepAvailable)
+        XCTAssertTrue(fixture.engine.currentState.lidSleepAvailable)
+        XCTAssertEqual(fixture.engine.currentState.darkWake.lastAtEpochSeconds?.int64Value, 2_000)
+    }
+
+    /// 对应 `full wake restores sleep now restrictions`。
+    func testFullWakeRestoresSleepNowRestrictions() {
+        let store = WakeLogStore(
+            WakeLogSnapshot(events: [WakeEvent(kind: .dark, atEpochSeconds: 1_000, reason: "Initial")], darkWakeCount24h: 1)
+        )
+        let fixture = Fixture(wakeLogReader: store)
+        fixture.privileged.installed = true
+        fixture.power.value = BatteryStatus(percent: 80, state: .discharging, remainingSeconds: nil)
+        fixture.engine.start()
+        fixture.engine.setIdleSleepAvailable(available: false)
+        _ = fixture.engine.setLidSleepAvailable(available: false)
+        fixture.engine.sleepNow()
+
+        store.snapshot = WakeLogSnapshot(
+            events: [WakeEvent(kind: .full, atEpochSeconds: 2_000, reason: "UserActivity")],
+            darkWakeCount24h: 1
+        )
+        fixture.watcher.wake()
+
+        XCTAssertFalse(fixture.engine.currentState.idleSleepAvailable)
+        XCTAssertFalse(fixture.engine.currentState.lidSleepAvailable)
+    }
+
+    /// 对应 `overlapping wake signals share one log scan`。
+    func testOverlappingWakeSignalsShareOneLogScan() {
+        let store = WakeLogStore(
+            WakeLogSnapshot(events: [WakeEvent(kind: .dark, atEpochSeconds: 1_000, reason: "Initial")], darkWakeCount24h: 1)
+        )
+        let queued = QueuedExecutor()
+        let fixture = Fixture(wakeLogReader: store, wakeScanExecutor: queued.executor)
+        fixture.engine.start()
+        XCTAssertEqual(queued.count, 1)
+        queued.runNext()
+        XCTAssertEqual(store.reads, 1)
+
+        store.snapshot = WakeLogSnapshot(
+            events: [WakeEvent(kind: .dark, atEpochSeconds: 2_000, reason: "RTC")],
+            darkWakeCount24h: 2
+        )
+        fixture.watcher.wake()
+        fixture.watcher.wake()
+
+        XCTAssertEqual(queued.count, 1)
+        queued.runNext()
+        XCTAssertEqual(store.reads, 2)
+    }
+
+    /// 对应 `wake scan retries an unchanged log snapshot`。
+    func testWakeScanRetriesAnUnchangedLogSnapshot() {
+        let initial = WakeLogSnapshot(
+            events: [WakeEvent(kind: .dark, atEpochSeconds: 1_000, reason: "Initial")],
+            darkWakeCount24h: 1
+        )
+        let updated = WakeLogSnapshot(
+            events: [WakeEvent(kind: .dark, atEpochSeconds: 2_000, reason: "RTC")],
+            darkWakeCount24h: 2
+        )
+        var reads = 0
+        let store = WakeLogStore()
+        store.provider = { _ in
+            reads += 1
+            return reads <= 2 ? initial : updated
+        }
+        let fixture = Fixture(wakeLogReader: store, wakeDelay: { _ in store.delays += 1 })
+        fixture.engine.start()
+        fixture.watcher.wake()
+
+        XCTAssertEqual(store.reads, 3)
+        XCTAssertEqual(store.delays, 2)
+        XCTAssertEqual(fixture.engine.currentState.darkWake.lastAtEpochSeconds?.int64Value, 2_000)
+    }
+
+    /// 对应 `wake log failure restores sleep now restrictions and marks status unavailable`。
+    func testWakeLogFailureRestoresSleepNowRestrictionsAndMarksStatusUnavailable() {
+        let store = WakeLogStore(
+            WakeLogSnapshot(events: [WakeEvent(kind: .dark, atEpochSeconds: 1_000, reason: "Initial")], darkWakeCount24h: 1)
+        )
+        let fixture = Fixture(wakeLogReader: store)
+        fixture.privileged.installed = true
+        fixture.power.value = BatteryStatus(percent: 80, state: .discharging, remainingSeconds: nil)
+        fixture.engine.start()
+        fixture.engine.setIdleSleepAvailable(available: false)
+        _ = fixture.engine.setLidSleepAvailable(available: false)
+        fixture.engine.sleepNow()
+
+        store.snapshot = nil
+        fixture.watcher.wake()
+
+        XCTAssertFalse(fixture.engine.currentState.darkWake.available)
+        XCTAssertFalse(fixture.engine.currentState.idleSleepAvailable)
+        XCTAssertFalse(fixture.engine.currentState.lidSleepAvailable)
+        XCTAssertTrue(fixture.logger.messages.contains { $0.contains("Wake log parsing failed") })
+    }
+
+    /// 对应 `wake log refresh is cached for 60 seconds`。
+    func testWakeLogRefreshIsCachedForSixtySeconds() {
+        var nowMillis: Int64 = 1_000_000
+        let store = WakeLogStore(
+            WakeLogSnapshot(events: [WakeEvent(kind: .dark, atEpochSeconds: 1_000, reason: "Initial")], darkWakeCount24h: 1)
+        )
+        let fixture = Fixture(wakeLogReader: store, wakeCacheNowMillis: { nowMillis })
+        fixture.power.value = BatteryStatus(percent: 80, state: .discharging, remainingSeconds: nil)
+        fixture.engine.start()
+        XCTAssertEqual(store.reads, 1)
+
+        fixture.engine.stop()
+        store.snapshot = WakeLogSnapshot(
+            events: [WakeEvent(kind: .dark, atEpochSeconds: 2_000, reason: "RTC")],
+            darkWakeCount24h: 2
+        )
+        nowMillis += 61_000
+        fixture.engine.start()
+
+        XCTAssertEqual(store.reads, 2)
+        XCTAssertEqual(fixture.engine.currentState.darkWake.lastAtEpochSeconds?.int64Value, 2_000)
+    }
+
+    /// 对应 `new wake event bypasses the cache`。
+    func testNewWakeEventBypassesTheCache() {
+        let store = WakeLogStore(
+            WakeLogSnapshot(events: [WakeEvent(kind: .dark, atEpochSeconds: 1_000, reason: "Initial")], darkWakeCount24h: 1)
+        )
+        let fixture = Fixture(wakeLogReader: store)
+        fixture.power.value = BatteryStatus(percent: 80, state: .discharging, remainingSeconds: nil)
+        fixture.engine.start()
+
+        store.snapshot = WakeLogSnapshot(
+            events: [
+                WakeEvent(kind: .dark, atEpochSeconds: 1_000, reason: "Initial"),
+                WakeEvent(kind: .full, atEpochSeconds: 2_000, reason: "UserActivity"),
+            ],
+            darkWakeCount24h: 1
+        )
+        fixture.watcher.wake()
+
+        XCTAssertEqual(fixture.engine.currentState.darkWake.lastAtEpochSeconds?.int64Value, 2_000)
+        XCTAssertEqual(fixture.engine.currentState.darkWake.lastReason, "UserActivity")
+    }
+
+    /// 对应 `wake log failure keeps the previous status data`。
+    func testWakeLogFailureKeepsThePreviousStatusData() {
+        let store = WakeLogStore(
+            WakeLogSnapshot(events: [WakeEvent(kind: .dark, atEpochSeconds: 1_000, reason: "RTC")], darkWakeCount24h: 1)
+        )
+        let fixture = Fixture(wakeLogReader: store)
+        fixture.power.value = BatteryStatus(percent: 80, state: .discharging, remainingSeconds: nil)
+        fixture.engine.start()
+
+        store.snapshot = nil
+        fixture.watcher.wake()
+
+        let status = fixture.engine.currentState.darkWake
+        XCTAssertFalse(status.available)
+        XCTAssertEqual(status.lastAtEpochSeconds?.int64Value, 1_000)
+        XCTAssertEqual(status.lastReason, "RTC")
+        XCTAssertEqual(status.count24h, 1)
+    }
+
+    // MARK: - 电池与合盖策略
+
+    /// 对应 `battery policy holds lid sleep on battery power`。
+    func testBatteryPolicyHoldsLidSleepOnBatteryPower() {
+        let fixture = Fixture(
+            config: AppConfigs.make(disableLidSleepOnBattery: true, lidSleepImmediateOnClose: false)
+        )
+        fixture.privileged.installed = true
+        fixture.power.value = BatteryStatus(percent: 80, state: .discharging, remainingSeconds: KotlinLong(longLong: 3_600))
+        fixture.engine.start()
+
+        XCTAssertFalse(fixture.engine.currentState.lidSleepAvailable)
+        XCTAssertTrue(fixture.privileged.disableSleepValues.contains(true))
+    }
+
+    /// 对应 `manual lid hold is released on request`。
+    func testManualLidHoldIsReleasedOnRequest() {
+        let fixture = Fixture(config: AppConfigs.make(lidSleepImmediateOnClose: false))
+        fixture.privileged.installed = true
+        fixture.power.value = BatteryStatus(percent: 80, state: .discharging, remainingSeconds: KotlinLong(longLong: 3_600))
+        fixture.engine.start()
+
+        fixture.engine.setManualLidSleepAvailable(available: false)
+        XCTAssertFalse(fixture.engine.currentState.lidSleepAvailable)
+
+        fixture.engine.setManualLidSleepAvailable(available: true)
+        XCTAssertTrue(fixture.engine.currentState.lidSleepAvailable)
+    }
+
+    /// 对应 `low battery policy overrides battery lid hold`。
+    func testLowBatteryPolicyOverridesBatteryLidHold() {
+        let fixture = Fixture(
+            config: AppConfigs.make(
+                lowBatteryCapacity: 10,
+                disableLidSleepOnBattery: true,
+                lidSleepImmediateOnClose: false
+            )
+        )
+        fixture.privileged.installed = true
+        fixture.power.value = BatteryStatus(percent: 5, state: .discharging, remainingSeconds: KotlinLong(longLong: 3_600))
+        fixture.engine.start()
+
+        XCTAssertEqual(fixture.sleep.sleepCalls, 1)
+        XCTAssertTrue(fixture.engine.currentState.lidSleepAvailable)
+        XCTAssertFalse(fixture.privileged.disableSleepValues.contains(true))
+    }
+
+    /// 对应 `helper failure rolls back lid policy config`。
+    func testHelperFailureRollsBackLidPolicyConfig() {
+        let fixture = Fixture(config: AppConfigs.make(lidSleepImmediateOnClose: false))
+        fixture.privileged.installed = true
+        fixture.privileged.disableSleepResult = false
+        fixture.power.value = BatteryStatus(percent: 80, state: .discharging, remainingSeconds: KotlinLong(longLong: 3_600))
+        fixture.engine.start()
+
+        let success = fixture.engine.updateConfig(
+            newConfig: AppConfigs.make(
+                from: fixture.engine.currentConfig,
+                disableLidSleepOnBattery: true
+            )
+        )
+
+        XCTAssertFalse(success)
+        XCTAssertFalse(fixture.engine.currentConfig.disableLidSleepOnBattery)
+        XCTAssertTrue(fixture.engine.currentState.lidSleepAvailable)
+    }
+
+    /// 对应 `low battery capacity triggers sleep only while discharging`。
+    func testLowBatteryCapacityTriggersSleepOnlyWhileDischarging() {
+        let fixture = Fixture(config: AppConfigs.make(lowBatteryCapacity: 6))
+        fixture.power.value = BatteryStatus(percent: 6, state: .discharging, remainingSeconds: nil)
+        fixture.engine.start()
+        XCTAssertEqual(fixture.sleep.sleepCalls, 1)
+        fixture.power.value = BatteryStatus(percent: 5, state: .charging, remainingSeconds: nil)
+        fixture.power.emit()
+        XCTAssertEqual(fixture.sleep.sleepCalls, 1)
+    }
+
+    /// 对应 `low remaining time triggers sleep`。
+    func testLowRemainingTimeTriggersSleep() {
+        let fixture = Fixture(config: AppConfigs.make(lowTimeRemainingMinutes: 10))
+        fixture.power.value = BatteryStatus(percent: 50, state: .discharging, remainingSeconds: KotlinLong(longLong: 600))
+        fixture.engine.start()
+        XCTAssertEqual(fixture.sleep.sleepCalls, 1)
+    }
+
+    /// 对应 `charging rules prevent idle and lid sleep then restore on battery`。
+    func testChargingRulesPreventIdleAndLidSleepThenRestoreOnBattery() {
+        let fixture = Fixture(
+            config: AppConfigs.make(
+                disableIdleSleepInCharging: true,
+                disableLidSleepInCharging: true,
+                lidSleepImmediateOnClose: false
+            )
+        )
+        fixture.privileged.installed = true
+        fixture.power.value = BatteryStatus(percent: 80, state: .charging, remainingSeconds: nil)
+        fixture.engine.start()
+        XCTAssertFalse(fixture.engine.currentState.idleSleepAvailable)
+        XCTAssertFalse(fixture.engine.currentState.lidSleepAvailable)
+
+        fixture.power.value = BatteryStatus(percent: 75, state: .discharging, remainingSeconds: KotlinLong(longLong: 3_600))
+        fixture.power.emit()
+        XCTAssertTrue(fixture.engine.currentState.idleSleepAvailable)
+        XCTAssertTrue(fixture.engine.currentState.lidSleepAvailable)
+    }
+
+    /// 对应 `lid charging policy is skipped when the helper is not installed`。
+    func testLidChargingPolicyIsSkippedWhenHelperIsNotInstalled() {
+        let fixture = Fixture(
+            config: AppConfigs.make(
+                disableIdleSleepInCharging: true,
+                disableLidSleepInCharging: true,
+                lidSleepImmediateOnClose: false
+            )
+        )
+        fixture.privileged.installed = false
+        fixture.power.value = BatteryStatus(percent: 80, state: .charging, remainingSeconds: nil)
+        fixture.engine.start()
+        XCTAssertFalse(fixture.engine.currentState.idleSleepAvailable)
+        XCTAssertTrue(fixture.engine.currentState.lidSleepAvailable)
+        XCTAssertTrue(fixture.privileged.disableSleepValues.isEmpty)
+    }
+
+    /// 对应 `start does not touch disablesleep when the helper is not installed`。
+    func testStartDoesNotTouchDisableSleepWhenHelperIsNotInstalled() {
+        let fixture = Fixture()
+        fixture.power.value = BatteryStatus(percent: 90, state: .discharging, remainingSeconds: nil)
+        fixture.privileged.installed = false
+        fixture.engine.start()
+        XCTAssertTrue(fixture.privileged.disableSleepValues.isEmpty)
+    }
+
+    // MARK: - 合盖与空闲
+
+    /// 对应 `lid close sleeps immediately when available`。
+    func testLidCloseSleepsImmediatelyWhenAvailable() {
+        let fixture = Fixture(config: AppConfigs.make(lidSleepImmediateOnClose: true))
+        fixture.power.value = BatteryStatus(percent: 80, state: .discharging, remainingSeconds: nil)
+        fixture.engine.start()
+        fixture.lid.state = .closed
+        fixture.lid.emit(.closed)
+        XCTAssertEqual(fixture.sleep.sleepCalls, 1)
+    }
+
+    /// 对应 `lid close only turns display off while sleep is prevented`。
+    func testLidCloseOnlyTurnsDisplayOffWhileSleepIsPrevented() {
+        let fixture = Fixture(config: AppConfigs.make(lidSleepImmediateOnClose: false))
+        fixture.power.value = BatteryStatus(percent: 80, state: .charging, remainingSeconds: nil)
+        fixture.engine.start()
+        _ = fixture.engine.setLidSleepAvailable(available: false)
+        fixture.lid.emit(.closed)
+        XCTAssertEqual(fixture.sleep.displayCalls, 1)
+        XCTAssertEqual(fixture.sleep.sleepCalls, 0)
+    }
+
+    /// 对应 `idle compensation sleeps after system timeout`。
+    func testIdleCompensationSleepsAfterSystemTimeout() {
+        let fixture = Fixture(config: AppConfigs.make(lidSleepImmediateOnClose: false))
+        fixture.power.value = BatteryStatus(percent: 80, state: .charging, remainingSeconds: nil)
+        fixture.engine.start()
+        _ = fixture.engine.setLidSleepAvailable(available: false)
+        fixture.sleep.timeoutSeconds = KotlinLong(longLong: 60)
+        fixture.idle.seconds = 61
+        fixture.engine.tick(nowMillis: fixture.nowMillis())
+        XCTAssertEqual(fixture.sleep.sleepCalls, 1)
+    }
+
+    /// 对应 `cancel timer restores idle availability`。
+    func testCancelTimerRestoresIdleAvailability() {
+        var now: Int64 = 1_000
+        let fixture = Fixture(clock: { now })
+        fixture.engine.scheduleCancelIdle(afterSeconds: 300)
+        XCTAssertFalse(fixture.engine.currentState.idleSleepAvailable)
+        now += 301_000
+        fixture.engine.tick(nowMillis: now)
+        XCTAssertTrue(fixture.engine.currentState.idleSleepAvailable)
+    }
+
+    /// 对应 `sleep now temporarily restores restrictions and wake restores them`。
+    func testSleepNowTemporarilyRestoresRestrictionsAndWakeRestoresThem() {
+        let fixture = Fixture()
+        fixture.power.value = BatteryStatus(percent: 90, state: .charging, remainingSeconds: nil)
+        fixture.engine.start()
+        fixture.engine.setIdleSleepAvailable(available: false)
+        _ = fixture.engine.setLidSleepAvailable(available: false)
+        XCTAssertFalse(fixture.engine.currentState.idleSleepAvailable)
+
+        fixture.engine.sleepNow()
+        XCTAssertEqual(fixture.sleep.sleepCalls, 1)
+        XCTAssertTrue(fixture.engine.currentState.idleSleepAvailable)
+        XCTAssertTrue(fixture.engine.currentState.lidSleepAvailable)
+
+        fixture.watcher.wake()
+        XCTAssertFalse(fixture.engine.currentState.idleSleepAvailable)
+        XCTAssertFalse(fixture.engine.currentState.lidSleepAvailable)
+    }
+
+    /// 对应 `cancel timer restores lid availability`。
+    func testCancelTimerRestoresLidAvailability() {
+        var now: Int64 = 5_000
+        let fixture = Fixture(clock: { now })
+        fixture.privileged.installed = true
+        fixture.engine.scheduleCancelLid(afterSeconds: 600)
+        XCTAssertFalse(fixture.engine.currentState.lidSleepAvailable)
+        now += 601_000
+        fixture.engine.tick(nowMillis: now)
+        XCTAssertTrue(fixture.engine.currentState.lidSleepAvailable)
+    }
+
+    // MARK: - 停止
+
+    /// 对应 `stop restores sleep availability and clears disablesleep`。
+    func testStopRestoresSleepAvailabilityAndClearsDisableSleep() {
+        let fixture = Fixture(config: AppConfigs.make(lidSleepImmediateOnClose: false))
+        fixture.privileged.installed = true
+        fixture.power.value = BatteryStatus(percent: 90, state: .charging, remainingSeconds: nil)
+        fixture.engine.start()
+        fixture.engine.setIdleSleepAvailable(available: false)
+        _ = fixture.engine.setLidSleepAvailable(available: false)
+        XCTAssertTrue(fixture.privileged.disableSleepValues.contains(true))
+
+        fixture.engine.stop()
+        XCTAssertTrue(fixture.engine.currentState.idleSleepAvailable)
+        XCTAssertTrue(fixture.engine.currentState.lidSleepAvailable)
+        XCTAssertFalse(fixture.sleep.prevented)
+        XCTAssertEqual(fixture.privileged.disableSleepValues.last, false)
+    }
+
+    /// 对应 `start removes stale disablesleep flag when no charging policy needs it`。
+    func testStartRemovesStaleDisableSleepFlagWhenNoChargingPolicyNeedsIt() {
+        let fixture = Fixture()
+        fixture.power.value = BatteryStatus(percent: 90, state: .discharging, remainingSeconds: nil)
+        fixture.privileged.installed = true
+        fixture.engine.start()
+        XCTAssertTrue(fixture.privileged.disableSleepValues.contains(false))
+    }
+}
