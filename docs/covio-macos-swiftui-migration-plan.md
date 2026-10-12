@@ -635,9 +635,22 @@ P0 阶段提出的五项，结论已记入 `docs/adr/ADR-001-macos-ui-swiftui.md
 
 新增纯类型套件：`HubMetricsTests`、`SettingsCatalogTests`、`SettingsSearchIndexTests`、`SettingsRowAnchorCoverageTests`。`ScreenshotsTabTests` 与 `ContractConstantsTests` 的高度加法按新公式改写。Swift 测试从 332 条增加到 375 条，全绿。375 这个数含并行工作流 P1 的 Files 页签与其测试。
 
+`ScreenGeometryTests` 随后补了三条用例，把 CI 运行器的屏幕形状钉下来。Swift 测试因此是 378 条。见下条。
+
 `SettingsRowAnchorCoverageTests` 是补漏后加的。它扫源码文本，核对每个锚点常量都挂在视图上。起因与自证见 ADR 实测 34。
 
-`NotchShellControllerTests` 里有几条靠计时等待的断言。机器被别的编译占满时，等待窗口可能超时。机器空闲时同一份代码全绿。这不是回归。
+### 首次 CI 的两个失败
+
+推送后 `macOS SwiftUI` 作业失败两次。两次都不是本机能复现的缺陷，因为本机与运行器的环境不同。
+
+| 次 | 失败步骤 | 根因 | 记录 |
+| --- | --- | --- | --- |
+| 1 | Build | 冷缓存下 `konanc` 找不到。发现排在了 Amper 解压之前 | ADR 实测 35 |
+| 2 | Test | 11 条断言写死屏幕坐标。运行器是 1024 × 768 的无刘海屏 | ADR 实测 36 |
+
+第三次全绿：三个作业 success，378 条测试，0 失败。见 ADR 实测 37。
+
+`NotchShellControllerTests` 里有几条靠计时等待的断言。机器被别的编译占满时，等待窗口可能超时。机器空闲时同一份代码全绿。在本机见过一次，与上面两个 CI 失败无关。
 
 **警告：** 新外壳没有视图测试。XCTest 不构建 SwiftUI 视图。几何值、目录表、搜索索引与退出动作都写成纯类型并配了测试，其余靠真机清单。
 
