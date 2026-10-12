@@ -5,6 +5,8 @@ import com.sun.jna.Memory
 import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.ptr.IntByReference
+import com.wyz.covio.core.HelperReply
+import com.wyz.covio.core.HelperWire
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -73,7 +75,7 @@ internal class HelperServer(private val logger: HelperLog) {
 
         bindServerSocket(HelperProtocol.SOCKET_PATH)
         check(posix.listen(serverSocket, 16) == 0) { "listen() failed" }
-        posix.chmod(HelperProtocol.SOCKET_PATH, 0x1B6) // 0666
+        posix.chmod(HelperProtocol.SOCKET_PATH, HelperWire.SOCKET_PERMISSIONS)
         logger.info("Helper listening on ${HelperProtocol.SOCKET_PATH}")
 
         while (!Thread.currentThread().isInterrupted) {
@@ -103,35 +105,35 @@ internal class HelperServer(private val logger: HelperLog) {
             val uid = IntByReference()
             val gid = IntByReference()
             if (posix.getpeereid(client, uid, gid) != 0) {
-                writeReply(client, HelperProtocol.failure("", "Cannot determine peer uid"))
+                writeReply(client, HelperWire.failure("", "Cannot determine peer uid"))
                 return
             }
             val allowed = readAllowedUid()
             if (allowed == null || uid.value != allowed) {
                 logger.info("Rejected helper request from uid=${uid.value}")
-                writeReply(client, HelperProtocol.failure("", "Peer uid is not allowed"))
+                writeReply(client, HelperWire.failure("", "Peer uid is not allowed"))
                 return
             }
 
             val requestLine = readLine(client) ?: return
-            val request = HelperProtocol.decodeRequest(requestLine)
+            val request = HelperWire.decodeRequest(requestLine)
             if (request == null) {
-                writeReply(client, HelperProtocol.failure("", "Invalid JSON request"))
+                writeReply(client, HelperWire.failure("", "Invalid JSON request"))
                 return
             }
-            val validationError = HelperProtocol.validate(request)
+            val validationError = HelperWire.validate(request)
             if (validationError != null) {
-                writeReply(client, HelperProtocol.failure(request.requestId, validationError))
+                writeReply(client, HelperWire.failure(request.requestId, validationError))
                 return
             }
-            val reply = when (request.command) {
-                "version" -> HelperProtocol.versionReply(request.requestId)
-                "setDisableSleep" -> setDisableSleep(request.requestId, request.payload["disabled"] == "true")
-                "setHibernateMode" -> setHibernateMode(
-                    request.requestId,
-                    request.payload["mode"]?.toIntOrNull() ?: return,
-                )
-                else -> HelperProtocol.failure(request.requestId, "Command is not allowed")
+            val arguments = HelperWire.pmsetArguments(request)
+            val reply = if (arguments != null) {
+                runPmset(request.requestId, arguments)
+            } else if (request.command == HelperWire.COMMAND_VERSION) {
+                HelperWire.versionReply(request.requestId)
+            } else {
+                // 白名单外的命令在校验那一步就被拒绝了，这里只是兜底。
+                HelperWire.failure(request.requestId, "Command is not allowed")
             }
             writeReply(client, reply)
         } catch (error: Throwable) {
@@ -145,24 +147,18 @@ internal class HelperServer(private val logger: HelperLog) {
         Files.readString(Path.of(HelperProtocol.ALLOWED_UID_PATH)).trim().toInt()
     }.getOrNull()
 
-    private fun setDisableSleep(requestId: String, disabled: Boolean) = runCatching {
-        val process = ProcessBuilder("/usr/bin/pmset", "-a", "disablesleep", if (disabled) "1" else "0")
+    /**
+     * 跑一条 `pmset` 命令。
+     *
+     * 参数由共享层给出，退出码的判定也在共享层。
+     * 进程启动失败只有本宿主知道原因，所以那一句文案留在本地。
+     */
+    private fun runPmset(requestId: String, arguments: List<String>) = runCatching {
+        val process = ProcessBuilder("/usr/bin/pmset", *arguments.toTypedArray())
             .redirectErrorStream(true)
             .start()
-        val output = process.inputStream.bufferedReader().readText().trim()
-        val exit = process.waitFor()
-        if (exit == 0) HelperProtocol.success(requestId)
-        else HelperProtocol.failure(requestId, output.ifBlank { "pmset exited with $exit" })
-    }.getOrElse { HelperProtocol.failure(requestId, it.message ?: "pmset failed") }
-
-    private fun setHibernateMode(requestId: String, mode: Int) = runCatching {
-        val process = ProcessBuilder("/usr/bin/pmset", "-a", "hibernatemode", mode.toString())
-            .redirectErrorStream(true)
-            .start()
-        val output = process.inputStream.bufferedReader().readText().trim()
-        val exit = process.waitFor()
-        if (exit == 0) HelperProtocol.success(requestId)
-        else HelperProtocol.failure(requestId, output.ifBlank { "pmset exited with $exit" })
+        val output = process.inputStream.bufferedReader().readText()
+        HelperWire.pmsetReply(requestId, process.waitFor(), output)
     }.getOrElse { HelperProtocol.failure(requestId, it.message ?: "pmset failed") }
 
     private fun readLine(fd: Int): String? {
@@ -178,8 +174,8 @@ internal class HelperServer(private val logger: HelperLog) {
         return null
     }
 
-    private fun writeReply(fd: Int, reply: com.wyz.covio.core.HelperReply) {
-        val bytes = (HelperProtocol.encodeReply(reply) + "\n").toByteArray(StandardCharsets.UTF_8)
+    private fun writeReply(fd: Int, reply: HelperReply) {
+        val bytes = (HelperWire.encodeReply(reply) + "\n").toByteArray(StandardCharsets.UTF_8)
         val memory = Memory(bytes.size.toLong())
         memory.write(0, bytes, 0, bytes.size)
         var offset = 0
@@ -193,6 +189,6 @@ internal class HelperServer(private val logger: HelperLog) {
     companion object {
         private const val AF_UNIX = 1
         private const val SOCK_STREAM = 1
-        private const val MAX_REQUEST_BYTES = 64 * 1024
+        private const val MAX_REQUEST_BYTES = HelperWire.MAX_REQUEST_BYTES
     }
 }

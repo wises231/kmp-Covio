@@ -1,55 +1,56 @@
 package com.wyz.covio.app.helper
 
-import com.wyz.covio.core.APP_VERSION
 import com.wyz.covio.core.HelperReply
 import com.wyz.covio.core.HelperRequest
-import com.wyz.covio.core.SUPPORTED_HIBERNATE_MODES
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import com.wyz.covio.core.HelperWire
+// 常量定义在共享模块的 `HelperContract.kt`，这里只是转发。
+// 加别名是因为成员名与顶层常量名相同，不加则解析到自身。
+import com.wyz.covio.core.HELPER_ALLOWED_COMMANDS as SHARED_ALLOWED_COMMANDS
+import com.wyz.covio.core.HELPER_ALLOWED_UID_PATH as SHARED_ALLOWED_UID_PATH
+import com.wyz.covio.core.HELPER_APP_PATH_FILE as SHARED_APP_PATH_FILE
+import com.wyz.covio.core.HELPER_DIRECTORY as SHARED_DIRECTORY
+import com.wyz.covio.core.HELPER_LOG_PATH as SHARED_LOG_PATH
+import com.wyz.covio.core.HELPER_PLIST_PATH as SHARED_PLIST_PATH
+import com.wyz.covio.core.HELPER_PROTOCOL_VERSION as SHARED_PROTOCOL_VERSION
+import com.wyz.covio.core.HELPER_SOCKET_PATH as SHARED_SOCKET_PATH
+import com.wyz.covio.core.HELPER_VERSION_PATH as SHARED_VERSION_PATH
 
+/**
+ * 本模块用到的协议入口。
+ *
+ * 协议本身只有一份实现，在共享模块的 `HelperWire.kt`。
+ * SwiftUI 版的 helper 调用同一份，所以两侧不可能漂移。
+ * 这里的成员只是改名转发，方便本模块的调用点。
+ *
+ * 本模块随 Compose 宿主一起退役，见迁移计划 P6。届时整个文件删除，
+ * 调用点直接用 `HelperWire`。
+ */
 object HelperProtocol {
-    const val PROTOCOL_VERSION = "1"
-    const val SOCKET_PATH = "/Library/Application Support/Covio/helper.sock"
-    const val HELPER_DIRECTORY = "/Library/Application Support/Covio"
-    const val ALLOWED_UID_PATH = "$HELPER_DIRECTORY/allowed_uid"
-    const val VERSION_PATH = "$HELPER_DIRECTORY/version"
-    const val APP_PATH_FILE = "$HELPER_DIRECTORY/Covio.app"
-    const val LOG_PATH = "$HELPER_DIRECTORY/helper.log"
-    const val PLIST_PATH = "/Library/LaunchDaemons/com.wyz.covio.helper.plist"
-    val allowedCommands = setOf("version", "setDisableSleep", "setHibernateMode")
-    private val json = Json { ignoreUnknownKeys = true }
+    const val PROTOCOL_VERSION = SHARED_PROTOCOL_VERSION
+    const val SOCKET_PATH = SHARED_SOCKET_PATH
+    const val HELPER_DIRECTORY = SHARED_DIRECTORY
+    const val ALLOWED_UID_PATH = SHARED_ALLOWED_UID_PATH
+    const val VERSION_PATH = SHARED_VERSION_PATH
+    const val APP_PATH_FILE = SHARED_APP_PATH_FILE
+    const val LOG_PATH = SHARED_LOG_PATH
+    const val PLIST_PATH = SHARED_PLIST_PATH
+    val allowedCommands = SHARED_ALLOWED_COMMANDS
 
-    fun decodeRequest(line: String): HelperRequest? = runCatching {
-        json.decodeFromString<HelperRequest>(line)
-    }.getOrNull()
+    fun decodeRequest(line: String): HelperRequest? = HelperWire.decodeRequest(line)
 
-    fun encodeRequest(request: HelperRequest): String = json.encodeToString(request)
-    fun encodeReply(reply: HelperReply): String = json.encodeToString(reply)
+    fun encodeRequest(request: HelperRequest): String = HelperWire.encodeRequest(request)
 
-    fun decodeReply(line: String): HelperReply? = runCatching {
-        json.decodeFromString<HelperReply>(line)
-    }.getOrNull()
+    fun encodeReply(reply: HelperReply): String = HelperWire.encodeReply(reply)
 
-    fun success(requestId: String, result: Map<String, String> = emptyMap()) =
-        HelperReply(PROTOCOL_VERSION, requestId, true, result = result)
+    fun decodeReply(line: String): HelperReply? = HelperWire.decodeReply(line)
 
-    fun failure(requestId: String, message: String) =
-        HelperReply(PROTOCOL_VERSION, requestId, false, error = message)
+    fun success(requestId: String, result: Map<String, String> = emptyMap()): HelperReply =
+        HelperWire.success(requestId, result)
 
-    fun validate(request: HelperRequest): String? {
-        if (request.version != PROTOCOL_VERSION) return "Unsupported protocol version"
-        if (request.requestId.isBlank()) return "Missing requestId"
-        if (request.command !in allowedCommands) return "Command is not allowed"
-        if (request.command == "setDisableSleep") {
-            val value = request.payload["disabled"] ?: return "Missing disabled value"
-            if (value !in setOf("true", "false")) return "Invalid disabled value"
-        }
-        if (request.command == "setHibernateMode") {
-            val mode = request.payload["mode"]?.toIntOrNull() ?: return "Missing hibernate mode"
-            if (mode !in SUPPORTED_HIBERNATE_MODES) return "Invalid hibernate mode"
-        }
-        return null
-    }
+    fun failure(requestId: String, message: String): HelperReply =
+        HelperWire.failure(requestId, message)
 
-    fun versionReply(requestId: String) = success(requestId, mapOf("version" to APP_VERSION))
+    fun validate(request: HelperRequest): String? = HelperWire.validate(request)
+
+    fun versionReply(requestId: String): HelperReply = HelperWire.versionReply(requestId)
 }

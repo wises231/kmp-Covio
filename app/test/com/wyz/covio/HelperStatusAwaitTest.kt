@@ -1,6 +1,6 @@
 package com.wyz.covio.app
 
-import com.wyz.covio.app.ui.awaitHelperStatus
+import com.wyz.covio.app.helper.awaitHelperStatus
 import com.wyz.covio.core.HelperStatus
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
