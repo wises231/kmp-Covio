@@ -4,4 +4,8 @@ dist/
 .idea/
 .DS_Store
 *.log
-native/*.dylib
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint

@@ -6,10 +6,34 @@ It controls sleep behavior and provides a screenshot toolbar at the top of the s
 Covio is an independent implementation.
 It does not use the Tendedero name, icon, or documentation images.
 
+## Product design
+
+- [Product design master](docs/covio-product-master.md) defines product behavior and priorities.
+- [Design contract](docs/covio-design-contract.json) is the machine-readable design authority.
+- [Design contract schema](docs/covio-design-contract.schema.json) validates the contract structure.
+- [Design contract guide](docs/covio-product-design.md) explains the contract and Figma projection.
+- The Covio Figma file is the visual projection used for implementation verification.
+- Static design status: 8 pages, 8 sections, 35 boards, 130 source component sets, 186 component nodes, and 42 prototype reactions. Static visual audit passed.
+
+Each component carries a `composeMapping` and a `swiftMapping`.
+The macOS host reads the Swift mapping. The Compose host reads the other one.
+
+**Note:** The JSON schema cannot express "`swiftMapping` is required on macOS".
+The check is in `scripts/validate-contract.py`.
+The script also checks the rules that cross two sections of the contract.
+
+## Research
+
+- [Research archive](docs/research/README.md) defines the research archive rules and links each research topic.
+
 ## Download (internal test)
 
 This repository is under internal test.
 The current build is not a public release.
+
+0.4.2 is the last published build. It is the Compose version.
+0.5.0 is the SwiftUI version. It is not published yet.
+Build 0.5.0 locally with `bash scripts/package-macos-swift.sh`.
 
 - [Covio-0.4.2.dmg](https://github.com/wises231/kmp-Covio/releases/download/v0.4.2/Covio-0.4.2.dmg)
 - [Release page](https://github.com/wises231/kmp-Covio/releases/tag/v0.4.2)
@@ -37,6 +61,26 @@ The download has this SHA-256 checksum:
 ```text
 1237b65bdb8c0c15f1300a0b6ca095f8280db3b1894f1018fb2803b386333344  Covio-0.4.2.dmg
 ```
+
+## What is new in 0.5.0
+
+- The macOS interface is SwiftUI. The shared logic is Kotlin Multiplatform, module `kmpDomain`.
+- The app requires macOS 26 or later. Covio 0.4.x stays on macOS 12.
+- The Hub has a new layout. A floating navigation rail is on the left. A floating capsule is at the top.
+  - The rail holds the search box, the six tabs, and a bottom group.
+  - The bottom group holds the run indicator, the settings button, the language menu, and quit.
+  - The capsule holds the page title and the page actions.
+  - On the Settings tab the capsule holds the six section switches.
+  - The page title moved from the page body to the capsule.
+- The search box searches settings. Selecting a result opens the Settings tab.
+  The Hub scrolls to that row and highlights it for 1.2 seconds.
+- Press Escape to clear the search. Press Escape again to collapse the Hub.
+- The navigation rail and the capsule use Liquid Glass. In System Settings, turn on Reduce motion to switch without animation.
+- The app adds the clipboard history. See the Clipboard history section.
+- The screenshot toolbar behaves as in 0.4.2. The implementation is Swift.
+- The app keeps the sleep, lid, DarkWake, helper, and LaunchAgent functions.
+- The Settings tab keeps the same six sections.
+- `config.json` is compatible with 0.4.2 in both directions.
 
 ## What is new in 0.4.2
 
@@ -99,6 +143,35 @@ The screenshot directory is:
 Screenshots stay on this Mac.
 Covio does not send screenshot data to the network.
 
+## Clipboard history
+
+Covio keeps a clipboard history. Open the Hub and select the Clipboard tab.
+
+- Copy text, links, colors, images, or files. Covio adds each one to the list.
+- Select an item to copy it back to the clipboard.
+- Select Paste to copy the item and press `Command+V` in the front app.
+- Select Pin to keep an item. Clear All keeps pinned items.
+- Select Pause to stop recording. Covio keeps the list.
+- `Shift+Command+V` pastes the next item from the paste stack.
+- `Shift+Command+C` copies the selection of the front app.
+
+The Clipboard settings page shows the two shortcuts. Select a different combination when another app already uses one. Covio shows `Registration failed` in that case.
+
+Paste needs the Accessibility permission. Without it, copying still works and you press `Command+V` yourself.
+
+The retention policy keeps 100 items, 7 days, and 200 MB.
+Pinned items are always kept.
+Images are stored as files. Text recognition runs on each image, so you can find an image by the text inside it.
+
+The clipboard directory is:
+
+```text
+~/Library/Application Support/Covio/Clipboard
+```
+
+Clipboard data stays on this Mac.
+Covio does not send clipboard data to the network.
+
 ## Sleep and lid features
 
 - Sleep at the low-battery capacity threshold.
@@ -123,42 +196,77 @@ Covio does not send screenshot data to the network.
 
 ## Requirements
 
-- macOS 12 or later.
+- macOS 26 or later. Covio 0.4.x stays on macOS 12.
 - An Apple Silicon Mac.
-- JDK 25 for packaging.
-- Xcode command line tools for the native drag library.
+- Xcode 27 to build the SwiftUI host.
+- JDK 25 for the shared layer.
 
 ## Build and test
 
+Run every test:
+
 ```sh
-/bin/sh ./kotlin test
-/bin/sh ./kotlin build
+bash scripts/test-all.sh
 ```
+
+The script runs the Kotlin tests, checks the design-contract constants, checks the contract rules that the schema cannot express, checks with the helper cutover script, and runs the macOS XCTest suite.
+
+Build one side only:
+
+```sh
+/bin/sh ./kotlin test          # the shared layer, on jvm and macosArm64
+bash scripts/build-kmp-framework.sh   # write build/kmp-framework/kmpDomain.framework
+bash scripts/build-macos-swift.sh     # build the SwiftUI host
+bash scripts/test-macos-swift.sh      # run the SwiftUI host XCTest suite
+```
+
+After you change the design contract, run these two:
+
+```sh
+python3 scripts/validate-contract.py            # the cross-section rules
+python3 scripts/generate-contract-constants.py  # rewrite the Swift constants
+```
+
+The SwiftUI host reads its text and its tokens from `ContractCopy.swift` and `ContractTokens.swift`.
+Both files are generated. Do not edit them by hand.
+
+The macOS host is SwiftUI. The shared layer is Kotlin Multiplatform, module `kmpDomain`.
+The host links `kmpDomain.framework`. Open `macosApp/Covio.xcodeproj` to work on the host.
+
+The SwiftUI host is on macOS only.
+It uses the same `config.json` as the Compose version.
+The two versions use different lock files, so both can run at the same time.
 
 ## Package
 
 ```sh
-bash scripts/package-macos.sh
+bash scripts/package-macos-swift.sh
 ```
 
 The script writes these files:
 
 - `dist/Covio.app`
-- `dist/Covio-0.4.2.dmg`
+- `dist/Covio-0.5.0.dmg`
 
-The script compiles `native/libCovioDrag.dylib` for arm64.
-The script copies the library into the app image.
-The script sets the bundle keys and applies an ad-hoc signature.
+The script archives the Xcode project in the Release configuration.
+The script reads the version from `APP_VERSION` and checks that the bundle carries it.
+The script checks that the bundle carries `macosApp/src/Covio.icns` and applies an ad-hoc signature.
+The script builds the DMG with `diskutil image create`.
+
+The icon source is `assets/Covio.iconset`. Run `iconutil --convert icns --output macosApp/src/Covio.icns assets/Covio.iconset` after a change.
+The Xcode target copies `macosApp/src/Covio.icns` into the bundle, so every build carries the icon.
+
+The app is arm64 only. `kmpDomain.framework` has one slice, `macosArm64`.
 
 ## Real-Mac acceptance checklist
 
 Run this checklist before a public release.
 The current internal test does not complete this checklist.
 
-1. Install Covio 0.4.2.
-2. Confirm the app version is `0.4.2`.
+1. Install the build under test.
+2. Confirm the app version matches `APP_VERSION` in `kmpDomain/src/com/wyz/covio/core/Models.kt`.
 3. Install the privileged helper.
-4. Confirm the helper version is `0.4.2`.
+4. Confirm the helper version matches the app version.
 5. Confirm screenshot takeover changes the three `com.apple.screencapture` keys.
 6. Take a screenshot. Confirm the system thumbnail is hidden.
 7. Confirm the screenshot appears in the toolbar.
@@ -188,6 +296,14 @@ The current internal test does not complete this checklist.
 31. Quit the app. Confirm the LaunchAgent does not restart it.
 32. Force-quit the app. Confirm the LaunchAgent restarts it.
 33. Remove the helper. Confirm `SleepDisabled` is `0`.
+34. Open the Hub. Confirm the floating rail is on the left and the floating capsule is at the top.
+35. Confirm the rail and the capsule look like glass. If they do not, set `GlassSurfaceMode.current` to `.material`.
+36. Switch all six tabs. Confirm each page fits the card. Confirm no button row is cut.
+37. Type `休眠` in the search box. Select the result. Confirm the Hub opens the Settings tab, the General section, and highlights the sleep mode row.
+38. Press Escape. Confirm the search clears and the Hub stays open. Press Escape again. Confirm the Hub collapses.
+39. Switch the language to English in the rail. Confirm all text changes.
+40. Turn on Reduce motion in System Settings. Repeat step 36. Confirm the selection changes without animation.
+41. Click quit at the bottom of the rail. Confirm the app exits and the sleep state returns to the value before start.
 
 ## Privileged helper
 
@@ -234,9 +350,21 @@ The helper LaunchDaemon is:
 /Library/LaunchDaemons/com.wyz.covio.helper.plist
 ```
 
+The screenshot shelf state and the screenshot files are:
+
+```text
+~/Library/Application Support/Covio/Screenshots
+```
+
+The clipboard state and the clipboard images are:
+
+```text
+~/Library/Application Support/Covio/Clipboard
+```
+
 ## Publish an internal test release
 
-1. Run `scripts/package-macos.sh`.
+1. Run `scripts/package-macos-swift.sh`.
 2. Run `gh auth login`.
 3. Run `bash scripts/create-release.sh`.
 
