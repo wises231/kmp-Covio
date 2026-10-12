@@ -1,0 +1,844 @@
+// 本文件由 scripts/generate-contract-constants.py 生成。不要手改。
+// 权威是 docs/covio-design-contract.json。
+// 改合同后重跑脚本：python3 scripts/generate-contract-constants.py
+
+import Foundation
+
+/// 设计合同 `copy` 段的全部文案。
+///
+/// 键名就是合同里的键路径。`DesignContractTests` 逐条比对，
+/// 所以这里的值不能手改。
+enum ContractCopy {
+    /// `copy/app/name`
+    static let copyAppName = LocalizedCopy(key: "copy/app/name", en: "Covio", zhHans: "Covio")
+    /// `copy/app/tagline`
+    static let copyAppTagline = LocalizedCopy(key: "copy/app/tagline", en: "Keep your Mac awake when it matters.", zhHans: "在需要时保持 Mac 唤醒。")
+    /// `copy/battery/capacity-threshold`
+    static let copyBatteryCapacityThreshold = LocalizedCopy(key: "copy/battery/capacity-threshold", en: "Capacity threshold", zhHans: "容量阈值")
+    /// `copy/battery/enabled`
+    static let copyBatteryEnabled = LocalizedCopy(key: "copy/battery/enabled", en: "Sleep at low battery", zhHans: "低电量时睡眠")
+    /// `copy/battery/time-threshold`
+    static let copyBatteryTimeThreshold = LocalizedCopy(key: "copy/battery/time-threshold", en: "Remaining time threshold", zhHans: "剩余时间阈值")
+    /// `copy/battery/unit/minutes`
+    static let copyBatteryUnitMinutes = LocalizedCopy(key: "copy/battery/unit/minutes", en: "minutes", zhHans: "分钟")
+    /// `copy/battery/unit/percent`
+    static let copyBatteryUnitPercent = LocalizedCopy(key: "copy/battery/unit/percent", en: "percent", zhHans: "百分比")
+    /// `copy/clipboard/action/clear`
+    static let copyClipboardActionClear = LocalizedCopy(key: "copy/clipboard/action/clear", en: "Clear All", zhHans: "全部清除")
+    /// `copy/clipboard/action/open-settings`
+    static let copyClipboardActionOpenSettings = LocalizedCopy(key: "copy/clipboard/action/open-settings", en: "Open System Settings", zhHans: "打开系统设置")
+    /// `copy/clipboard/action/paste`
+    static let copyClipboardActionPaste = LocalizedCopy(key: "copy/clipboard/action/paste", en: "Paste", zhHans: "粘贴")
+    /// `copy/clipboard/action/pin`
+    static let copyClipboardActionPin = LocalizedCopy(key: "copy/clipboard/action/pin", en: "Pin", zhHans: "置顶")
+    /// `copy/clipboard/action/remove`
+    static let copyClipboardActionRemove = LocalizedCopy(key: "copy/clipboard/action/remove", en: "Remove", zhHans: "删除")
+    /// `copy/clipboard/action/unpin`
+    static let copyClipboardActionUnpin = LocalizedCopy(key: "copy/clipboard/action/unpin", en: "Unpin", zhHans: "取消置顶")
+    /// `copy/clipboard/empty`
+    static let copyClipboardEmpty = LocalizedCopy(key: "copy/clipboard/empty", en: "Nothing copied yet", zhHans: "还没有复制内容")
+    /// `copy/clipboard/error/accessibility`
+    static let copyClipboardErrorAccessibility = LocalizedCopy(key: "copy/clipboard/error/accessibility", en: "Paste needs Accessibility permission.", zhHans: "粘贴回填需要辅助功能权限。")
+    /// `copy/clipboard/error/hot-key`
+    static let copyClipboardErrorHotKey = LocalizedCopy(key: "copy/clipboard/error/hot-key", en: "This shortcut is already taken.", zhHans: "这个快捷键已被占用。")
+    /// `copy/clipboard/error/image`
+    static let copyClipboardErrorImage = LocalizedCopy(key: "copy/clipboard/error/image", en: "Cannot save the image.", zhHans: "无法保存图片。")
+    /// `copy/clipboard/error/paste`
+    static let copyClipboardErrorPaste = LocalizedCopy(key: "copy/clipboard/error/paste", en: "Cannot paste into the front app.", zhHans: "无法粘贴到前台应用。")
+    /// `copy/clipboard/settings/accessibility`
+    static let copyClipboardSettingsAccessibility = LocalizedCopy(key: "copy/clipboard/settings/accessibility", en: "Accessibility permission", zhHans: "辅助功能权限")
+    /// `copy/clipboard/settings/accessibility-fallback`
+    static let copyClipboardSettingsAccessibilityFallback = LocalizedCopy(key: "copy/clipboard/settings/accessibility-fallback", en: "Copying still works. Without this permission Covio cannot press ⌘V for you.", zhHans: "复制仍然可用。没有这个权限时 Covio 不能替你按 ⌘V。")
+    /// `copy/clipboard/settings/capture-hot-key`
+    static let copyClipboardSettingsCaptureHotKey = LocalizedCopy(key: "copy/clipboard/settings/capture-hot-key", en: "Capture selection", zhHans: "抓取选中内容")
+    /// `copy/clipboard/settings/enabled`
+    static let copyClipboardSettingsEnabled = LocalizedCopy(key: "copy/clipboard/settings/enabled", en: "Record clipboard history", zhHans: "记录剪切板历史")
+    /// `copy/clipboard/settings/granted`
+    static let copyClipboardSettingsGranted = LocalizedCopy(key: "copy/clipboard/settings/granted", en: "Granted", zhHans: "已授权")
+    /// `copy/clipboard/settings/hot-key-conflict`
+    static let copyClipboardSettingsHotKeyConflict = LocalizedCopy(key: "copy/clipboard/settings/hot-key-conflict", en: "Registration failed. Another app owns this shortcut. Pick another one.", zhHans: "注册失败。这个快捷键被别的应用占用了，换一个。")
+    /// `copy/clipboard/settings/hot-keys`
+    static let copyClipboardSettingsHotKeys = LocalizedCopy(key: "copy/clipboard/settings/hot-keys", en: "Shortcuts", zhHans: "快捷键")
+    /// `copy/clipboard/settings/not-granted`
+    static let copyClipboardSettingsNotGranted = LocalizedCopy(key: "copy/clipboard/settings/not-granted", en: "Not granted", zhHans: "未授权")
+    /// `copy/clipboard/settings/paste-stack-hot-key`
+    static let copyClipboardSettingsPasteStackHotKey = LocalizedCopy(key: "copy/clipboard/settings/paste-stack-hot-key", en: "Paste next from stack", zhHans: "粘贴栈的下一条")
+    /// `copy/clipboard/settings/request-permission`
+    static let copyClipboardSettingsRequestPermission = LocalizedCopy(key: "copy/clipboard/settings/request-permission", en: "Request Permission", zhHans: "申请权限")
+    /// `copy/clipboard/state/pause`
+    static let copyClipboardStatePause = LocalizedCopy(key: "copy/clipboard/state/pause", en: "Pause", zhHans: "暂停记录")
+    /// `copy/clipboard/state/paused`
+    static let copyClipboardStatePaused = LocalizedCopy(key: "copy/clipboard/state/paused", en: "Recording paused", zhHans: "已暂停记录")
+    /// `copy/clipboard/state/resume`
+    static let copyClipboardStateResume = LocalizedCopy(key: "copy/clipboard/state/resume", en: "Resume", zhHans: "继续记录")
+    /// `copy/clipboard/title`
+    static let copyClipboardTitle = LocalizedCopy(key: "copy/clipboard/title", en: "Clipboard", zhHans: "剪切板")
+    /// `copy/component/material/blur`
+    static let copyComponentMaterialBlur = LocalizedCopy(key: "copy/component/material/blur", en: "Blur", zhHans: "模糊")
+    /// `copy/component/material/medium`
+    static let copyComponentMaterialMedium = LocalizedCopy(key: "copy/component/material/medium", en: "Medium", zhHans: "中")
+    /// `copy/component/material/thick`
+    static let copyComponentMaterialThick = LocalizedCopy(key: "copy/component/material/thick", en: "Thick", zhHans: "厚")
+    /// `copy/component/material/thin`
+    static let copyComponentMaterialThin = LocalizedCopy(key: "copy/component/material/thin", en: "Thin", zhHans: "薄")
+    /// `copy/component/material/ultra-thick`
+    static let copyComponentMaterialUltraThick = LocalizedCopy(key: "copy/component/material/ultra-thick", en: "Ultra Thick", zhHans: "超厚")
+    /// `copy/component/material/ultra-thin`
+    static let copyComponentMaterialUltraThin = LocalizedCopy(key: "copy/component/material/ultra-thin", en: "Ultra Thin", zhHans: "超薄")
+    /// `copy/component/popover/bottom`
+    static let copyComponentPopoverBottom = LocalizedCopy(key: "copy/component/popover/bottom", en: "Bottom", zhHans: "底部")
+    /// `copy/component/popover/custom`
+    static let copyComponentPopoverCustom = LocalizedCopy(key: "copy/component/popover/custom", en: "Custom", zhHans: "自定义")
+    /// `copy/component/popover/form`
+    static let copyComponentPopoverForm = LocalizedCopy(key: "copy/component/popover/form", en: "Form", zhHans: "表单")
+    /// `copy/component/popover/menu`
+    static let copyComponentPopoverMenu = LocalizedCopy(key: "copy/component/popover/menu", en: "Menu", zhHans: "菜单")
+    /// `copy/component/popover/top`
+    static let copyComponentPopoverTop = LocalizedCopy(key: "copy/component/popover/top", en: "Top", zhHans: "顶部")
+    /// `copy/component/toolbar/compact`
+    static let copyComponentToolbarCompact = LocalizedCopy(key: "copy/component/toolbar/compact", en: "Compact", zhHans: "紧凑")
+    /// `copy/component/toolbar/default`
+    static let copyComponentToolbarDefault = LocalizedCopy(key: "copy/component/toolbar/default", en: "Default", zhHans: "默认")
+    /// `copy/component/window-shell/compact`
+    static let copyComponentWindowShellCompact = LocalizedCopy(key: "copy/component/window-shell/compact", en: "Compact", zhHans: "紧凑")
+    /// `copy/component/window-shell/sidebar`
+    static let copyComponentWindowShellSidebar = LocalizedCopy(key: "copy/component/window-shell/sidebar", en: "Sidebar", zhHans: "侧边栏")
+    /// `copy/component/window-shell/standard`
+    static let copyComponentWindowShellStandard = LocalizedCopy(key: "copy/component/window-shell/standard", en: "Standard", zhHans: "标准")
+    /// `copy/component/window-shell/toolbar`
+    static let copyComponentWindowShellToolbar = LocalizedCopy(key: "copy/component/window-shell/toolbar", en: "Toolbar", zhHans: "工具栏")
+    /// `copy/dialog/helper-install/body`
+    static let copyDialogHelperInstallBody = LocalizedCopy(key: "copy/dialog/helper-install/body", en: "Covio needs the helper for sleep control.", zhHans: "Covio 需要助手来控制睡眠。")
+    /// `copy/dialog/helper-install/title`
+    static let copyDialogHelperInstallTitle = LocalizedCopy(key: "copy/dialog/helper-install/title", en: "Install helper", zhHans: "安装助手")
+    /// `copy/dialog/helper-unavailable/body`
+    static let copyDialogHelperUnavailableBody = LocalizedCopy(key: "copy/dialog/helper-unavailable/body", en: "Start the helper, then try again.", zhHans: "启动助手，然后重试。")
+    /// `copy/dialog/helper-unavailable/title`
+    static let copyDialogHelperUnavailableTitle = LocalizedCopy(key: "copy/dialog/helper-unavailable/title", en: "Helper unavailable", zhHans: "助手不可用")
+    /// `copy/dialog/reset/body`
+    static let copyDialogResetBody = LocalizedCopy(key: "copy/dialog/reset/body", en: "This action removes all local Covio settings.", zhHans: "此操作会删除全部本地 Covio 设置。")
+    /// `copy/dialog/reset/title`
+    static let copyDialogResetTitle = LocalizedCopy(key: "copy/dialog/reset/title", en: "Clear configuration?", zhHans: "清除配置？")
+    /// `copy/dialog/update/body`
+    static let copyDialogUpdateBody = LocalizedCopy(key: "copy/dialog/update/body", en: "A new Covio version is ready.", zhHans: "新的 Covio 版本已就绪。")
+    /// `copy/dialog/update/title`
+    static let copyDialogUpdateTitle = LocalizedCopy(key: "copy/dialog/update/title", en: "Update available", zhHans: "有可用更新")
+    /// `copy/general/check-updates`
+    static let copyGeneralCheckUpdates = LocalizedCopy(key: "copy/general/check-updates", en: "Check for updates", zhHans: "检查更新")
+    /// `copy/general/clear-config`
+    static let copyGeneralClearConfig = LocalizedCopy(key: "copy/general/clear-config", en: "Clear Configuration…", zhHans: "清除配置…")
+    /// `copy/general/darkwake`
+    static let copyGeneralDarkwake = LocalizedCopy(key: "copy/general/darkwake", en: "DarkWake awareness", zhHans: "DarkWake 感知")
+    /// `copy/general/language`
+    static let copyGeneralLanguage = LocalizedCopy(key: "copy/general/language", en: "Language", zhHans: "语言")
+    /// `copy/general/language/chinese`
+    static let copyGeneralLanguageChinese = LocalizedCopy(key: "copy/general/language/chinese", en: "Simplified Chinese", zhHans: "简体中文")
+    /// `copy/general/language/english`
+    static let copyGeneralLanguageEnglish = LocalizedCopy(key: "copy/general/language/english", en: "English", zhHans: "English")
+    /// `copy/general/launch-at-login`
+    static let copyGeneralLaunchAtLogin = LocalizedCopy(key: "copy/general/launch-at-login", en: "Launch at login", zhHans: "登录时启动")
+    /// `copy/general/notifications`
+    static let copyGeneralNotifications = LocalizedCopy(key: "copy/general/notifications", en: "Notifications", zhHans: "通知")
+    /// `copy/general/sleep-mode`
+    static let copyGeneralSleepMode = LocalizedCopy(key: "copy/general/sleep-mode", en: "Sleep mode", zhHans: "睡眠模式")
+    /// `copy/general/sleep-mode/default`
+    static let copyGeneralSleepModeDefault = LocalizedCopy(key: "copy/general/sleep-mode/default", en: "3 · Default", zhHans: "3 · 默认")
+    /// `copy/general/sleep-mode/fastest`
+    static let copyGeneralSleepModeFastest = LocalizedCopy(key: "copy/general/sleep-mode/fastest", en: "0 · Fastest", zhHans: "0 · 最快")
+    /// `copy/general/sleep-mode/lowest-power`
+    static let copyGeneralSleepModeLowestPower = LocalizedCopy(key: "copy/general/sleep-mode/lowest-power", en: "25 · Lowest power", zhHans: "25 · 最省电")
+    /// `copy/hub/files/action/import`
+    static let copyHubFilesActionImport = LocalizedCopy(key: "copy/hub/files/action/import", en: "Import Files…", zhHans: "放入文件…")
+    /// `copy/hub/files/action/open`
+    static let copyHubFilesActionOpen = LocalizedCopy(key: "copy/hub/files/action/open", en: "Open", zhHans: "打开")
+    /// `copy/hub/files/action/pin`
+    static let copyHubFilesActionPin = LocalizedCopy(key: "copy/hub/files/action/pin", en: "Pin", zhHans: "置顶")
+    /// `copy/hub/files/action/remove`
+    static let copyHubFilesActionRemove = LocalizedCopy(key: "copy/hub/files/action/remove", en: "Remove", zhHans: "删除")
+    /// `copy/hub/files/action/reveal`
+    static let copyHubFilesActionReveal = LocalizedCopy(key: "copy/hub/files/action/reveal", en: "Show in Finder", zhHans: "在访达中显示")
+    /// `copy/hub/files/action/sweep`
+    static let copyHubFilesActionSweep = LocalizedCopy(key: "copy/hub/files/action/sweep", en: "Clean Up", zhHans: "清理过期")
+    /// `copy/hub/files/action/unpin`
+    static let copyHubFilesActionUnpin = LocalizedCopy(key: "copy/hub/files/action/unpin", en: "Unpin", zhHans: "取消置顶")
+    /// `copy/hub/files/empty`
+    static let copyHubFilesEmpty = LocalizedCopy(key: "copy/hub/files/empty", en: "The workspace is empty", zhHans: "工作区还是空的")
+    /// `copy/hub/files/error/import`
+    static let copyHubFilesErrorImport = LocalizedCopy(key: "copy/hub/files/error/import", en: "Cannot read this file.", zhHans: "读不到这个文件。")
+    /// `copy/hub/files/error/missing`
+    static let copyHubFilesErrorMissing = LocalizedCopy(key: "copy/hub/files/error/missing", en: "This device no longer has the content.", zhHans: "本机已经没有这份内容。")
+    /// `copy/hub/files/error/quota`
+    static let copyHubFilesErrorQuota = LocalizedCopy(key: "copy/hub/files/error/quota", en: "The workspace is full. Remove an entry or raise the limit.", zhHans: "工作区已满。删除一些条目，或调高上限。")
+    /// `copy/hub/files/error/too-large`
+    static let copyHubFilesErrorTooLarge = LocalizedCopy(key: "copy/hub/files/error/too-large", en: "This file is over the single entry limit.", zhHans: "这个文件超过单条目上限。")
+    /// `copy/hub/files/hint`
+    static let copyHubFilesHint = LocalizedCopy(key: "copy/hub/files/hint", en: "Drop files here, or use Import Files.", zhHans: "把文件拖到这里，或点「放入文件」。")
+    /// `copy/hub/files/notice/duplicate`
+    static let copyHubFilesNoticeDuplicate = LocalizedCopy(key: "copy/hub/files/notice/duplicate", en: "The workspace already has this content.", zhHans: "工作区里已经有这份内容。")
+    /// `copy/hub/files/notice/swept`
+    static let copyHubFilesNoticeSwept = LocalizedCopy(key: "copy/hub/files/notice/swept", en: "Removed expired entries.", zhHans: "已清理过期条目。")
+    /// `copy/hub/files/usage`
+    static let copyHubFilesUsage = LocalizedCopy(key: "copy/hub/files/usage", en: "In use", zhHans: "已占用")
+    /// `copy/hub/log/export`
+    static let copyHubLogExport = LocalizedCopy(key: "copy/hub/log/export", en: "Export Log…", zhHans: "导出日志…")
+    /// `copy/hub/log/view`
+    static let copyHubLogView = LocalizedCopy(key: "copy/hub/log/view", en: "View Log", zhHans: "查看日志")
+    /// `copy/hub/placeholder-notice`
+    static let copyHubPlaceholderNotice = LocalizedCopy(key: "copy/hub/placeholder-notice", en: "This tab is a placeholder. Content lands in a later phase.", zhHans: "本页签是占位。内容在后续阶段落地。")
+    /// `copy/hub/tab/clipboard`
+    static let copyHubTabClipboard = LocalizedCopy(key: "copy/hub/tab/clipboard", en: "Clipboard", zhHans: "剪贴板")
+    /// `copy/hub/tab/clipboard/summary`
+    static let copyHubTabClipboardSummary = LocalizedCopy(key: "copy/hub/tab/clipboard/summary", en: "Recent text, images, and files.", zhHans: "最近文本、图片和文件列表。")
+    /// `copy/hub/tab/devices`
+    static let copyHubTabDevices = LocalizedCopy(key: "copy/hub/tab/devices", en: "Devices", zhHans: "设备")
+    /// `copy/hub/tab/devices/summary`
+    static let copyHubTabDevicesSummary = LocalizedCopy(key: "copy/hub/tab/devices/summary", en: "Paired devices, discovery results, and the transfer queue.", zhHans: "已配对设备、发现结果和传输队列。")
+    /// `copy/hub/tab/files`
+    static let copyHubTabFiles = LocalizedCopy(key: "copy/hub/tab/files", en: "Files", zhHans: "文件")
+    /// `copy/hub/tab/files/summary`
+    static let copyHubTabFilesSummary = LocalizedCopy(key: "copy/hub/tab/files/summary", en: "Temporary files, free space, and expiry.", zhHans: "临时文件、剩余空间和过期时间。")
+    /// `copy/hub/tab/now`
+    static let copyHubTabNow = LocalizedCopy(key: "copy/hub/tab/now", en: "Now", zhHans: "现在")
+    /// `copy/hub/tab/now/summary`
+    static let copyHubTabNowSummary = LocalizedCopy(key: "copy/hub/tab/now/summary", en: "Power, battery, lid, device links, and pending items.", zhHans: "电源、电池、合盖、设备连接和待处理项。")
+    /// `copy/hub/tab/screenshots`
+    static let copyHubTabScreenshots = LocalizedCopy(key: "copy/hub/tab/screenshots", en: "Screenshots", zhHans: "截图")
+    /// `copy/hub/tab/screenshots/summary`
+    static let copyHubTabScreenshotsSummary = LocalizedCopy(key: "copy/hub/tab/screenshots/summary", en: "Recent screenshots and the capture toolbar.", zhHans: "最近截图和截图工具栏。")
+    /// `copy/hub/tab/settings`
+    static let copyHubTabSettings = LocalizedCopy(key: "copy/hub/tab/settings", en: "Settings", zhHans: "设置")
+    /// `copy/hub/tab/settings/summary`
+    static let copyHubTabSettingsSummary = LocalizedCopy(key: "copy/hub/tab/settings/summary", en: "Permissions, language, notifications, privacy, and retention.", zhHans: "权限、语言、通知、隐私和保留策略。")
+    /// `copy/hub/update/up-to-date`
+    static let copyHubUpdateUpToDate = LocalizedCopy(key: "copy/hub/update/up-to-date", en: "Covio is up to date.", zhHans: "Covio 已是最新版本。")
+    /// `copy/icon/concept/blue-grid`
+    static let copyIconConceptBlueGrid = LocalizedCopy(key: "copy/icon/concept/blue-grid", en: "05 · BLUE GRID", zhHans: "05 · 蓝色网格")
+    /// `copy/icon/concept/blue-koala`
+    static let copyIconConceptBlueKoala = LocalizedCopy(key: "copy/icon/concept/blue-koala", en: "00 · BLUE KOALA", zhHans: "00 · 蓝色考拉")
+    /// `copy/icon/concept/blue-orbit`
+    static let copyIconConceptBlueOrbit = LocalizedCopy(key: "copy/icon/concept/blue-orbit", en: "01 · BLUE ORBIT", zhHans: "01 · 蓝色轨道")
+    /// `copy/icon/concept/notch-core`
+    static let copyIconConceptNotchCore = LocalizedCopy(key: "copy/icon/concept/notch-core", en: "02 · NOTCH CORE", zhHans: "02 · 刘海核心")
+    /// `copy/icon/concept/status-pulse`
+    static let copyIconConceptStatusPulse = LocalizedCopy(key: "copy/icon/concept/status-pulse", en: "04 · STATUS PULSE", zhHans: "04 · 状态脉冲")
+    /// `copy/icon/concept/top-shelf`
+    static let copyIconConceptTopShelf = LocalizedCopy(key: "copy/icon/concept/top-shelf", en: "03 · TOP SHELF", zhHans: "03 · 顶部挂架")
+    /// `copy/idle/cancel-after`
+    static let copyIdleCancelAfter = LocalizedCopy(key: "copy/idle/cancel-after", en: "Cancel after", zhHans: "在此时间后取消")
+    /// `copy/idle/prevent-idle`
+    static let copyIdlePreventIdle = LocalizedCopy(key: "copy/idle/prevent-idle", en: "Prevent idle sleep", zhHans: "阻止闲置睡眠")
+    /// `copy/idle/remaining`
+    static let copyIdleRemaining = LocalizedCopy(key: "copy/idle/remaining", en: "Remaining time", zhHans: "剩余时间")
+    /// `copy/idle/while-charging`
+    static let copyIdleWhileCharging = LocalizedCopy(key: "copy/idle/while-charging", en: "Prevent sleep while charging", zhHans: "充电时阻止睡眠")
+    /// `copy/lid/battery-rules`
+    static let copyLidBatteryRules = LocalizedCopy(key: "copy/lid/battery-rules", en: "Battery rules", zhHans: "电池规则")
+    /// `copy/lid/instant-sleep`
+    static let copyLidInstantSleep = LocalizedCopy(key: "copy/lid/instant-sleep", en: "Sleep immediately when the lid closes", zhHans: "合盖后立即睡眠")
+    /// `copy/lid/power-rules`
+    static let copyLidPowerRules = LocalizedCopy(key: "copy/lid/power-rules", en: "Power rules", zhHans: "接电源规则")
+    /// `copy/lid/prevent-sleep`
+    static let copyLidPreventSleep = LocalizedCopy(key: "copy/lid/prevent-sleep", en: "Prevent sleep after the lid closes", zhHans: "合盖后阻止睡眠")
+    /// `copy/lid/warning`
+    static let copyLidWarning = LocalizedCopy(key: "copy/lid/warning", en: "Warning: this option increases battery drain.", zhHans: "警告：此选项会增加电池耗电。")
+    /// `copy/macos27-alignment/measurement`
+    static let copyMacos27AlignmentMeasurement = LocalizedCopy(key: "copy/macos27-alignment/measurement", en: "Measurement Comparison", zhHans: "测量值对照")
+    /// `copy/macos27-alignment/static-verified`
+    static let copyMacos27AlignmentStaticVerified = LocalizedCopy(key: "copy/macos27-alignment/static-verified", en: "Static verified", zhHans: "静态已验证")
+    /// `copy/mode/dark`
+    static let copyModeDark = LocalizedCopy(key: "copy/mode/dark", en: "Dark", zhHans: "深色")
+    /// `copy/mode/light`
+    static let copyModeLight = LocalizedCopy(key: "copy/mode/light", en: "Light", zhHans: "浅色")
+    /// `copy/nav/battery`
+    static let copyNavBattery = LocalizedCopy(key: "copy/nav/battery", en: "Battery", zhHans: "电池")
+    /// `copy/nav/general`
+    static let copyNavGeneral = LocalizedCopy(key: "copy/nav/general", en: "General", zhHans: "通用")
+    /// `copy/nav/idle`
+    static let copyNavIdle = LocalizedCopy(key: "copy/nav/idle", en: "Idle", zhHans: "闲置")
+    /// `copy/nav/lid`
+    static let copyNavLid = LocalizedCopy(key: "copy/nav/lid", en: "Lid", zhHans: "合盖")
+    /// `copy/nav/overview`
+    static let copyNavOverview = LocalizedCopy(key: "copy/nav/overview", en: "Overview", zhHans: "概览")
+    /// `copy/nav/quit`
+    static let copyNavQuit = LocalizedCopy(key: "copy/nav/quit", en: "Quit Covio", zhHans: "退出 Covio")
+    /// `copy/nav/rail-label`
+    static let copyNavRailLabel = LocalizedCopy(key: "copy/nav/rail-label", en: "Hub navigation", zhHans: "Hub 导航")
+    /// `copy/nav/search-empty`
+    static let copyNavSearchEmpty = LocalizedCopy(key: "copy/nav/search-empty", en: "No matching settings", zhHans: "没有匹配的设置")
+    /// `copy/nav/search-placeholder`
+    static let copyNavSearchPlaceholder = LocalizedCopy(key: "copy/nav/search-placeholder", en: "Search settings", zhHans: "搜索设置")
+    /// `copy/nav/search-results`
+    static let copyNavSearchResults = LocalizedCopy(key: "copy/nav/search-results", en: "Search results", zhHans: "搜索结果")
+    /// `copy/nav/status-paused`
+    static let copyNavStatusPaused = LocalizedCopy(key: "copy/nav/status-paused", en: "Paused", zhHans: "已暂停")
+    /// `copy/nav/status-running`
+    static let copyNavStatusRunning = LocalizedCopy(key: "copy/nav/status-running", en: "Running", zhHans: "运行中")
+    /// `copy/nav/top-shelf`
+    static let copyNavTopShelf = LocalizedCopy(key: "copy/nav/top-shelf", en: "Top Shelf", zhHans: "顶部挂帘")
+    /// `copy/notch-hub/layout/collapsed-presence`
+    static let copyNotchHubLayoutCollapsedPresence = LocalizedCopy(key: "copy/notch-hub/layout/collapsed-presence", en: "A · Collapsed Presence", zhHans: "A · 收起存在感")
+    /// `copy/notch-hub/layout/drag-target`
+    static let copyNotchHubLayoutDragTarget = LocalizedCopy(key: "copy/notch-hub/layout/drag-target", en: "C · Drag Target", zhHans: "C · 拖放目标")
+    /// `copy/notch-hub/layout/expanded-output`
+    static let copyNotchHubLayoutExpandedOutput = LocalizedCopy(key: "copy/notch-hub/layout/expanded-output", en: "B · Expanded Output", zhHans: "B · 展开输出")
+    /// `copy/notch-hub/state/active`
+    static let copyNotchHubStateActive = LocalizedCopy(key: "copy/notch-hub/state/active", en: "Active", zhHans: "活动")
+    /// `copy/notch-hub/state/collapsed`
+    static let copyNotchHubStateCollapsed = LocalizedCopy(key: "copy/notch-hub/state/collapsed", en: "Collapsed", zhHans: "收起")
+    /// `copy/notch-hub/state/drag-target`
+    static let copyNotchHubStateDragTarget = LocalizedCopy(key: "copy/notch-hub/state/drag-target", en: "Drag Target", zhHans: "拖放目标")
+    /// `copy/notch-hub/state/error`
+    static let copyNotchHubStateError = LocalizedCopy(key: "copy/notch-hub/state/error", en: "Error", zhHans: "错误")
+    /// `copy/notch-hub/state/exit`
+    static let copyNotchHubStateExit = LocalizedCopy(key: "copy/notch-hub/state/exit", en: "Exit", zhHans: "退出")
+    /// `copy/notch-hub/state/expanded`
+    static let copyNotchHubStateExpanded = LocalizedCopy(key: "copy/notch-hub/state/expanded", en: "Expanded Output", zhHans: "展开输出")
+    /// `copy/notch-hub/state/hidden`
+    static let copyNotchHubStateHidden = LocalizedCopy(key: "copy/notch-hub/state/hidden", en: "Hidden", zhHans: "隐藏")
+    /// `copy/notch-hub/state/hover`
+    static let copyNotchHubStateHover = LocalizedCopy(key: "copy/notch-hub/state/hover", en: "Hover", zhHans: "悬停")
+    /// `copy/notch-hub/state/open`
+    static let copyNotchHubStateOpen = LocalizedCopy(key: "copy/notch-hub/state/open", en: "Open", zhHans: "打开")
+    /// `copy/notch-hub/state/processing`
+    static let copyNotchHubStateProcessing = LocalizedCopy(key: "copy/notch-hub/state/processing", en: "Processing", zhHans: "处理中")
+    /// `copy/notch-hub/state/ready`
+    static let copyNotchHubStateReady = LocalizedCopy(key: "copy/notch-hub/state/ready", en: "Ready", zhHans: "就绪")
+    /// `copy/overview/action/display-off`
+    static let copyOverviewActionDisplayOff = LocalizedCopy(key: "copy/overview/action/display-off", en: "Turn Display Off", zhHans: "关闭显示器")
+    /// `copy/overview/action/sleep-now`
+    static let copyOverviewActionSleepNow = LocalizedCopy(key: "copy/overview/action/sleep-now", en: "Sleep Now", zhHans: "立即睡眠")
+    /// `copy/overview/helper/install`
+    static let copyOverviewHelperInstall = LocalizedCopy(key: "copy/overview/helper/install", en: "Install helper", zhHans: "安装助手")
+    /// `copy/overview/helper/installed`
+    static let copyOverviewHelperInstalled = LocalizedCopy(key: "copy/overview/helper/installed", en: "Helper installed", zhHans: "助手已安装")
+    /// `copy/overview/helper/missing`
+    static let copyOverviewHelperMissing = LocalizedCopy(key: "copy/overview/helper/missing", en: "Helper not installed", zhHans: "助手未安装")
+    /// `copy/overview/helper/version`
+    static let copyOverviewHelperVersion = LocalizedCopy(key: "copy/overview/helper/version", en: "Version", zhHans: "版本")
+    /// `copy/overview/rules/master`
+    static let copyOverviewRulesMaster = LocalizedCopy(key: "copy/overview/rules/master", en: "Sleep protection", zhHans: "睡眠保护")
+    /// `copy/page/battery/state/disabled`
+    static let copyPageBatteryStateDisabled = LocalizedCopy(key: "copy/page/battery/state/disabled", en: "04 · Battery - Disabled", zhHans: "04 · Battery - 不可用")
+    /// `copy/page/battery/state/empty`
+    static let copyPageBatteryStateEmpty = LocalizedCopy(key: "copy/page/battery/state/empty", en: "04 · Battery - Empty", zhHans: "04 · Battery - 无项目")
+    /// `copy/page/battery/state/error`
+    static let copyPageBatteryStateError = LocalizedCopy(key: "copy/page/battery/state/error", en: "04 · Battery - Error", zhHans: "04 · Battery - 操作失败")
+    /// `copy/page/battery/state/loading`
+    static let copyPageBatteryStateLoading = LocalizedCopy(key: "copy/page/battery/state/loading", en: "04 · Battery - Loading", zhHans: "04 · Battery - 正在加载")
+    /// `copy/page/battery/state/normal`
+    static let copyPageBatteryStateNormal = LocalizedCopy(key: "copy/page/battery/state/normal", en: "04 · Battery - Normal", zhHans: "04 · Battery - 就绪")
+    /// `copy/page/battery/state/success`
+    static let copyPageBatteryStateSuccess = LocalizedCopy(key: "copy/page/battery/state/success", en: "04 · Battery - Success", zhHans: "04 · Battery - 已完成")
+    /// `copy/page/battery/state/warning`
+    static let copyPageBatteryStateWarning = LocalizedCopy(key: "copy/page/battery/state/warning", en: "04 · Battery - Warning", zhHans: "04 · Battery - 需要检查")
+    /// `copy/page/battery/summary`
+    static let copyPageBatterySummary = LocalizedCopy(key: "copy/page/battery/summary", en: "Sleep when battery power reaches a threshold.", zhHans: "电池电量达到阈值时睡眠。")
+    /// `copy/page/battery/title`
+    static let copyPageBatteryTitle = LocalizedCopy(key: "copy/page/battery/title", en: "Battery", zhHans: "电池")
+    /// `copy/page/general/state/disabled`
+    static let copyPageGeneralStateDisabled = LocalizedCopy(key: "copy/page/general/state/disabled", en: "08 · General - Disabled", zhHans: "08 · General - 不可用")
+    /// `copy/page/general/state/empty`
+    static let copyPageGeneralStateEmpty = LocalizedCopy(key: "copy/page/general/state/empty", en: "08 · General - Empty", zhHans: "08 · General - 无项目")
+    /// `copy/page/general/state/error`
+    static let copyPageGeneralStateError = LocalizedCopy(key: "copy/page/general/state/error", en: "08 · General - Error", zhHans: "08 · General - 操作失败")
+    /// `copy/page/general/state/loading`
+    static let copyPageGeneralStateLoading = LocalizedCopy(key: "copy/page/general/state/loading", en: "08 · General - Loading", zhHans: "08 · General - 正在加载")
+    /// `copy/page/general/state/normal`
+    static let copyPageGeneralStateNormal = LocalizedCopy(key: "copy/page/general/state/normal", en: "08 · General - Normal", zhHans: "08 · General - 就绪")
+    /// `copy/page/general/state/success`
+    static let copyPageGeneralStateSuccess = LocalizedCopy(key: "copy/page/general/state/success", en: "08 · General - Success", zhHans: "08 · General - 已完成")
+    /// `copy/page/general/state/warning`
+    static let copyPageGeneralStateWarning = LocalizedCopy(key: "copy/page/general/state/warning", en: "08 · General - Warning", zhHans: "08 · General - 需要检查")
+    /// `copy/page/general/summary`
+    static let copyPageGeneralSummary = LocalizedCopy(key: "copy/page/general/summary", en: "Control startup, updates, language, and power mode.", zhHans: "控制启动、更新、语言和电源模式。")
+    /// `copy/page/general/title`
+    static let copyPageGeneralTitle = LocalizedCopy(key: "copy/page/general/title", en: "General", zhHans: "通用")
+    /// `copy/page/idle/state/disabled`
+    static let copyPageIdleStateDisabled = LocalizedCopy(key: "copy/page/idle/state/disabled", en: "06 · Idle - Disabled", zhHans: "06 · Idle - 不可用")
+    /// `copy/page/idle/state/empty`
+    static let copyPageIdleStateEmpty = LocalizedCopy(key: "copy/page/idle/state/empty", en: "06 · Idle - Empty", zhHans: "06 · Idle - 无项目")
+    /// `copy/page/idle/state/error`
+    static let copyPageIdleStateError = LocalizedCopy(key: "copy/page/idle/state/error", en: "06 · Idle - Error", zhHans: "06 · Idle - 操作失败")
+    /// `copy/page/idle/state/loading`
+    static let copyPageIdleStateLoading = LocalizedCopy(key: "copy/page/idle/state/loading", en: "06 · Idle - Loading", zhHans: "06 · Idle - 正在加载")
+    /// `copy/page/idle/state/normal`
+    static let copyPageIdleStateNormal = LocalizedCopy(key: "copy/page/idle/state/normal", en: "06 · Idle - Normal", zhHans: "06 · Idle - 就绪")
+    /// `copy/page/idle/state/success`
+    static let copyPageIdleStateSuccess = LocalizedCopy(key: "copy/page/idle/state/success", en: "06 · Idle - Success", zhHans: "06 · Idle - 已完成")
+    /// `copy/page/idle/state/warning`
+    static let copyPageIdleStateWarning = LocalizedCopy(key: "copy/page/idle/state/warning", en: "06 · Idle - Warning", zhHans: "06 · Idle - 需要检查")
+    /// `copy/page/idle/summary`
+    static let copyPageIdleSummary = LocalizedCopy(key: "copy/page/idle/summary", en: "Control sleep behavior while the Mac is idle.", zhHans: "控制 Mac 闲置时的睡眠行为。")
+    /// `copy/page/idle/title`
+    static let copyPageIdleTitle = LocalizedCopy(key: "copy/page/idle/title", en: "Idle", zhHans: "闲置")
+    /// `copy/page/lid/state/disabled`
+    static let copyPageLidStateDisabled = LocalizedCopy(key: "copy/page/lid/state/disabled", en: "05 · Lid - Disabled", zhHans: "05 · Lid - 不可用")
+    /// `copy/page/lid/state/empty`
+    static let copyPageLidStateEmpty = LocalizedCopy(key: "copy/page/lid/state/empty", en: "05 · Lid - Empty", zhHans: "05 · Lid - 无项目")
+    /// `copy/page/lid/state/error`
+    static let copyPageLidStateError = LocalizedCopy(key: "copy/page/lid/state/error", en: "05 · Lid - Error", zhHans: "05 · Lid - 操作失败")
+    /// `copy/page/lid/state/loading`
+    static let copyPageLidStateLoading = LocalizedCopy(key: "copy/page/lid/state/loading", en: "05 · Lid - Loading", zhHans: "05 · Lid - 正在加载")
+    /// `copy/page/lid/state/normal`
+    static let copyPageLidStateNormal = LocalizedCopy(key: "copy/page/lid/state/normal", en: "05 · Lid - Normal", zhHans: "05 · Lid - 就绪")
+    /// `copy/page/lid/state/success`
+    static let copyPageLidStateSuccess = LocalizedCopy(key: "copy/page/lid/state/success", en: "05 · Lid - Success", zhHans: "05 · Lid - 已完成")
+    /// `copy/page/lid/state/warning`
+    static let copyPageLidStateWarning = LocalizedCopy(key: "copy/page/lid/state/warning", en: "05 · Lid - Warning", zhHans: "05 · Lid - 需要检查")
+    /// `copy/page/lid/summary`
+    static let copyPageLidSummary = LocalizedCopy(key: "copy/page/lid/summary", en: "Control sleep behavior when the lid closes.", zhHans: "控制合盖后的睡眠行为。")
+    /// `copy/page/lid/title`
+    static let copyPageLidTitle = LocalizedCopy(key: "copy/page/lid/title", en: "Lid", zhHans: "合盖")
+    /// `copy/page/overview/state/disabled`
+    static let copyPageOverviewStateDisabled = LocalizedCopy(key: "copy/page/overview/state/disabled", en: "03 · Overview - Disabled", zhHans: "03 · Overview - 不可用")
+    /// `copy/page/overview/state/empty`
+    static let copyPageOverviewStateEmpty = LocalizedCopy(key: "copy/page/overview/state/empty", en: "03 · Overview - Empty", zhHans: "03 · Overview - 无项目")
+    /// `copy/page/overview/state/error`
+    static let copyPageOverviewStateError = LocalizedCopy(key: "copy/page/overview/state/error", en: "03 · Overview - Error", zhHans: "03 · Overview - 操作失败")
+    /// `copy/page/overview/state/loading`
+    static let copyPageOverviewStateLoading = LocalizedCopy(key: "copy/page/overview/state/loading", en: "03 · Overview - Loading", zhHans: "03 · Overview - 正在加载")
+    /// `copy/page/overview/state/normal`
+    static let copyPageOverviewStateNormal = LocalizedCopy(key: "copy/page/overview/state/normal", en: "03 · Overview - Normal", zhHans: "03 · Overview - 就绪")
+    /// `copy/page/overview/state/success`
+    static let copyPageOverviewStateSuccess = LocalizedCopy(key: "copy/page/overview/state/success", en: "03 · Overview - Success", zhHans: "03 · Overview - 已完成")
+    /// `copy/page/overview/state/warning`
+    static let copyPageOverviewStateWarning = LocalizedCopy(key: "copy/page/overview/state/warning", en: "03 · Overview - Warning", zhHans: "03 · Overview - 需要检查")
+    /// `copy/page/overview/summary`
+    static let copyPageOverviewSummary = LocalizedCopy(key: "copy/page/overview/summary", en: "Manage sleep rules and helper status.", zhHans: "管理睡眠规则和助手状态。")
+    /// `copy/page/overview/title`
+    static let copyPageOverviewTitle = LocalizedCopy(key: "copy/page/overview/title", en: "Overview", zhHans: "概览")
+    /// `copy/page/top-shelf-settings/state/disabled`
+    static let copyPageTopShelfSettingsStateDisabled = LocalizedCopy(key: "copy/page/top-shelf-settings/state/disabled", en: "07 · Top Shelf Settings - Disabled", zhHans: "07 · Top Shelf Settings - 不可用")
+    /// `copy/page/top-shelf-settings/state/empty`
+    static let copyPageTopShelfSettingsStateEmpty = LocalizedCopy(key: "copy/page/top-shelf-settings/state/empty", en: "07 · Top Shelf Settings - Empty", zhHans: "07 · Top Shelf Settings - 无项目")
+    /// `copy/page/top-shelf-settings/state/error`
+    static let copyPageTopShelfSettingsStateError = LocalizedCopy(key: "copy/page/top-shelf-settings/state/error", en: "07 · Top Shelf Settings - Error", zhHans: "07 · Top Shelf Settings - 操作失败")
+    /// `copy/page/top-shelf-settings/state/loading`
+    static let copyPageTopShelfSettingsStateLoading = LocalizedCopy(key: "copy/page/top-shelf-settings/state/loading", en: "07 · Top Shelf Settings - Loading", zhHans: "07 · Top Shelf Settings - 正在加载")
+    /// `copy/page/top-shelf-settings/state/normal`
+    static let copyPageTopShelfSettingsStateNormal = LocalizedCopy(key: "copy/page/top-shelf-settings/state/normal", en: "07 · Top Shelf Settings - Normal", zhHans: "07 · Top Shelf Settings - 就绪")
+    /// `copy/page/top-shelf-settings/state/success`
+    static let copyPageTopShelfSettingsStateSuccess = LocalizedCopy(key: "copy/page/top-shelf-settings/state/success", en: "07 · Top Shelf Settings - Success", zhHans: "07 · Top Shelf Settings - 已完成")
+    /// `copy/page/top-shelf-settings/state/warning`
+    static let copyPageTopShelfSettingsStateWarning = LocalizedCopy(key: "copy/page/top-shelf-settings/state/warning", en: "07 · Top Shelf Settings - Warning", zhHans: "07 · Top Shelf Settings - 需要检查")
+    /// `copy/page/top-shelf-settings/summary`
+    static let copyPageTopShelfSettingsSummary = LocalizedCopy(key: "copy/page/top-shelf-settings/summary", en: "Control screenshot takeover and the top shelf.", zhHans: "控制截图接管和顶部挂帘。")
+    /// `copy/page/top-shelf-settings/title`
+    static let copyPageTopShelfSettingsTitle = LocalizedCopy(key: "copy/page/top-shelf-settings/title", en: "Top Shelf", zhHans: "顶部挂帘")
+    /// `copy/state/cancel`
+    static let copyStateCancel = LocalizedCopy(key: "copy/state/cancel", en: "Cancel", zhHans: "取消")
+    /// `copy/state/component/toolbar/default/disabled`
+    static let copyStateComponentToolbarDefaultDisabled = LocalizedCopy(key: "copy/state/component/toolbar/default/disabled", en: "Disabled", zhHans: "禁用")
+    /// `copy/state/component/toolbar/default/focused`
+    static let copyStateComponentToolbarDefaultFocused = LocalizedCopy(key: "copy/state/component/toolbar/default/focused", en: "Focused", zhHans: "聚焦")
+    /// `copy/state/component/toolbar/default/hover`
+    static let copyStateComponentToolbarDefaultHover = LocalizedCopy(key: "copy/state/component/toolbar/default/hover", en: "Hover", zhHans: "悬停")
+    /// `copy/state/component/toolbar/default/pressed`
+    static let copyStateComponentToolbarDefaultPressed = LocalizedCopy(key: "copy/state/component/toolbar/default/pressed", en: "Pressed", zhHans: "按下")
+    /// `copy/state/disabled`
+    static let copyStateDisabled = LocalizedCopy(key: "copy/state/disabled", en: "Unavailable", zhHans: "不可用")
+    /// `copy/state/empty`
+    static let copyStateEmpty = LocalizedCopy(key: "copy/state/empty", en: "No items", zhHans: "无项目")
+    /// `copy/state/error`
+    static let copyStateError = LocalizedCopy(key: "copy/state/error", en: "Action failed", zhHans: "操作失败")
+    /// `copy/state/loading`
+    static let copyStateLoading = LocalizedCopy(key: "copy/state/loading", en: "Loading", zhHans: "正在加载")
+    /// `copy/state/normal`
+    static let copyStateNormal = LocalizedCopy(key: "copy/state/normal", en: "Ready", zhHans: "就绪")
+    /// `copy/state/retry`
+    static let copyStateRetry = LocalizedCopy(key: "copy/state/retry", en: "Retry", zhHans: "重试")
+    /// `copy/state/success`
+    static let copyStateSuccess = LocalizedCopy(key: "copy/state/success", en: "Completed", zhHans: "已完成")
+    /// `copy/state/warning`
+    static let copyStateWarning = LocalizedCopy(key: "copy/state/warning", en: "Review required", zhHans: "需要检查")
+    /// `copy/status-item/charging`
+    static let copyStatusItemCharging = LocalizedCopy(key: "copy/status-item/charging", en: "Battery is charging.", zhHans: "电池正在充电。")
+    /// `copy/status-item/default`
+    static let copyStatusItemDefault = LocalizedCopy(key: "copy/status-item/default", en: "Covio is available.", zhHans: "Covio 可用。")
+    /// `copy/status-item/disabled`
+    static let copyStatusItemDisabled = LocalizedCopy(key: "copy/status-item/disabled", en: "Covio is paused.", zhHans: "Covio 已暂停。")
+    /// `copy/status-item/helper-error`
+    static let copyStatusItemHelperError = LocalizedCopy(key: "copy/status-item/helper-error", en: "The helper needs attention.", zhHans: "Helper 需要处理。")
+    /// `copy/status-item/idle-prevented`
+    static let copyStatusItemIdlePrevented = LocalizedCopy(key: "copy/status-item/idle-prevented", en: "Idle sleep is prevented.", zhHans: "已阻止空闲休眠。")
+    /// `copy/status-item/lid-prevented`
+    static let copyStatusItemLidPrevented = LocalizedCopy(key: "copy/status-item/lid-prevented", en: "Lid sleep is prevented.", zhHans: "已阻止合盖休眠。")
+    /// `copy/status-item/low-battery`
+    static let copyStatusItemLowBattery = LocalizedCopy(key: "copy/status-item/low-battery", en: "Battery is low.", zhHans: "电池电量低。")
+    /// `copy/toast/error`
+    static let copyToastError = LocalizedCopy(key: "copy/toast/error", en: "The operation failed. Try again.", zhHans: "操作失败。请重试。")
+    /// `copy/toast/success`
+    static let copyToastSuccess = LocalizedCopy(key: "copy/toast/success", en: "Operation completed.", zhHans: "操作已完成。")
+    /// `copy/toast/warning`
+    static let copyToastWarning = LocalizedCopy(key: "copy/toast/warning", en: "Review the result before you continue.", zhHans: "继续前检查结果。")
+    /// `copy/top-shelf/action/clear-all`
+    static let copyTopShelfActionClearAll = LocalizedCopy(key: "copy/top-shelf/action/clear-all", en: "Clear", zhHans: "清空")
+    /// `copy/top-shelf/action/copy`
+    static let copyTopShelfActionCopy = LocalizedCopy(key: "copy/top-shelf/action/copy", en: "Copy", zhHans: "复制")
+    /// `copy/top-shelf/action/hide-toolbar`
+    static let copyTopShelfActionHideToolbar = LocalizedCopy(key: "copy/top-shelf/action/hide-toolbar", en: "Hide Toolbar", zhHans: "隐藏工具栏")
+    /// `copy/top-shelf/action/markup`
+    static let copyTopShelfActionMarkup = LocalizedCopy(key: "copy/top-shelf/action/markup", en: "Markup", zhHans: "标记")
+    /// `copy/top-shelf/action/open-folder`
+    static let copyTopShelfActionOpenFolder = LocalizedCopy(key: "copy/top-shelf/action/open-folder", en: "Open Folder", zhHans: "打开目录")
+    /// `copy/top-shelf/action/preview`
+    static let copyTopShelfActionPreview = LocalizedCopy(key: "copy/top-shelf/action/preview", en: "Preview", zhHans: "预览")
+    /// `copy/top-shelf/action/remove`
+    static let copyTopShelfActionRemove = LocalizedCopy(key: "copy/top-shelf/action/remove", en: "Remove", zhHans: "移除")
+    /// `copy/top-shelf/action/remove-from-shelf`
+    static let copyTopShelfActionRemoveFromShelf = LocalizedCopy(key: "copy/top-shelf/action/remove-from-shelf", en: "Remove from Shelf", zhHans: "从工具栏移除")
+    /// `copy/top-shelf/action/show-toolbar`
+    static let copyTopShelfActionShowToolbar = LocalizedCopy(key: "copy/top-shelf/action/show-toolbar", en: "Show Toolbar", zhHans: "显示工具栏")
+    /// `copy/top-shelf/clear`
+    static let copyTopShelfClear = LocalizedCopy(key: "copy/top-shelf/clear", en: "Clear Shelf", zhHans: "清空挂帘")
+    /// `copy/top-shelf/empty`
+    static let copyTopShelfEmpty = LocalizedCopy(key: "copy/top-shelf/empty", en: "No screenshots match your filters.", zhHans: "没有截图符合筛选条件。")
+    /// `copy/top-shelf/enabled`
+    static let copyTopShelfEnabled = LocalizedCopy(key: "copy/top-shelf/enabled", en: "Top Shelf", zhHans: "顶部挂帘")
+    /// `copy/top-shelf/error/copy`
+    static let copyTopShelfErrorCopy = LocalizedCopy(key: "copy/top-shelf/error/copy", en: "Cannot copy the screenshot.", zhHans: "无法复制截图。")
+    /// `copy/top-shelf/error/directory`
+    static let copyTopShelfErrorDirectory = LocalizedCopy(key: "copy/top-shelf/error/directory", en: "Cannot open the screenshot folder.", zhHans: "无法打开截图目录。")
+    /// `copy/top-shelf/error/markup`
+    static let copyTopShelfErrorMarkup = LocalizedCopy(key: "copy/top-shelf/error/markup", en: "Cannot open Markup.", zhHans: "无法打开标记工具。")
+    /// `copy/top-shelf/error/move`
+    static let copyTopShelfErrorMove = LocalizedCopy(key: "copy/top-shelf/error/move", en: "The file operation failed.", zhHans: "文件操作失败。")
+    /// `copy/top-shelf/error/open`
+    static let copyTopShelfErrorOpen = LocalizedCopy(key: "copy/top-shelf/error/open", en: "Cannot open the screenshot.", zhHans: "无法打开截图。")
+    /// `copy/top-shelf/error/restore`
+    static let copyTopShelfErrorRestore = LocalizedCopy(key: "copy/top-shelf/error/restore", en: "System screenshot settings were not restored.", zhHans: "系统截图设置未能恢复。")
+    /// `copy/top-shelf/error/takeover`
+    static let copyTopShelfErrorTakeover = LocalizedCopy(key: "copy/top-shelf/error/takeover", en: "Screenshot takeover failed.", zhHans: "截图接管失败。")
+    /// `copy/top-shelf/none`
+    static let copyTopShelfNone = LocalizedCopy(key: "copy/top-shelf/none", en: "No screenshots", zhHans: "没有截图")
+    /// `copy/top-shelf/open-folder`
+    static let copyTopShelfOpenFolder = LocalizedCopy(key: "copy/top-shelf/open-folder", en: "Open Screenshot Folder", zhHans: "打开截图文件夹")
+    /// `copy/top-shelf/pending-notice`
+    static let copyTopShelfPendingNotice = LocalizedCopy(key: "copy/top-shelf/pending-notice", en: "These switches save the setting now. The shelf itself arrives in a later phase.", zhHans: "这些开关现在只保存设置。挂帘本体在后续阶段接上。")
+    /// `copy/top-shelf/show`
+    static let copyTopShelfShow = LocalizedCopy(key: "copy/top-shelf/show", en: "Show Shelf", zhHans: "显示挂帘")
+    /// `copy/top-shelf/sounds`
+    static let copyTopShelfSounds = LocalizedCopy(key: "copy/top-shelf/sounds", en: "Screenshot sounds", zhHans: "截图声音")
+    /// `copy/top-shelf/state/cancel`
+    static let copyTopShelfStateCancel = LocalizedCopy(key: "copy/top-shelf/state/cancel", en: "CANCEL", zhHans: "取消拖拽")
+    /// `copy/top-shelf/state/drag-to-app`
+    static let copyTopShelfStateDragToApp = LocalizedCopy(key: "copy/top-shelf/state/drag-to-app", en: "DRAG TO APP", zhHans: "拖到应用")
+    /// `copy/top-shelf/state/drag-to-folder`
+    static let copyTopShelfStateDragToFolder = LocalizedCopy(key: "copy/top-shelf/state/drag-to-folder", en: "DRAG TO FOLDER", zhHans: "拖到文件夹")
+    /// `copy/top-shelf/state/drag-to-trash`
+    static let copyTopShelfStateDragToTrash = LocalizedCopy(key: "copy/top-shelf/state/drag-to-trash", en: "DRAG TO TRASH", zhHans: "拖到废纸篓")
+    /// `copy/top-shelf/state/hover`
+    static let copyTopShelfStateHover = LocalizedCopy(key: "copy/top-shelf/state/hover", en: "HOVER", zhHans: "悬停")
+    /// `copy/top-shelf/state/right-click-menu`
+    static let copyTopShelfStateRightClickMenu = LocalizedCopy(key: "copy/top-shelf/state/right-click-menu", en: "RIGHT-CLICK MENU", zhHans: "右键菜单")
+    /// `copy/top-shelf/status`
+    static let copyTopShelfStatus = LocalizedCopy(key: "copy/top-shelf/status", en: "Shelf status", zhHans: "挂帘状态")
+    /// `copy/top-shelf/take-over`
+    static let copyTopShelfTakeOver = LocalizedCopy(key: "copy/top-shelf/take-over", en: "Take over screenshots", zhHans: "接管截图")
+    /// `copy/top-shelf/title`
+    static let copyTopShelfTitle = LocalizedCopy(key: "copy/top-shelf/title", en: "Top Shelf", zhHans: "顶部工具栏")
+    /// `copy/tray/action/display-off`
+    static let copyTrayActionDisplayOff = LocalizedCopy(key: "copy/tray/action/display-off", en: "Turn Display Off", zhHans: "关闭显示器")
+    /// `copy/tray/action/quit`
+    static let copyTrayActionQuit = LocalizedCopy(key: "copy/tray/action/quit", en: "Quit Covio", zhHans: "退出 Covio")
+    /// `copy/tray/action/settings`
+    static let copyTrayActionSettings = LocalizedCopy(key: "copy/tray/action/settings", en: "Settings…", zhHans: "设置…")
+    /// `copy/tray/action/show-shelf`
+    static let copyTrayActionShowShelf = LocalizedCopy(key: "copy/tray/action/show-shelf", en: "Show Shelf", zhHans: "显示挂帘")
+    /// `copy/tray/action/sleep-now`
+    static let copyTrayActionSleepNow = LocalizedCopy(key: "copy/tray/action/sleep-now", en: "Sleep Now", zhHans: "立即睡眠")
+    /// `copy/tray/tooltip/battery`
+    static let copyTrayTooltipBattery = LocalizedCopy(key: "copy/tray/tooltip/battery", en: "On battery", zhHans: "使用电池")
+    /// `copy/tray/tooltip/charging`
+    static let copyTrayTooltipCharging = LocalizedCopy(key: "copy/tray/tooltip/charging", en: "Charging", zhHans: "正在充电")
+    /// `copy/tray/tooltip/helper-error`
+    static let copyTrayTooltipHelperError = LocalizedCopy(key: "copy/tray/tooltip/helper-error", en: "Helper error", zhHans: "助手错误")
+    /// `copy/tray/tooltip/idle-prevented`
+    static let copyTrayTooltipIdlePrevented = LocalizedCopy(key: "copy/tray/tooltip/idle-prevented", en: "Idle sleep prevented", zhHans: "已阻止闲置睡眠")
+    /// `copy/tray/tooltip/lid-prevented`
+    static let copyTrayTooltipLidPrevented = LocalizedCopy(key: "copy/tray/tooltip/lid-prevented", en: "Lid sleep prevented", zhHans: "已阻止合盖睡眠")
+    /// `copy/tray/tooltip/low-battery`
+    static let copyTrayTooltipLowBattery = LocalizedCopy(key: "copy/tray/tooltip/low-battery", en: "Low battery", zhHans: "电量低")
+    /// `copy/tray/tooltip/normal`
+    static let copyTrayTooltipNormal = LocalizedCopy(key: "copy/tray/tooltip/normal", en: "Covio status", zhHans: "Covio 状态")
+
+    /// 全部条目。供测试遍历。
+    static let all: [LocalizedCopy] = [
+        copyAppName,
+        copyAppTagline,
+        copyBatteryCapacityThreshold,
+        copyBatteryEnabled,
+        copyBatteryTimeThreshold,
+        copyBatteryUnitMinutes,
+        copyBatteryUnitPercent,
+        copyClipboardActionClear,
+        copyClipboardActionOpenSettings,
+        copyClipboardActionPaste,
+        copyClipboardActionPin,
+        copyClipboardActionRemove,
+        copyClipboardActionUnpin,
+        copyClipboardEmpty,
+        copyClipboardErrorAccessibility,
+        copyClipboardErrorHotKey,
+        copyClipboardErrorImage,
+        copyClipboardErrorPaste,
+        copyClipboardSettingsAccessibility,
+        copyClipboardSettingsAccessibilityFallback,
+        copyClipboardSettingsCaptureHotKey,
+        copyClipboardSettingsEnabled,
+        copyClipboardSettingsGranted,
+        copyClipboardSettingsHotKeyConflict,
+        copyClipboardSettingsHotKeys,
+        copyClipboardSettingsNotGranted,
+        copyClipboardSettingsPasteStackHotKey,
+        copyClipboardSettingsRequestPermission,
+        copyClipboardStatePause,
+        copyClipboardStatePaused,
+        copyClipboardStateResume,
+        copyClipboardTitle,
+        copyComponentMaterialBlur,
+        copyComponentMaterialMedium,
+        copyComponentMaterialThick,
+        copyComponentMaterialThin,
+        copyComponentMaterialUltraThick,
+        copyComponentMaterialUltraThin,
+        copyComponentPopoverBottom,
+        copyComponentPopoverCustom,
+        copyComponentPopoverForm,
+        copyComponentPopoverMenu,
+        copyComponentPopoverTop,
+        copyComponentToolbarCompact,
+        copyComponentToolbarDefault,
+        copyComponentWindowShellCompact,
+        copyComponentWindowShellSidebar,
+        copyComponentWindowShellStandard,
+        copyComponentWindowShellToolbar,
+        copyDialogHelperInstallBody,
+        copyDialogHelperInstallTitle,
+        copyDialogHelperUnavailableBody,
+        copyDialogHelperUnavailableTitle,
+        copyDialogResetBody,
+        copyDialogResetTitle,
+        copyDialogUpdateBody,
+        copyDialogUpdateTitle,
+        copyGeneralCheckUpdates,
+        copyGeneralClearConfig,
+        copyGeneralDarkwake,
+        copyGeneralLanguage,
+        copyGeneralLanguageChinese,
+        copyGeneralLanguageEnglish,
+        copyGeneralLaunchAtLogin,
+        copyGeneralNotifications,
+        copyGeneralSleepMode,
+        copyGeneralSleepModeDefault,
+        copyGeneralSleepModeFastest,
+        copyGeneralSleepModeLowestPower,
+        copyHubFilesActionImport,
+        copyHubFilesActionOpen,
+        copyHubFilesActionPin,
+        copyHubFilesActionRemove,
+        copyHubFilesActionReveal,
+        copyHubFilesActionSweep,
+        copyHubFilesActionUnpin,
+        copyHubFilesEmpty,
+        copyHubFilesErrorImport,
+        copyHubFilesErrorMissing,
+        copyHubFilesErrorQuota,
+        copyHubFilesErrorTooLarge,
+        copyHubFilesHint,
+        copyHubFilesNoticeDuplicate,
+        copyHubFilesNoticeSwept,
+        copyHubFilesUsage,
+        copyHubLogExport,
+        copyHubLogView,
+        copyHubPlaceholderNotice,
+        copyHubTabClipboard,
+        copyHubTabClipboardSummary,
+        copyHubTabDevices,
+        copyHubTabDevicesSummary,
+        copyHubTabFiles,
+        copyHubTabFilesSummary,
+        copyHubTabNow,
+        copyHubTabNowSummary,
+        copyHubTabScreenshots,
+        copyHubTabScreenshotsSummary,
+        copyHubTabSettings,
+        copyHubTabSettingsSummary,
+        copyHubUpdateUpToDate,
+        copyIconConceptBlueGrid,
+        copyIconConceptBlueKoala,
+        copyIconConceptBlueOrbit,
+        copyIconConceptNotchCore,
+        copyIconConceptStatusPulse,
+        copyIconConceptTopShelf,
+        copyIdleCancelAfter,
+        copyIdlePreventIdle,
+        copyIdleRemaining,
+        copyIdleWhileCharging,
+        copyLidBatteryRules,
+        copyLidInstantSleep,
+        copyLidPowerRules,
+        copyLidPreventSleep,
+        copyLidWarning,
+        copyMacos27AlignmentMeasurement,
+        copyMacos27AlignmentStaticVerified,
+        copyModeDark,
+        copyModeLight,
+        copyNavBattery,
+        copyNavGeneral,
+        copyNavIdle,
+        copyNavLid,
+        copyNavOverview,
+        copyNavQuit,
+        copyNavRailLabel,
+        copyNavSearchEmpty,
+        copyNavSearchPlaceholder,
+        copyNavSearchResults,
+        copyNavStatusPaused,
+        copyNavStatusRunning,
+        copyNavTopShelf,
+        copyNotchHubLayoutCollapsedPresence,
+        copyNotchHubLayoutDragTarget,
+        copyNotchHubLayoutExpandedOutput,
+        copyNotchHubStateActive,
+        copyNotchHubStateCollapsed,
+        copyNotchHubStateDragTarget,
+        copyNotchHubStateError,
+        copyNotchHubStateExit,
+        copyNotchHubStateExpanded,
+        copyNotchHubStateHidden,
+        copyNotchHubStateHover,
+        copyNotchHubStateOpen,
+        copyNotchHubStateProcessing,
+        copyNotchHubStateReady,
+        copyOverviewActionDisplayOff,
+        copyOverviewActionSleepNow,
+        copyOverviewHelperInstall,
+        copyOverviewHelperInstalled,
+        copyOverviewHelperMissing,
+        copyOverviewHelperVersion,
+        copyOverviewRulesMaster,
+        copyPageBatteryStateDisabled,
+        copyPageBatteryStateEmpty,
+        copyPageBatteryStateError,
+        copyPageBatteryStateLoading,
+        copyPageBatteryStateNormal,
+        copyPageBatteryStateSuccess,
+        copyPageBatteryStateWarning,
+        copyPageBatterySummary,
+        copyPageBatteryTitle,
+        copyPageGeneralStateDisabled,
+        copyPageGeneralStateEmpty,
+        copyPageGeneralStateError,
+        copyPageGeneralStateLoading,
+        copyPageGeneralStateNormal,
+        copyPageGeneralStateSuccess,
+        copyPageGeneralStateWarning,
+        copyPageGeneralSummary,
+        copyPageGeneralTitle,
+        copyPageIdleStateDisabled,
+        copyPageIdleStateEmpty,
+        copyPageIdleStateError,
+        copyPageIdleStateLoading,
+        copyPageIdleStateNormal,
+        copyPageIdleStateSuccess,
+        copyPageIdleStateWarning,
+        copyPageIdleSummary,
+        copyPageIdleTitle,
+        copyPageLidStateDisabled,
+        copyPageLidStateEmpty,
+        copyPageLidStateError,
+        copyPageLidStateLoading,
+        copyPageLidStateNormal,
+        copyPageLidStateSuccess,
+        copyPageLidStateWarning,
+        copyPageLidSummary,
+        copyPageLidTitle,
+        copyPageOverviewStateDisabled,
+        copyPageOverviewStateEmpty,
+        copyPageOverviewStateError,
+        copyPageOverviewStateLoading,
+        copyPageOverviewStateNormal,
+        copyPageOverviewStateSuccess,
+        copyPageOverviewStateWarning,
+        copyPageOverviewSummary,
+        copyPageOverviewTitle,
+        copyPageTopShelfSettingsStateDisabled,
+        copyPageTopShelfSettingsStateEmpty,
+        copyPageTopShelfSettingsStateError,
+        copyPageTopShelfSettingsStateLoading,
+        copyPageTopShelfSettingsStateNormal,
+        copyPageTopShelfSettingsStateSuccess,
+        copyPageTopShelfSettingsStateWarning,
+        copyPageTopShelfSettingsSummary,
+        copyPageTopShelfSettingsTitle,
+        copyStateCancel,
+        copyStateComponentToolbarDefaultDisabled,
+        copyStateComponentToolbarDefaultFocused,
+        copyStateComponentToolbarDefaultHover,
+        copyStateComponentToolbarDefaultPressed,
+        copyStateDisabled,
+        copyStateEmpty,
+        copyStateError,
+        copyStateLoading,
+        copyStateNormal,
+        copyStateRetry,
+        copyStateSuccess,
+        copyStateWarning,
+        copyStatusItemCharging,
+        copyStatusItemDefault,
+        copyStatusItemDisabled,
+        copyStatusItemHelperError,
+        copyStatusItemIdlePrevented,
+        copyStatusItemLidPrevented,
+        copyStatusItemLowBattery,
+        copyToastError,
+        copyToastSuccess,
+        copyToastWarning,
+        copyTopShelfActionClearAll,
+        copyTopShelfActionCopy,
+        copyTopShelfActionHideToolbar,
+        copyTopShelfActionMarkup,
+        copyTopShelfActionOpenFolder,
+        copyTopShelfActionPreview,
+        copyTopShelfActionRemove,
+        copyTopShelfActionRemoveFromShelf,
+        copyTopShelfActionShowToolbar,
+        copyTopShelfClear,
+        copyTopShelfEmpty,
+        copyTopShelfEnabled,
+        copyTopShelfErrorCopy,
+        copyTopShelfErrorDirectory,
+        copyTopShelfErrorMarkup,
+        copyTopShelfErrorMove,
+        copyTopShelfErrorOpen,
+        copyTopShelfErrorRestore,
+        copyTopShelfErrorTakeover,
+        copyTopShelfNone,
+        copyTopShelfOpenFolder,
+        copyTopShelfPendingNotice,
+        copyTopShelfShow,
+        copyTopShelfSounds,
+        copyTopShelfStateCancel,
+        copyTopShelfStateDragToApp,
+        copyTopShelfStateDragToFolder,
+        copyTopShelfStateDragToTrash,
+        copyTopShelfStateHover,
+        copyTopShelfStateRightClickMenu,
+        copyTopShelfStatus,
+        copyTopShelfTakeOver,
+        copyTopShelfTitle,
+        copyTrayActionDisplayOff,
+        copyTrayActionQuit,
+        copyTrayActionSettings,
+        copyTrayActionShowShelf,
+        copyTrayActionSleepNow,
+        copyTrayTooltipBattery,
+        copyTrayTooltipCharging,
+        copyTrayTooltipHelperError,
+        copyTrayTooltipIdlePrevented,
+        copyTrayTooltipLidPrevented,
+        copyTrayTooltipLowBattery,
+        copyTrayTooltipNormal,
+    ]
+}

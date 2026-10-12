@@ -1,0 +1,93 @@
+import AppKit
+import XCTest
+@testable import Covio
+
+/// `ShellPanel` 系列的窗口配置测试。
+///
+/// 这些断言把 P1 的 NSPanel 配置表逐条钉住。其中 `level` 那一条最关键：
+/// `isFloatingPanel = true` 会把 `level` 静默重置为 `.floating`（3），
+/// 现有 Compose 版的 `FLOATING_WINDOW_LEVEL = 3` 就是踩了这个坑。
+/// 见 `docs/adr/ADR-001-macos-ui-swiftui.md` 实测 9。
+@MainActor
+final class ShellPanelTests: XCTestCase {
+    private let testRect = CGRect(x: 100, y: 700, width: 960, height: 352)
+
+    func testHubPanelLevelIsAboveTheMenuBar() {
+        let panel = HubPanel(rect: testRect)
+        defer { panel.orderOut(nil) }
+
+        // 系统菜单栏是 24。25 刚好高于它。
+        XCTAssertEqual(panel.level.rawValue, 25)
+        XCTAssertEqual(panel.level, .statusBar)
+    }
+
+    func testHubPanelStylingMaskIsNonActivatingAndBorderless() {
+        let panel = HubPanel(rect: testRect)
+        defer { panel.orderOut(nil) }
+
+        XCTAssertTrue(panel.styleMask.contains(.borderless))
+        XCTAssertTrue(panel.styleMask.contains(.nonactivatingPanel))
+    }
+
+    func testCollectionBehaviorMatchesTheComposeVersionPlusIgnoresCycle() {
+        let panel = HubPanel(rect: testRect)
+        defer { panel.orderOut(nil) }
+
+        // 现有 Compose 版的 PANEL_COLLECTION_BEHAVIOR 是 0x51，
+        // 即 canJoinAllSpaces | stationary | fullScreenAuxiliary。这里再加 ignoresCycle。
+        XCTAssertTrue(panel.collectionBehavior.contains(.canJoinAllSpaces))
+        XCTAssertTrue(panel.collectionBehavior.contains(.stationary))
+        XCTAssertTrue(panel.collectionBehavior.contains(.fullScreenAuxiliary))
+        XCTAssertTrue(panel.collectionBehavior.contains(.ignoresCycle))
+    }
+
+    func testHubPanelDoesNotHideOnDeactivate() {
+        let panel = HubPanel(rect: testRect)
+        defer { panel.orderOut(nil) }
+
+        // §4.4：用户编辑输入或拖动文件时 Hub 不自动收起。
+        XCTAssertFalse(panel.hidesOnDeactivate)
+        XCTAssertFalse(panel.isMovable)
+        XCTAssertFalse(panel.hasShadow)
+        XCTAssertFalse(panel.isOpaque)
+    }
+
+    /// `.nonactivatingPanel` 加 `canBecomeKey` 是 P4 粘贴回填的前提：
+    /// 面板能收键盘，但前台应用不变。
+    func testHubPanelCanBecomeKeyButTheHotZoneCannot() {
+        let hub = HubPanel(rect: testRect)
+        let hotZone = HotZonePanel(rect: CGRect(x: 0, y: 1000, width: 185, height: 32))
+        defer {
+            hub.orderOut(nil)
+            hotZone.orderOut(nil)
+        }
+
+        XCTAssertTrue(hub.canBecomeKey)
+        XCTAssertFalse(hotZone.canBecomeKey)
+    }
+
+    func testBothPanelsAcceptMouseEvents() {
+        let hub = HubPanel(rect: testRect)
+        let hotZone = HotZonePanel(rect: CGRect(x: 0, y: 1000, width: 185, height: 32))
+        defer {
+            hub.orderOut(nil)
+            hotZone.orderOut(nil)
+        }
+
+        // 热区靠自己的 tracking area 报告指针进出，必须能收鼠标事件。
+        XCTAssertFalse(hub.ignoresMouseEvents)
+        XCTAssertFalse(hotZone.ignoresMouseEvents)
+    }
+
+    /// Escape 收起 Hub。§4.4。
+    func testEscapeAsksTheControllerToCollapse() {
+        let panel = HubPanel(rect: testRect)
+        defer { panel.orderOut(nil) }
+
+        var cancelled = false
+        panel.onCancel = { cancelled = true }
+
+        panel.cancelOperation(nil)
+        XCTAssertTrue(cancelled)
+    }
+}
