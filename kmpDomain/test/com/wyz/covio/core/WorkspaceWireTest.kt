@@ -57,6 +57,23 @@ class WorkspaceWireTest {
         assertEquals("""{"request_id":"req-0002","op":"workspace.stat"}""", text)
     }
 
+    /// 删除请求只带条目摘要。契约第 2.5 节的参数只有 `entry_id`。
+    @Test
+    fun `a delete request carries the entry id`() {
+        val text = WorkspaceWire.encode(
+            WorkspaceRequest(
+                requestId = "req-0004",
+                op = WorkspaceWire.OP_DELETE,
+                args = WorkspaceArgs(entryId = "c".repeat(64)),
+            ),
+        )
+
+        assertEquals(
+            """{"request_id":"req-0004","op":"workspace.delete","args":{"entry_id":"${"c".repeat(64)}"}}""",
+            text,
+        )
+    }
+
     @Test
     fun `a request round trips`() {
         val request = WorkspaceRequest(

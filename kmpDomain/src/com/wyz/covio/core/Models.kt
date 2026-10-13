@@ -372,6 +372,30 @@ data class WorkspaceState(
     }
 }
 
+/**
+ * 一条删除标记。
+ *
+ * 条目删掉之后留一条标记，拦住对端把它重新复制回来（方案第 7.7 节）。
+ * 删除标记单独存放在 `tombstones.json` 里，布局见方案第 1.3 节。
+ * 保留期见 [WorkspaceLogic.TOMBSTONE_RETENTION_DAYS]。
+ *
+ * [deletedAtEpochSeconds] 是本机删除的时间。时钟不一致时以本机为准：
+ * 标记只需要说明「这条删过」，不需要精确顺序。
+ */
+@Serializable
+data class WorkspaceTombstone(
+    @SerialName("entryId") val entryId: String,
+    @SerialName("deletedAtEpochSeconds") val deletedAtEpochSeconds: Long = 0L,
+) {
+    fun normalized(): WorkspaceTombstone = copy(
+        entryId = normalizeEntryId(entryId),
+        deletedAtEpochSeconds = deletedAtEpochSeconds.coerceAtLeast(0L),
+    )
+
+    /** 摘要不合法的标记是坏数据，与 [WorkspaceEntry.isUsable] 同一套判断。 */
+    val isUsable: Boolean get() = WorkspaceLogic.isValidEntryId(entryId)
+}
+
 data class ShelfState(
     val items: List<ShelfItem> = emptyList(),
     val visible: Boolean = false,

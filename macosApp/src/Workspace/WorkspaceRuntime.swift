@@ -193,7 +193,7 @@ final class WorkspaceRuntime {
     }
 
     func remove(_ entryId: String) {
-        adopt(client.remove(state: state, entryId: entryId))
+        adopt(client.remove(state: state, entryId: entryId, nowEpochSeconds: environment.now()))
     }
 
     /// 清理过期与超出上限的条目。返回清掉的条数。
