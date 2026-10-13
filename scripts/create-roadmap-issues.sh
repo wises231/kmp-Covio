@@ -11,7 +11,9 @@
 # 脚本可以重复运行。docs/roadmap/issues/.created.json 里已有的编号会跳过。
 #
 # front-matter 的 type 字段是可选的。填了就传给 gh issue create --type。
-# 缺字段时不传 --type，所以账号里没有自定义类型时脚本照样能跑。
+# 缺字段时不传 --type。
+# gh 从账号级列表解析类型。读不到这个列表时 --type 会失败。
+# 所以有 type 字段时，脚本先检查 scope，不合格就整体退出。
 # 自定义类型由 scripts/sync-issue-types.sh 创建。
 #
 # 本脚本兼容 macOS 自带的 bash 3.2。不要引入关联数组（declare -A）和 mapfile。
@@ -184,6 +186,26 @@ print(f"解析 {len(rows)} 个 issue 定义。", file=sys.stderr)
 PY
 
 INDEX="$TMP/index.tsv"
+
+# ---- 1.5 issue type 预检 ---------------------------------------------------
+# issue type 是账号级对象。gh 从账号列表解析 --type，不从仓库列表解析。
+# 列表读不到时 gh 把可用类型当成空，第一个带 type 的 issue 就会失败。
+# 那时前面的 issue 可能已经建出来了。所以在动 GitHub 之前先拦住。
+if [ "$DRY_RUN" -eq 0 ]; then
+  if cut -d"$SEP" -f8 "$INDEX" | grep -qv '^$'; then
+    if ! gh auth status 2>&1 | grep -qE "'(user|read:user)'"; then
+      info "错误：定义里有 type 字段，但当前 token 没有 user scope。"
+      info ""
+      info "gh 读不到账号级类型列表时，--type 会失败。"
+      info "先运行下面两条命令，第一条按提示完成浏览器授权："
+      info "  gh auth refresh -h github.com -s user"
+      info "  bash scripts/sync-issue-types.sh"
+      info ""
+      info "本次没有写入 GitHub。"
+      exit 1
+    fi
+  fi
+fi
 
 # ---- 2. 标签与里程碑定义 ---------------------------------------------------
 # 格式：<标签名>|<颜色>|<说明>
