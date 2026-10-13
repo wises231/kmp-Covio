@@ -234,7 +234,7 @@ private fun isLowBattery(config: AppConfig, state: AppState): Boolean {
  * 电池状态的一行写法，例如 `82% · 放电`。
  *
  * 放在这里而不是运行时类里：托盘文案是唯一的使用方，
- * 而 Compose 宿主的运行时已经随 P6 退役。
+ * 而 Compose 宿主的运行时已经随 M6 退役。
  */
 internal fun formatBattery(battery: BatteryStatus, strings: Strings): String {
     val stateText = when (battery.state) {

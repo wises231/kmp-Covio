@@ -22,7 +22,7 @@ struct WorkspaceEnvironment {
     var reveal: (URL) -> Void = { NSWorkspace.shared.activateFileViewerSelecting([$0]) }
 }
 
-/// 工作区的运行时。对应 P5 的数据与行为层。
+/// 工作区的运行时。
 ///
 /// 职责：
 /// - 读工作区索引，按 Kotlin 那份顺序规则排出界面顺序。

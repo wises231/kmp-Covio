@@ -183,7 +183,7 @@ final class NotchShellControllerTests: XCTestCase {
 
     // MARK: - 内容态
 
-    /// 内容区状态与面板状态正交。P1 只驱动到 READY。
+    /// 内容区状态与面板状态正交。M1 只驱动到 READY。
     func testOutputStateIsCollapsedWhileHiddenAndReadyWhenActive() throws {
         let controller = try controllerWithPointerInsideHub()
         controller.start()
@@ -212,7 +212,7 @@ final class NotchShellControllerTests: XCTestCase {
     // MARK: - 宿主进程
 
     /// 测试是跑在被测应用进程里的，`AppDelegate` 已经启动了真正的 shell。
-    /// 这条断言验证的是 P1 的装配真的生效，而不只是单元测试里能跑通。
+    /// 这条断言验证的是 M1 的装配真的生效，而不只是单元测试里能跑通。
     func testHostApplicationRunsTheShell() throws {
         let hotZones = NSApp.windows.compactMap { $0 as? HotZonePanel }
         let hubs = NSApp.windows.compactMap { $0 as? HubPanel }

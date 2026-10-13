@@ -3,7 +3,7 @@ import AppKit
 /// 无边框浮层面板的共同配置。
 ///
 /// 设置顺序有硬性要求。`isFloatingPanel = true` 会把 `level` 重置为 `.floating`（3）。
-/// P0 实测：
+/// M0 实测：
 ///
 /// | 顺序 | 读回的 `level.rawValue` |
 /// | --- | --- |
@@ -64,7 +64,7 @@ final class HotZonePanel: ShellPanel {
 /// Hub 面板。整个进程只有一个。
 ///
 /// `.nonactivatingPanel` 让点击不激活 Covio，`canBecomeKey = true` 让面板能收到键盘。
-/// 两者合起来是 P4 粘贴回填需要的行为：Hub 显示后前台应用不改变，但 Escape 仍然可用。
+/// 两者合起来是 M4 粘贴回填需要的行为：Hub 显示后前台应用不改变，但 Escape 仍然可用。
 @MainActor
 final class HubPanel: ShellPanel {
     /// Escape 的处理。`cancelOperation` 与 `keyDown` 都会走到这里。

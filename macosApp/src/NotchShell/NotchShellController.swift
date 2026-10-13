@@ -14,7 +14,7 @@ import SwiftUI
 final class NotchShellController {
     /// 面板生命周期状态。来源是合同 `states.menuBarAndNotchHub.hubStates`。
     private(set) var state: HubState = .hidden
-    /// 内容区状态。来源是合同 `states.notchOutputHub.states`。P1 固定为 collapsed。
+    /// 内容区状态。来源是合同 `states.notchOutputHub.states`。M1 固定为 collapsed。
     private(set) var outputState: HubOutputState = .collapsed
     /// 当前页签。设置页比占位页高，所以换页签要重排面板。
     var selection: HubTab = .now {

@@ -22,7 +22,7 @@ import com.wyz.covio.core.HELPER_VERSION_PATH as SHARED_VERSION_PATH
  * SwiftUI 版的 helper 调用同一份，所以两侧不可能漂移。
  * 这里的成员只是改名转发，方便本模块的调用点。
  *
- * 本模块随 Compose 宿主一起退役，见迁移计划 P6。届时整个文件删除，
+ * 本模块随 Compose 宿主一起退役，见迁移计划 M6。届时整个文件删除，
  * 调用点直接用 `HelperWire`。
  */
 object HelperProtocol {

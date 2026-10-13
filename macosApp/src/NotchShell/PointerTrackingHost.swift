@@ -3,7 +3,7 @@ import SwiftUI
 
 /// 把 SwiftUI 内容装进窗口，并报告指针进出。
 ///
-/// 为什么不用全局鼠标监听：P0 实测在 `AXIsProcessTrusted = false` 时
+/// 为什么不用全局鼠标监听：M0 实测在 `AXIsProcessTrusted = false` 时
 /// `NSEvent.addGlobalMonitorForEvents` 仍然返回非 nil 的 token。
 /// 注册成功不能作为拿到权限的依据。窗口自己的 tracking area 不依赖辅助功能权限。
 /// 见 `docs/adr/ADR-001-macos-ui-swiftui.md` 实测 10。

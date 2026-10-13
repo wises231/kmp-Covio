@@ -4,7 +4,7 @@ import XCTest
 /// `ScreenGeometry` 的几何测试。
 ///
 /// 用手写的屏幕数值，不依赖运行测试的机器。
-/// 数值取自 P0 在本机内建视网膜屏上的实测：1728 × 1117，顶部安全区 32 点，
+/// 数值取自 M0 在本机内建视网膜屏上的实测：1728 × 1117，顶部安全区 32 点，
 /// 刘海占 x 从 771.5 到 956.5。见 `docs/adr/ADR-001-macos-ui-swiftui.md` 实测 8。
 final class ScreenGeometryTests: XCTestCase {
     /// 本机实测的刘海屏。
@@ -161,12 +161,12 @@ final class ScreenGeometryTests: XCTestCase {
         XCTAssertTrue(screen.frame.contains(geometry.expandedRect), "面板矩形超出了屏幕")
         XCTAssertEqual(geometry.hasNotch, geometry.notch != nil)
 
-        // 把实测值打出来，方便与 P0 的记录比对。
+        // 把实测值打出来，方便与 M0 的记录比对。
         print("""
-        [P1] screen frame=\(screen.frame) visible=\(screen.visibleFrame)
-        [P1] safeAreaTop=\(geometry.safeAreaTop) notch=\(String(describing: geometry.notch))
-        [P1] hotZone=\(zone) expandedRect=\(geometry.expandedRect)
-        [P1] menuBarVisible=\(geometry.isMenuBarVisible)
+        [M1] screen frame=\(screen.frame) visible=\(screen.visibleFrame)
+        [M1] safeAreaTop=\(geometry.safeAreaTop) notch=\(String(describing: geometry.notch))
+        [M1] hotZone=\(zone) expandedRect=\(geometry.expandedRect)
+        [M1] menuBarVisible=\(geometry.isMenuBarVisible)
         """)
     }
 }

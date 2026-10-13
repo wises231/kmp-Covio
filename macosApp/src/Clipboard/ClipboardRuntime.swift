@@ -93,7 +93,7 @@ final class ClipboardBridge {
     var report: ((LocalizedCopy) -> Void)?
 }
 
-/// 剪切板的运行时。对应 P4 的数据与行为层。
+/// 剪切板的运行时。对应 M4 的数据与行为层。
 ///
 /// 职责：
 /// - 监视系统剪贴板，把新内容收进列表，读写 `clipboard.json`。

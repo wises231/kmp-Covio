@@ -3,7 +3,7 @@ import XCTest
 
 /// 两版共存的路径测试。
 ///
-/// P1 的完成判据要求 Compose 版与 SwiftUI 版可以同时运行。
+/// M1 的完成判据要求 Compose 版与 SwiftUI 版可以同时运行。
 /// 两版共用数据目录与 `config.json`，只有 lock 文件名不同。
 final class AppPathsTests: XCTestCase {
     func testSupportDirectoryMatchesTheComposeVersion() {
@@ -19,7 +19,7 @@ final class AppPathsTests: XCTestCase {
     }
 
     func testBothVersionsShareTheSameConfigFile() {
-        // P2 要求 config.json 与 0.4.2 双向兼容，所以必须指向同一个文件。
+        // M2 要求 config.json 与 0.4.2 双向兼容，所以必须指向同一个文件。
         XCTAssertEqual(AppPaths.configFile.lastPathComponent, "config.json")
         XCTAssertEqual(AppPaths.configFile.deletingLastPathComponent(), AppPaths.supportDirectory)
     }

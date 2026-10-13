@@ -89,7 +89,7 @@ class VersionAndConfigTest {
         assertEquals(null, AppConfig(hibernateMode = 7).normalized().hibernateMode)
     }
 
-    /// P4：剪切板默认开启，两个快捷键是出厂组合。
+    /// M4：剪切板默认开启，两个快捷键是出厂组合。
     @Test
     fun `clipboard defaults record history with the shipped shortcuts`() {
         val config = AppConfig()
@@ -170,7 +170,7 @@ class VersionAndConfigTest {
         assertEquals(stable, UpdatePolicy.selectUpdate(stable, "1.0.0"))
     }
 
-    /// P2 的完成判据之一：`config.json` 与 0.4.2 双向兼容。
+    /// M2 的完成判据之一：`config.json` 与 0.4.2 双向兼容。
     /// 这条用 0.4.2 会写出的完整字段集验证读回后逐字段相等。
     @Test
     fun `a config written by an older release loads without loss`() =

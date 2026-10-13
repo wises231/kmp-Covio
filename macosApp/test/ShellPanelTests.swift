@@ -4,7 +4,7 @@ import XCTest
 
 /// `ShellPanel` 系列的窗口配置测试。
 ///
-/// 这些断言把 P1 的 NSPanel 配置表逐条钉住。其中 `level` 那一条最关键：
+/// 这些断言把 M1 的 NSPanel 配置表逐条钉住。其中 `level` 那一条最关键：
 /// `isFloatingPanel = true` 会把 `level` 静默重置为 `.floating`（3），
 /// 现有 Compose 版的 `FLOATING_WINDOW_LEVEL = 3` 就是踩了这个坑。
 /// 见 `docs/adr/ADR-001-macos-ui-swiftui.md` 实测 9。
@@ -52,7 +52,7 @@ final class ShellPanelTests: XCTestCase {
         XCTAssertFalse(panel.isOpaque)
     }
 
-    /// `.nonactivatingPanel` 加 `canBecomeKey` 是 P4 粘贴回填的前提：
+    /// `.nonactivatingPanel` 加 `canBecomeKey` 是 M4 粘贴回填的前提：
     /// 面板能收键盘，但前台应用不变。
     func testHubPanelCanBecomeKeyButTheHotZoneCannot() {
         let hub = HubPanel(rect: testRect)

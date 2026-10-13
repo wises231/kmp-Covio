@@ -5,7 +5,7 @@ import kmpDomain
 /// `GithubUpdateChecker` 的解析与状态判定。
 ///
 /// 这是唯一一处直连 GitHub 的代码。解析器是纯函数，测试直接喂 HTML 字符串。
-/// 断言对应 P6 删掉的 `GithubUpdateCheckerTest.kt`。
+/// 断言对应 M6 删掉的 `GithubUpdateCheckerTest.kt`。
 ///
 /// 网络那两条走注入的 `URLProtocol`：`init` 收一个 `URLSession`，
 /// 正是为了让这几条不用真发请求。

@@ -80,7 +80,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     // MARK: - 菜单动作
 
-    /// 显示挂帘。挂帘本体属于 P3，这里先打开 Hub 的截图页。
+    /// 显示挂帘。挂帘本体属于 M3，这里先打开 Hub 的截图页。
     @objc private func showShelf() {
         shell.selection = .screenshots
         shell.show()

@@ -2,7 +2,7 @@ import Carbon.HIToolbox
 import Foundation
 
 /// 全局快捷键。§4.4 要求 `Control+Option+T` 打开或收起 Hub。
-/// P4 又加了 `Shift+Command+V` 与 `Shift+Command+C`。
+/// M4 又加了 `Shift+Command+V` 与 `Shift+Command+C`。
 ///
 /// 用 Carbon 的 `RegisterEventHotKey`。它不需要辅助功能权限，
 /// 与现有 Compose 版的 `app/src/com/wyz/covio/app/platform/GlobalHotKey.kt` 是同一套做法。
@@ -32,14 +32,14 @@ final class GlobalHotKey {
         id: 1
     )
 
-    /// P4：`Shift+Command+V` 依次粘贴粘贴栈里的下一条。
+    /// M4：`Shift+Command+V` 依次粘贴粘贴栈里的下一条。
     static let pasteStack = Spec(
         keyCode: UInt32(kVK_ANSI_V),
         modifiers: UInt32(cmdKey | shiftKey),
         id: 2
     )
 
-    /// P4：`Shift+Command+C` 把当前前台应用的选中内容收进剪切板。
+    /// M4：`Shift+Command+C` 把当前前台应用的选中内容收进剪切板。
     static let captureSelection = Spec(
         keyCode: UInt32(kVK_ANSI_C),
         modifiers: UInt32(cmdKey | shiftKey),

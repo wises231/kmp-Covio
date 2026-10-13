@@ -19,7 +19,7 @@ struct ClipboardTabView: View {
         VStack(alignment: .leading, spacing: MacTheme.space3) {
             content
 
-            // 权限被拒或快捷键冲突时给一条可见的说明。计划把这两条列为 P4 的完成判据。
+            // 权限被拒或快捷键冲突时给一条可见的说明。计划把这两条列为 M4 的完成判据。
             if let notice {
                 MacAlert(message: notice, kind: .warning)
             }

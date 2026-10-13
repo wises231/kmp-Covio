@@ -11,7 +11,7 @@ import kmpDomain
 ///
 /// 只跑在主线程。`Engine` 自己加锁，所以后台的端口回调进来也安全。
 ///
-/// 截图挂帘的行为在 `ShelfRuntime` 里，剪贴板属于 P4。
+/// 截图挂帘的行为在 `ShelfRuntime` 里，剪贴板属于 M4。
 /// `AppRuntime` 负责把配置变化转达给挂帘运行时。
 @MainActor
 @Observable

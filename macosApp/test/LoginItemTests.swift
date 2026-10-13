@@ -2,7 +2,7 @@ import XCTest
 import kmpDomain
 @testable import Covio
 
-/// `MacLoginItem` 的断言。对应 P6 删掉的 `MacLoginItemTest.kt`。
+/// `MacLoginItem` 的断言。对应 M6 删掉的 `MacLoginItemTest.kt`。
 ///
 /// 登录项写 `~/Library/LaunchAgents/<APP_ID>.plist`，再用 `launchctl` 注册。
 /// 测试不碰真的 LaunchAgents 目录，也不跑真的 `launchctl`：

@@ -2,7 +2,7 @@
 
 - 状态：已接受
 - 日期：2026-10-12
-- 阶段：P0 到 P6 已结案。进度见 [迁移计划的阶段进度表](../covio-macos-swiftui-migration-plan.md)
+- 阶段：M0 到 M6 已结案。进度见 [迁移计划的阶段进度表](../covio-macos-swiftui-migration-plan.md)
 - 补充：2026-10-12 按 `docs/covio-product-master.md` 第 7.1 节对齐共享层边界。结论见实测 26 到 28
 - 补充：2026-10-12 补记实测 29 与 30：测试宿主不启动运行时；图标是工程资源
 - 补充：2026-10-12 补记实测 31 到 34：Hub 外壳按 macOS 27 版式重做，部署目标提到 26.0；搜索锚点漏挂两处。玻璃的显示效果待真机确认
@@ -31,7 +31,7 @@ Hub 挂帘需要非激活面板、鼠标穿透、全宽工具条。这些能力�
 
 ## 证据
 
-P0 spike 的执行结果。全部在本机实测。环境是 macOS 27.0.1、Xcode 27.0、Swift 6.4、Apple Silicon。
+M0 spike 的执行结果。全部在本机实测。环境是 macOS 27.0.1、Xcode 27.0、Swift 6.4、Apple Silicon。
 
 ### 实测 1：`macosArm64` 编译通过
 
@@ -160,8 +160,8 @@ private final class SwiftGreeter: NSObject, GreeterPort {
     func greet(name: String) -> String { "swift: \(name)" }
 }
 
-PortHost().runWith(port: SwiftGreeter(), name: "P0")   // "swift: P0"
-PortHost().kotlinPort().greet(name: "P0")              // "kotlin: P0"
+PortHost().runWith(port: SwiftGreeter(), name: "M0")   // "swift: M0"
+PortHost().kotlinPort().greet(name: "M0")              // "kotlin: M0"
 ```
 
 两个方向都通过。约束是 Swift 实现类必须继承 `NSObject`，因为导出目标是 Objective-C protocol。
@@ -180,7 +180,7 @@ auxiliaryTopRightArea: Optional((956.5, 1085.0, 771.5, 32.0))
 
 读出的结论：顶部条高 32 pt；刘海占 x 从 771.5 到 956.5，宽 185 pt。
 
-P1 的热区与面板定位应该读这两个属性，不要写死数值。
+M1 的热区与面板定位应该读这两个属性，不要写死数值。
 
 ### 实测 9：`isFloatingPanel` 会把 `level` 静默重置
 
@@ -196,7 +196,7 @@ P1 的热区与面板定位应该读这两个属性，不要写死数值。
 
 `isFloatingPanel = true` 会把 level 重置为 `.floating`（3）。
 
-**P1 必须按这个顺序写。** 否则面板层级会退回 3，与现有 Compose 版的 `FLOATING_WINDOW_LEVEL = 3` 是同一个错误。
+**M1 必须按这个顺序写。** 否则面板层级会退回 3，与现有 Compose 版的 `FLOATING_WINDOW_LEVEL = 3` 是同一个错误。
 
 ### 实测 10：事件权限的现状
 
@@ -204,7 +204,7 @@ P1 的热区与面板定位应该读这两个属性，不要写死数值。
 
 `NSEvent.addGlobalMonitorForEvents` 对 `.mouseMoved` 与 `.keyDown` 都返回了非 nil 的 token。**注册成功不代表有权限**，所以不能用"注册成功"判断权限。
 
-`CGPreflightPostEventAccess = false` 说明 P4 的合成 ⌘V 现在不可用。用户必须授权辅助功能。
+`CGPreflightPostEventAccess = false` 说明 M4 的合成 ⌘V 现在不可用。用户必须授权辅助功能。
 
 ### 实测 11：Amper 能在 macosArm64 上跑 Kotlin 测试
 
@@ -263,15 +263,15 @@ Passed actualIsMacosArm64
 | `VersionAndConfigTest.kt` | 118 | 13 |
 | `ShelfStoreTest.kt` | 77 | 15 |
 
-这意味着 P2 不需要把 `EngineTest` 的断言在 XCTest 里重建。把 `Engine` 与它的依赖移进 `kmpDomain` common 之后，这 573 行断言可以原样运行在 macosArm64 上。
+这意味着 M2 不需要把 `EngineTest` 的断言在 XCTest 里重建。把 `Engine` 与它的依赖移进 `kmpDomain` common 之后，这 573 行断言可以原样运行在 macosArm64 上。
 
-`Engine.kt` 本身仍然要改。它用了约 30 处 `synchronized`、`Thread.sleep`、`AtomicBoolean`，这些在 Kotlin/Native 不存在。改造办法见计划的 P2 段。
+`Engine.kt` 本身仍然要改。它用了约 30 处 `synchronized`、`Thread.sleep`、`AtomicBoolean`，这些在 Kotlin/Native 不存在。改造办法见计划的 M2 段。
 
 ### 实测 13：热区用 `NSTrackingArea` 就不需要全局监听
 
 这条结掉实测 10 留下的问题。
 
-P1 的热区不用 `NSEvent.addGlobalMonitorForEvents`。做法是每块屏幕一个 `HotZonePanel`，面板的 `contentView` 装 `NSTrackingArea`：
+M1 的热区不用 `NSEvent.addGlobalMonitorForEvents`。做法是每块屏幕一个 `HotZonePanel`，面板的 `contentView` 装 `NSTrackingArea`：
 
 ```swift
 let options: NSTrackingArea.Options = [.mouseEnteredAndExited, .activeAlways, .inVisibleRect]
@@ -288,7 +288,7 @@ let options: NSTrackingArea.Options = [.mouseEnteredAndExited, .activeAlways, .i
 
 ### 实测 14：全屏 Space 用 `visibleFrame` 判定，免权限
 
-P0 设想的办法是 `CGSCopyManagedDisplaySpaces` 判 `type == 4`。P1 改用更简单的规则：
+M0 设想的办法是 `CGSCopyManagedDisplaySpaces` 判 `type == 4`。M1 改用更简单的规则：
 
 ```swift
 var isMenuBarVisible: Bool { visibleFrame.maxY < frame.maxY }
@@ -309,7 +309,7 @@ frame.maxY - visibleFrame.maxY = 33.0   (1117 - 1084)
 
 32 是刘海与圆角的安全区，33 是菜单栏占的实际高度。两者不相等。
 
-P1 的用法：
+M1 的用法：
 
 - 展开矩形的高度用 `safeAreaInsets.top` 加上内容高度，因为卡片要从刘海下沿开始画。
 - 菜单栏可见性用 `visibleFrame.maxY < frame.maxY`，因为它比的是"有没有让位"。
@@ -318,7 +318,7 @@ P1 的用法：
 
 ### 实测 16：宿主 XCTest 包加同步目录组的组合
 
-P1 要给 AppKit 类型写单元测试，需要 `@testable import Covio`。做法是把这个测试 target 改成宿主测试包：
+M1 要给 AppKit 类型写单元测试，需要 `@testable import Covio`。做法是把这个测试 target 改成宿主测试包：
 
 ```text
 TEST_HOST     = $(BUILT_PRODUCTS_DIR)/Covio.app/Contents/MacOS/Covio
@@ -332,7 +332,7 @@ BUNDLE_LOADER = $(TEST_HOST)
 - 测试跑在真实的 app 进程里。`AppDelegate` 已经把 shell 启动了，所以测试进程里真实存在热区与 Hub 面板。`NotchShellControllerTests.testHostApplicationRunsTheShell` 正是利用这一点验证装配。
 - 测试期间面板会真的出现在屏幕上。控制器把指针位置做成可注入的闭包，测试不移动真实鼠标。
 
-配合决策 6 的同步目录组，P1 新增 20 个 Swift 文件没有改过一次 `project.pbxproj`。
+配合决策 6 的同步目录组，M1 新增 20 个 Swift 文件没有改过一次 `project.pbxproj`。
 
 ### 实测 17：`flock` 按打开的文件描述算
 
@@ -648,12 +648,12 @@ func handleEscape() -> Bool {
 ### 正面
 
 - KMP 共享层的意图保留。`kmpDomain` 仍然编 `macosArm64`，仍然产出可供 Swift 调用的 framework。
-- **Kotlin 测试跑在 macosArm64 上。** 共享逻辑的行为基线用 `./kotlin test` 验证，不用在 XCTest 里重建。这削减了 P2 的大部分工作量。
+- **Kotlin 测试跑在 macosArm64 上。** 共享逻辑的行为基线用 `./kotlin test` 验证，不用在 XCTest 里重建。这削减了 M2 的大部分工作量。
 - macOS framework 的产出链路完全由本仓库的脚本控制。不依赖 Amper 的未文档化行为。
 - `macosApp` 是纯 Xcode 工程。SwiftUI 侧不再受 Amper 产品类型限制。
-- Swift 与 Kotlin 的互操作在 P0 就验证了。Ports 用 Swift 实现没有阻碍。
-- Xcode 工程用同步目录组，P1 到 P4 新增 Swift 文件不改 pbxproj。R6 的合并冲突风险因此下降。
-- **P1 的壳不依赖任何系统权限。** 热区、全屏 Space 判定、全局快捷键（Carbon）都在 `AXIsProcessTrusted = false` 下工作。辅助功能权限只在 P4 的粘贴回填才需要。
+- Swift 与 Kotlin 的互操作在 M0 就验证了。Ports 用 Swift 实现没有阻碍。
+- Xcode 工程用同步目录组，M1 到 M4 新增 Swift 文件不改 pbxproj。R6 的合并冲突风险因此下降。
+- **M1 的壳不依赖任何系统权限。** 热区、全屏 Space 判定、全局快捷键（Carbon）都在 `AXIsProcessTrusted = false` 下工作。辅助功能权限只在 M4 的粘贴回填才需要。
 - **业务规则单一来源。** 命名去重、`pmset` 解析、截图偏好解析、helper 协议、晾衣线时序都在 `kmpDomain`。这些规则各有 Kotlin 测试，跑在 jvm 与 macosArm64 上。Compose 宿主复活时直接复用。
 - 界面文案只有一个来源。生成的 `ContractCopy.swift` 之外的 Swift 文件不得写文案字面量，`CopySingleSourceTests` 与 `validate-contract.py` 各拦一次。
 
@@ -671,7 +671,7 @@ func handleEscape() -> Bool {
 - 若 `kmpDomain` 引入的依赖增多，klib 收集的出错过概率会上升。缓解办法是限制 `kmpDomain` 的依赖集合，只允许 `kotlinx-serialization` 与 `okio` 这类有 native 产物的库。脚本在缺 klib 时会报出缺失的坐标与期望路径。
 - 若后续 Amper 支持 macOS SDK，应切回 `xcode-integration`。届时删除自研脚本。脚本头部留了这条注释。
 - 同步目录组要求 Xcode 16 以上，所以 CI 的 Swift 作业不能用更老的运行器。
-  P8 把部署目标提到 26.0 之后，这个作业进一步固定 `macos-26`：测试二进制在更低版本的系统上启动不了。
+  M8 把部署目标提到 26.0 之后，这个作业进一步固定 `macos-26`：测试二进制在更低版本的系统上启动不了。
   Kotlin 与合同校验两个作业留在 `macos-15`，它们不构建宿主应用。见实测 31。
 - 共享层的类被 `@MainActor` 类型持有后，跨线程传递会过不了 Swift 6 的编译检查。缓解办法是加 `@unchecked Sendable` 门面，并在门面的注释里写清锁由谁持有。见实测 28。
 
@@ -689,13 +689,13 @@ func handleEscape() -> Bool {
 
 放弃 `project.pbxproj`，用 `Package.swift` 加 `swift test`，再手工拼 `.app` 包。
 
-好处是不用维护 pbxproj。代价是失去 Xcode 的可视化开发与 Instruments 接入。P1 到 P4 要写大量 AppKit 代码，这个代价不划算。
+好处是不用维护 pbxproj。代价是失去 Xcode 的可视化开发与 Instruments 接入。M1 到 M4 要写大量 AppKit 代码，这个代价不划算。
 
 未采纳。
 
 ## 未决事项
 
-P0 结案时仍未确认的项目。
+M0 结案时仍未确认的项目。
 
 | 项目 | 状态 | 确认方法 |
 | --- | --- | --- |
@@ -704,10 +704,10 @@ P0 结案时仍未确认的项目。
 | NSPanel 相对系统 UI 的正确 `level` | **已结案**，`.statusBar` = 25 高于菜单栏 24 | 见实测 9 |
 | konanc 第三方依赖 klib 的收集方式 | **已结案**，用 `show dependencies` 的输出 | 见实测 6 |
 | Amper 能否在 macosArm64 上跑 Kotlin 测试 | **已结案**，能 | 见实测 11。`EngineTest` 可原样迁移，见实测 12 |
-| `.mouseMoved` 全局监听在 macOS 27 是否免辅助功能权限 | **已结案，且不再需要** | 注册成功不能作为依据。P1 不用全局监听，改用面板自己的 `NSTrackingArea`。见实测 13 |
+| `.mouseMoved` 全局监听在 macOS 27 是否免辅助功能权限 | **已结案，且不再需要** | 注册成功不能作为依据。M1 不用全局监听，改用面板自己的 `NSTrackingArea`。见实测 13 |
 | 菜单栏区域该用 `safeAreaInsets.top` 还是 `visibleFrame` 的差 | **已结案**，两处各用其一 | 见实测 15 |
 
-P8（Hub 外壳重做）结案时仍未确认的项目。
+M8（Hub 外壳重做）结案时仍未确认的项目。
 
 | 项目 | 状态 | 确认方法 |
 | --- | --- | --- |

@@ -62,7 +62,7 @@ class DesignContractTest {
     fun `the shipped contract keeps the hub state copy`() {
         val contract = readRealContract()
 
-        // P1 的状态机按这些键取文案，两条状态机各六个状态。
+        // M1 的状态机按这些键取文案，两条状态机各六个状态。
         val hubStates = listOf("hidden", "hover", "open", "active", "exit", "error")
         for (slug in hubStates) {
             assertNotNull(contract.entry("copy/notch-hub/state/$slug"), "缺 $slug 的文案")

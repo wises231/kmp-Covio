@@ -52,7 +52,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.shell.toggle()
         }
         if !hotKey.register() {
-            // Carbon 在快捷键冲突时静默失败。计划的 P4 要求设置页暴露这个状态。
+            // Carbon 在快捷键冲突时静默失败。计划的 M4 要求设置页暴露这个状态。
             NSLog("Control+Option+T 注册失败。快捷键可能已被其它应用占用。")
         }
         self.hotKey = hotKey
