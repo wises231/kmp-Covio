@@ -1,6 +1,7 @@
 package com.wyz.covio.core
 
 import com.wyz.covio.domain.EngineLock
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import kotlin.random.Random
 import okio.Buffer
@@ -29,9 +30,11 @@ private const val CHUNK_BYTES = 64L * 1024
  *   index.json          条目索引，原子写入
  *   objects/<sha256>    内容字节，按摘要命名
  *   incoming/<sha256>   未完成的写入，校验后改名移入 objects
+ *   tombstones.json     删除标记，保留 30 天
  * ```
  *
- * 删除标记（`tombstones.json`）属于复制阶段，这里不写。
+ * 删除标记拦住对端把删过的条目重新复制回来（方案第 3.4 节）。
+ * 它与索引分开存放：索引每次放入都要写，标记很少变。
  *
  * **内容寻址。** 文件名就是内容的 SHA-256。相同内容只存一份，同名不同内容自动分开。
  * 摘要以外的字符会被拒绝：摘要是十六进制，出现别的字符就不该拼进路径。
@@ -48,6 +51,9 @@ class WorkspaceStore(
     val objectsDirectory: String get() = "$directory/objects"
 
     val incomingDirectory: String get() = "$directory/incoming"
+
+    /** 删除标记。与索引分开存放，布局见方案第 1.3 节。 */
+    val tombstonesPath: String get() = "$directory/tombstones.json"
 
     /**
      * 读取索引。
@@ -75,27 +81,77 @@ class WorkspaceStore(
      */
     internal fun saveReporting(state: WorkspaceState): WorkspaceState? = lock.withLock {
         val normalized = state.normalized()
-        val written = runCatching {
-            val target = indexPath.toPath()
-            target.parent?.let { fileSystem.createDirectories(it) }
-            val temporary = target.parent!!.resolve(target.name + ".tmp")
-            fileSystem.write(temporary) {
-                writeUtf8(json.encodeToString(WorkspaceState.serializer(), normalized))
-            }
-            fileSystem.atomicMove(temporary, target)
-        }.isSuccess
+        val written = writeAtomically(
+            path = indexPath,
+            text = json.encodeToString(WorkspaceState.serializer(), normalized),
+        )
         if (written) normalized else null
     }
 
     /** 写入索引，返回规范化之后的状态。写盘失败时返回规范化后的内存状态，见 [saveReporting]。 */
     fun save(state: WorkspaceState): WorkspaceState = saveReporting(state) ?: state.normalized()
 
-    /** 清空索引与两个内容目录。 */
+    /**
+     * 读取删除标记。
+     *
+     * 文件不存在、读不动、JSON 坏了都返回空列表。与 [load] 同一套写法：
+     * 异常跨到 Swift 没有接收方。
+     *
+     * 这里不按时间过滤：调用方各自有「现在」。保留期的判断见 [WorkspaceLogic.liveTombstones]。
+     */
+    fun loadTombstones(): List<WorkspaceTombstone> = lock.withLock {
+        val marked = runCatching {
+            val target = tombstonesPath.toPath()
+            if (!fileSystem.exists(target)) return@runCatching null
+            json.decodeFromString<List<WorkspaceTombstone>>(fileSystem.read(target) { readUtf8() })
+        }.getOrNull()
+        (marked ?: emptyList())
+            .map { it.normalized() }
+            .filter { it.isUsable }
+            .distinctBy { it.entryId }
+    }
+
+    /**
+     * 写入删除标记。写盘失败返回 null。
+     *
+     * 删条目之前先写标记：标记没写成就不该删，否则对端会把这条重新复制回来。
+     */
+    internal fun saveTombstonesReporting(
+        tombstones: List<WorkspaceTombstone>,
+    ): List<WorkspaceTombstone>? = lock.withLock {
+        val normalized = tombstones
+            .map { it.normalized() }
+            .filter { it.isUsable }
+            .distinctBy { it.entryId }
+        val written = writeAtomically(
+            path = tombstonesPath,
+            text = json.encodeToString(ListSerializer(WorkspaceTombstone.serializer()), normalized),
+        )
+        if (written) normalized else null
+    }
+
+    /**
+     * 写一个 JSON 文件：先写 `.tmp`，再原子改名。
+     *
+     * 写不进去返回 false，不抛异常。理由与 [saveReporting] 相同。
+     */
+    private fun writeAtomically(path: String, text: String): Boolean = runCatching {
+        val target = path.toPath()
+        target.parent?.let { fileSystem.createDirectories(it) }
+        val temporary = target.parent!!.resolve(target.name + ".tmp")
+        fileSystem.write(temporary) { writeUtf8(text) }
+        fileSystem.atomicMove(temporary, target)
+    }.isSuccess
+
+    /** 清空索引、两个内容目录与删除标记。 */
     fun clear(): Boolean = lock.withLock {
         runCatching {
             val target = indexPath.toPath()
             fileSystem.delete(target, mustExist = false)
             fileSystem.delete(target.parent!!.resolve(target.name + ".tmp"), mustExist = false)
+            val marks = tombstonesPath.toPath()
+            fileSystem.delete(marks, mustExist = false)
+            fileSystem.delete(marks.parent!!.resolve(marks.name + ".tmp"), mustExist = false)
             fileSystem.deleteRecursively(objectsDirectory.toPath(), mustExist = false)
             fileSystem.deleteRecursively(incomingDirectory.toPath(), mustExist = false)
         }.isSuccess
@@ -294,13 +350,33 @@ class WorkspaceStore(
         save(state.copy(entries = entries))
     }
 
-    /** 删掉一条条目及其内容。删除是全局操作，广播由复制层负责。 */
-    fun remove(state: WorkspaceState, entryId: String): WorkspaceState = lock.withLock {
+    /**
+     * 删掉一条条目及其内容，并留下删除标记。
+     *
+     * 删除是全局操作，广播由复制层负责（方案第 3.4 节）。
+     * **先写标记再删内容**：标记写不进去就什么都不删，否则对端会把这条重新复制回来。
+     * 条目本来就不在本机时也写标记，返回值不变。
+     */
+    fun remove(
+        state: WorkspaceState,
+        entryId: String,
+        nowEpochSeconds: Long,
+    ): WorkspaceState = lock.withLock {
         val id = normalizeEntryId(entryId)
         if (!WorkspaceLogic.isValidEntryId(id)) return@withLock state
+        if (!markDeleted(id, nowEpochSeconds)) return@withLock state
         val entries = state.entries.filterNot { it.entryId == id }
-        if (entries.size != state.entries.size) deleteContent(id)
+        if (entries.size == state.entries.size) return@withLock state
+        deleteContent(id)
         save(state.copy(entries = entries))
+    }
+
+    /** 写一条删除标记。写不进去返回 false。 */
+    fun markDeleted(entryId: String, nowEpochSeconds: Long): Boolean = lock.withLock {
+        val id = normalizeEntryId(entryId)
+        if (!WorkspaceLogic.isValidEntryId(id)) return@withLock false
+        val marked = WorkspaceLogic.withTombstone(loadTombstones(), id, nowEpochSeconds)
+        saveTombstonesReporting(marked) != null
     }
 
     /** 打开一个文件，读完后关掉。读不动或写不进时抛异常，由 [putFile] 收成 `FAILED`。 */
@@ -443,10 +519,13 @@ class WorkspaceStore(
     }
 
     /**
-     * 按策略执行一次过期与淘汰。
+     * 按策略执行一次过期与淘汰，并清掉过期的删除标记。
      *
      * 被淘汰与过期的条目连同内容一起删除，剩下的索引落盘。
      * 空间不足时淘汰的是旧条目，不是拒绝新条目——拒绝发生在放入那一刻。
+     *
+     * 这里不给淘汰与过期的条目写删除标记：标记的作用是拦住对端的重新复制，
+     * 而对端要知道这件事得靠广播，广播属于传输层。见方案第 10.3 节的未做清单。
      */
     fun sweep(policy: WorkspacePolicy, nowEpochSeconds: Long): WorkspacePlan = lock.withLock {
         val state = load()
@@ -457,6 +536,9 @@ class WorkspaceStore(
         if (plan.changed || next.policy != state.policy) {
             save(next)
         }
+        val marked = loadTombstones()
+        val live = WorkspaceLogic.liveTombstones(marked, nowEpochSeconds)
+        if (live.size != marked.size) saveTombstonesReporting(live)
         plan
     }
 
@@ -550,6 +632,56 @@ object WorkspaceLogic {
 
     /** 摘要是不是合法的十六进制 SHA-256。 */
     fun isValidEntryId(value: String): Boolean = ENTRY_ID_PATTERN.matches(normalizeEntryId(value))
+
+    /**
+     * 删除标记保留多少天。
+     *
+     * 方案第 1.3 节与第 3.4 节都写 30 天。标记比内容留得久：
+     * 内容删掉之后，标记还要拦住对端的重新复制。
+     */
+    const val TOMBSTONE_RETENTION_DAYS = 30
+
+    /**
+     * 还在保留期内的删除标记。
+     *
+     * 摘要不合法或者时间读不出来的标记丢掉。同一个摘要只留最新的一条。
+     */
+    fun liveTombstones(
+        tombstones: List<WorkspaceTombstone>,
+        nowEpochSeconds: Long,
+    ): List<WorkspaceTombstone> {
+        val cutoff = nowEpochSeconds.coerceAtLeast(0L) - TOMBSTONE_RETENTION_DAYS * SECONDS_PER_DAY
+        return tombstones
+            .map { it.normalized() }
+            .filter { it.isUsable && it.deletedAtEpochSeconds >= cutoff }
+            .distinctBy { it.entryId }
+    }
+
+    /**
+     * 这个摘要是不是在保留期内被删过。
+     *
+     * 是的话不要再收：删除是全局操作，对端晚一步的复制不该让它复活。
+     */
+    fun isTombstoned(
+        entryId: String,
+        tombstones: List<WorkspaceTombstone>,
+        nowEpochSeconds: Long,
+    ): Boolean {
+        val id = normalizeEntryId(entryId)
+        return liveTombstones(tombstones, nowEpochSeconds).any { it.entryId == id }
+    }
+
+    /** 追加一条删除标记。同一个摘要只留最新的一条，时间取这次删除的时间。 */
+    fun withTombstone(
+        tombstones: List<WorkspaceTombstone>,
+        entryId: String,
+        nowEpochSeconds: Long,
+    ): List<WorkspaceTombstone> {
+        val id = normalizeEntryId(entryId)
+        if (!isValidEntryId(id)) return tombstones
+        val kept = tombstones.filterNot { normalizeEntryId(it.entryId) == id }
+        return kept + WorkspaceTombstone(id, nowEpochSeconds.coerceAtLeast(0L))
+    }
 
     /**
      * 按展示名与内容类型判断条目类别。

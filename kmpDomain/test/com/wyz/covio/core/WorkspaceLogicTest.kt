@@ -2,6 +2,7 @@ package com.wyz.covio.core
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
@@ -254,5 +255,59 @@ class WorkspaceLogicTest {
         assertEquals("clipboard.txt", WorkspaceLogic.suggestedTextName(""))
         assertEquals("clipboard.txt", WorkspaceLogic.suggestedTextName("///"))
         assertEquals(44, WorkspaceLogic.suggestedTextName("x".repeat(200)).length)
+    }
+
+    /// 保留期内的标记留下，过期的与摘要不合法的丢掉。
+    @Test
+    fun `live tombstones drop the old ones and the malformed ones`() {
+        val kept = entryId("kept")
+        val now = 1_700_000_000L
+
+        val live = WorkspaceLogic.liveTombstones(
+            listOf(
+                WorkspaceTombstone(kept, now),
+                WorkspaceTombstone(entryId("old"), now - (WorkspaceLogic.TOMBSTONE_RETENTION_DAYS + 1) * SECONDS_PER_DAY),
+                WorkspaceTombstone("not a digest", now),
+            ),
+            nowEpochSeconds = now,
+        )
+
+        assertEquals(listOf(kept), live.map { it.entryId })
+    }
+
+    /// 保留期的边界上还留着：到期当天仍然拦人。
+    @Test
+    fun `a tombstone on the retention boundary still counts`() {
+        val id = entryId("edge")
+        val now = 1_700_000_000L
+        val cutoff = now - WorkspaceLogic.TOMBSTONE_RETENTION_DAYS * SECONDS_PER_DAY
+
+        assertTrue(WorkspaceLogic.isTombstoned(id, listOf(WorkspaceTombstone(id, cutoff)), now))
+        assertFalse(WorkspaceLogic.isTombstoned(id, listOf(WorkspaceTombstone(id, cutoff - 1L)), now))
+    }
+
+    /// 同一个摘要只留一条标记，时间取最近一次删除。
+    @Test
+    fun `with tombstone keeps one mark per digest`() {
+        val id = entryId("dup")
+
+        val marks = WorkspaceLogic.withTombstone(
+            listOf(WorkspaceTombstone(id, 10L), WorkspaceTombstone(entryId("other"), 20L)),
+            id,
+            30L,
+        )
+
+        assertEquals(2, marks.size)
+        assertEquals(30L, marks.single { it.entryId == id }.deletedAtEpochSeconds)
+    }
+
+    /// 摘要不合法的标识写不进标记。
+    @Test
+    fun `with tombstone refuses a malformed digest`() {
+        assertEquals(emptyList(), WorkspaceLogic.withTombstone(emptyList(), "../escape", 10L))
+    }
+
+    private companion object {
+        const val SECONDS_PER_DAY = 24L * 60 * 60
     }
 }

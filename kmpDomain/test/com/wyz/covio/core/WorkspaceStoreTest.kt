@@ -33,6 +33,12 @@ class WorkspaceStoreTest {
 
     private fun digestOf(text: String): String = WorkspaceStore.digestOf(text.encodeToByteArray())
 
+    /** 测试里的「现在」。删除标记按天保留，固定一个值就够了。 */
+    private companion object {
+        const val NOW_EPOCH_SECONDS = 1_700_000_000L
+        const val SECONDS_PER_DAY = 24L * 60 * 60
+    }
+
     @Test
     fun `index round trips entries and policy`() =
         withTemporaryDirectory("workspace") { directory ->
@@ -497,7 +503,7 @@ class WorkspaceStoreTest {
             assertTrue(pinned.entries.single().pinned)
             assertTrue(store.load().entries.single().pinned)
 
-            val removed = store.remove(pinned, entryId)
+            val removed = store.remove(pinned, entryId, NOW_EPOCH_SECONDS)
             assertEquals(emptyList(), removed.entries)
             assertEquals(emptyList(), store.load().entries)
             assertFalse(store.hasContent(entryId), "删除条目要连内容一起删")
@@ -512,7 +518,125 @@ class WorkspaceStoreTest {
             val state = store.save(WorkspaceState(entries = listOf(entry(entryId, bytes = 1L))))
 
             assertEquals(state, store.setPinned(state, "../escape", pinned = true))
-            assertEquals(state, store.remove(state, "../escape"))
+            assertEquals(state, store.remove(state, "../escape", NOW_EPOCH_SECONDS))
             assertEquals(1, store.load().entries.size)
+        }
+
+    // MARK: - 删除标记
+
+    /// 删条目时留下标记。标记挡住的是对端晚一步的复制。
+    @Test
+    fun `removing an entry leaves a tombstone`() =
+        withTemporaryDirectory("workspace") { directory ->
+            val store = storeIn(directory)
+            val entryId = store.importContent("x".encodeToByteArray())!!
+            val state = store.save(WorkspaceState(entries = listOf(entry(entryId, bytes = 1L))))
+
+            store.remove(state, entryId, NOW_EPOCH_SECONDS)
+
+            val marks = store.loadTombstones()
+            assertEquals(listOf(entryId), marks.map { it.entryId })
+            assertEquals(NOW_EPOCH_SECONDS, marks.single().deletedAtEpochSeconds)
+        }
+
+    /// 标记写不进去时什么都不删。删了内容又没有标记，对端会把它复制回来。
+    @Test
+    fun `removing an entry keeps it when the tombstone cannot be written`() =
+        withTemporaryDirectory("workspace") { directory ->
+            val store = storeIn(directory)
+            val entryId = store.importContent("x".encodeToByteArray())!!
+            val state = store.save(WorkspaceState(entries = listOf(entry(entryId, bytes = 1L))))
+            // 把 `.tmp` 占成目录，原子改名就写不进去。
+            FileSystem.SYSTEM.createDirectories(directory.resolve("Workspace/tombstones.json.tmp"))
+
+            assertEquals(state, store.remove(state, entryId, NOW_EPOCH_SECONDS))
+            assertEquals(1, store.load().entries.size)
+            assertTrue(store.hasContent(entryId), "标记没写成，内容也要留着")
+        }
+
+    /// 标记单独存一个文件，跨重启读得回来。
+    @Test
+    fun `tombstones round trip through a reload`() =
+        withTemporaryDirectory("workspace") { directory ->
+            val store = storeIn(directory)
+            val entryId = digestOf("gone")
+            assertTrue(store.markDeleted(entryId, NOW_EPOCH_SECONDS))
+
+            assertEquals(entryId, storeIn(directory).loadTombstones().single().entryId)
+        }
+
+    /// 摘要不合法的标记丢掉：它挡不住任何东西，还会把文件撑大。
+    @Test
+    fun `load tombstones drops the malformed marks`() =
+        withTemporaryDirectory("workspace") { directory ->
+            val store = storeIn(directory)
+            val good = digestOf("good")
+            FileSystem.SYSTEM.createDirectories(directory.resolve("Workspace"))
+            FileSystem.SYSTEM.write(directory.resolve("Workspace/tombstones.json")) {
+                writeUtf8(
+                    """[{"entryId":"nope","deletedAtEpochSeconds":1},""" +
+                        """{"entryId":"$good","deletedAtEpochSeconds":2}]""",
+                )
+            }
+
+            assertEquals(listOf(good), store.loadTombstones().map { it.entryId })
+        }
+
+    /// 坏掉的标记文件当作没有标记，不抛异常。
+    @Test
+    fun `load tombstones ignores a corrupt file`() =
+        withTemporaryDirectory("workspace") { directory ->
+            val store = storeIn(directory)
+            FileSystem.SYSTEM.createDirectories(directory.resolve("Workspace"))
+            FileSystem.SYSTEM.write(directory.resolve("Workspace/tombstones.json")) { writeUtf8("{") }
+
+            assertEquals(emptyList(), store.loadTombstones())
+        }
+
+    /// 保留期过了的标记在清理时丢掉。
+    @Test
+    fun `sweep prunes tombstones past the retention window`() =
+        withTemporaryDirectory("workspace") { directory ->
+            val store = storeIn(directory)
+            val old = digestOf("old")
+            val fresh = digestOf("fresh")
+            store.saveTombstonesReporting(
+                listOf(
+                    WorkspaceTombstone(old, NOW_EPOCH_SECONDS - (WorkspaceLogic.TOMBSTONE_RETENTION_DAYS + 1) * SECONDS_PER_DAY),
+                    WorkspaceTombstone(fresh, NOW_EPOCH_SECONDS),
+                ),
+            )
+
+            store.sweep(WorkspacePolicy(), NOW_EPOCH_SECONDS)
+
+            assertEquals(listOf(fresh), store.loadTombstones().map { it.entryId })
+        }
+
+    /// 保留期内的标记清理不动：它还要继续拦人。
+    @Test
+    fun `sweep keeps the tombstones inside the retention window`() =
+        withTemporaryDirectory("workspace") { directory ->
+            val store = storeIn(directory)
+            val kept = digestOf("kept")
+            store.saveTombstonesReporting(listOf(WorkspaceTombstone(kept, NOW_EPOCH_SECONDS)))
+
+            store.sweep(WorkspacePolicy(), NOW_EPOCH_SECONDS)
+
+            assertEquals(listOf(kept), store.loadTombstones().map { it.entryId })
+        }
+
+    /// 清空工作区时标记一起删。留着会拦住用户重新放入同样的内容。
+    @Test
+    fun `clear drops the tombstones`() =
+        withTemporaryDirectory("workspace") { directory ->
+            val store = storeIn(directory)
+            val entryId = digestOf("gone")
+            store.markDeleted(entryId, NOW_EPOCH_SECONDS)
+            assertTrue(FileSystem.SYSTEM.exists(directory.resolve("Workspace/tombstones.json")))
+
+            store.clear()
+
+            assertEquals(emptyList(), store.loadTombstones())
+            assertFalse(FileSystem.SYSTEM.exists(directory.resolve("Workspace/tombstones.json")))
         }
 }

@@ -39,6 +39,10 @@ class WorkspaceTransferEngine(private val store: WorkspaceStore) {
         if (entry.expiresAtEpochSeconds > 0L && entry.expiresAtEpochSeconds <= nowEpochSeconds) {
             return WorkspaceBeginResult.rejected(WorkspaceErrorCode.ENTRY_EXPIRED)
         }
+        // 本机删过的条目不再收：删除是全局操作，对端晚一步的复制不该让它复活。
+        if (WorkspaceLogic.isTombstoned(entry.entryId, store.loadTombstones(), nowEpochSeconds)) {
+            return WorkspaceBeginResult.rejected(WorkspaceErrorCode.ENTRY_NOT_FOUND)
+        }
 
         val existing = state.entries.firstOrNull { it.entryId == entry.entryId }
         if (existing != null && store.hasContent(entry.entryId)) {
@@ -172,6 +176,27 @@ class WorkspaceTransferEngine(private val store: WorkspaceStore) {
         return true
     }
 
+    /**
+     * 收到一次 `workspace.delete`。
+     *
+     * 本机删掉索引与内容，并留下删除标记。删除标记拦住对端的重新复制，
+     * 所以它写不进去时这次删除算失败：条目还在，对端要重试。
+     *
+     * 条目本来就不在本机时也算成功——两端同时删除不报错（方案第 8 节）。
+     */
+    fun delete(entryId: String, nowEpochSeconds: Long): WorkspaceDeleteResult {
+        val id = normalizeEntryId(entryId)
+        if (!WorkspaceLogic.isValidEntryId(id)) {
+            return WorkspaceDeleteResult(false, WorkspaceErrorCode.ENTRY_NOT_FOUND)
+        }
+        store.remove(store.load(), id, nowEpochSeconds)
+        return if (store.loadTombstones().any { it.entryId == id }) {
+            WorkspaceDeleteResult(true, null)
+        } else {
+            WorkspaceDeleteResult(false, WorkspaceErrorCode.STORAGE_FULL)
+        }
+    }
+
     /** 已经收到的字节数。对方续传前先问这里。 */
     fun resumeOffset(taskId: String): Long = store.stagingSize(normalizeEntryId(taskId))
 
@@ -241,6 +266,9 @@ data class WorkspaceChunkResult(val received: Long, val errorCode: WorkspaceErro
 
 /** 一次 `transfer.commit` 的结果。 */
 data class WorkspaceCommitResult(val ok: Boolean, val errorCode: WorkspaceErrorCode?)
+
+/** 一次 `workspace.delete` 的结果。[ok] 为假时 [errorCode] 说明原因。 */
+data class WorkspaceDeleteResult(val ok: Boolean, val errorCode: WorkspaceErrorCode?)
 
 /** `workspace.stat` 的结果。 */
 data class WorkspaceStat(val totalBytes: Long, val maxTotalBytes: Long, val entryCount: Int)

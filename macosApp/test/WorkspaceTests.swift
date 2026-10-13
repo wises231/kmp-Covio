@@ -105,6 +105,32 @@ final class WorkspaceTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: content.path), "内容要一起删掉")
     }
 
+    /// 删除留下标记：标记挡住对端把这条重新复制回来。
+    func testRemoveLeavesATombstone() throws {
+        var now: Int64 = 1_000
+        let runtime = makeRuntime(now: { now })
+        runtime.intake(urls: [try makeFile(named: "note.txt", contents: "hello")])
+        let entryId = runtime.entries[0].entryId
+
+        runtime.remove(entryId)
+
+        let marks = makeClient().store.loadTombstones()
+        XCTAssertEqual(marks.map(\.entryId), [entryId])
+        XCTAssertEqual(marks.first?.deletedAtEpochSeconds, now)
+    }
+
+    /// 清空工作区时标记一起删。留着会拦住用户重新放入同样的内容。
+    func testClearAllDropsTheTombstones() throws {
+        let runtime = makeRuntime()
+        runtime.intake(urls: [try makeFile(named: "note.txt", contents: "hello")])
+        let entryId = runtime.entries[0].entryId
+        runtime.remove(entryId)
+
+        runtime.clearAll()
+
+        XCTAssertTrue(makeClient().store.loadTombstones().isEmpty)
+    }
+
     // MARK: - 过期
 
     /// 过期的条目在启动时就被清掉，内容也删掉。

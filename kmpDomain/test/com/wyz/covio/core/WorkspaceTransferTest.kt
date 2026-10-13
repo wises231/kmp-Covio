@@ -505,6 +505,103 @@ class WorkspaceTransferTest {
             assertFalse(engine.cancel(WorkspaceStore.digestOf("hello".encodeToByteArray())))
         }
 
+    // MARK: - 删除
+
+    /// 删除广播到达时删掉索引与内容，并留下标记。
+    @Test
+    fun `delete removes the content and leaves a tombstone`() =
+        withTemporaryDirectory("transfer") { directory ->
+            val store = storeIn(directory)
+            val engine = engineIn(directory)
+            val bytes = "hello".encodeToByteArray()
+            val id = store.importContent(bytes)!!
+            store.save(WorkspaceState(entries = listOf(entryFor(id, bytes.size.toLong()))))
+
+            val result = engine.delete(id, NOW_EPOCH_SECONDS)
+
+            assertTrue(result.ok)
+            assertNull(result.errorCode)
+            assertEquals(emptyList(), store.load().entries)
+            assertFalse(store.hasContent(id), "删除要连内容一起删")
+            assertEquals(listOf(id), store.loadTombstones().map { it.entryId })
+        }
+
+    /// 两端同时删除不报错：条目本来就不在本机也算成功，标记照写。
+    @Test
+    fun `delete is ok for an entry that is not here`() =
+        withTemporaryDirectory("transfer") { directory ->
+            val store = storeIn(directory)
+            val engine = engineIn(directory)
+            val id = WorkspaceStore.digestOf("gone".encodeToByteArray())
+
+            val result = engine.delete(id, NOW_EPOCH_SECONDS)
+
+            assertTrue(result.ok)
+            assertEquals(listOf(id), store.loadTombstones().map { it.entryId })
+        }
+
+    /// 摘要不合法就拒绝：拼不出路径的标识不能进标记文件。
+    @Test
+    fun `delete refuses a malformed entry id`() =
+        withTemporaryDirectory("transfer") { directory ->
+            val store = storeIn(directory)
+            val engine = engineIn(directory)
+
+            val result = engine.delete("../escape", NOW_EPOCH_SECONDS)
+
+            assertFalse(result.ok)
+            assertEquals(WorkspaceErrorCode.ENTRY_NOT_FOUND, result.errorCode)
+            assertEquals(emptyList(), store.loadTombstones())
+        }
+
+    /// 标记写不进去时这次删除算失败，条目留着：对端要重试。
+    @Test
+    fun `delete reports a failed tombstone write`() =
+        withTemporaryDirectory("transfer") { directory ->
+            val store = storeIn(directory)
+            val engine = engineIn(directory)
+            val bytes = "hello".encodeToByteArray()
+            val id = store.importContent(bytes)!!
+            store.save(WorkspaceState(entries = listOf(entryFor(id, bytes.size.toLong()))))
+            // 把 `.tmp` 占成目录，原子改名就写不进去。
+            FileSystem.SYSTEM.createDirectories(directory.resolve("Workspace/tombstones.json.tmp"))
+
+            val result = engine.delete(id, NOW_EPOCH_SECONDS)
+
+            assertFalse(result.ok)
+            assertEquals(WorkspaceErrorCode.STORAGE_FULL, result.errorCode)
+            assertEquals(1, store.load().entries.size)
+            assertTrue(store.hasContent(id), "标记没写成，内容也要留着")
+        }
+
+    /// 本机删过的条目不再收：对端晚一步的复制不该让它复活。
+    @Test
+    fun `begin refuses an entry deleted here`() =
+        withTemporaryDirectory("transfer") { directory ->
+            val engine = engineIn(directory)
+            val bytes = "hello".encodeToByteArray()
+            engine.delete(WorkspaceStore.digestOf(bytes), NOW_EPOCH_SECONDS)
+
+            val result = engine.begin(argsFor(bytes), nowEpochSeconds = NOW_EPOCH_SECONDS)
+
+            assertFalse(result.accepted)
+            assertEquals(WorkspaceErrorCode.ENTRY_NOT_FOUND, result.errorCode)
+        }
+
+    /// 保留期过了的标记不再拦人：用户重新放入同样的内容是允许的。
+    @Test
+    fun `begin accepts an entry whose tombstone has expired`() =
+        withTemporaryDirectory("transfer") { directory ->
+            val store = storeIn(directory)
+            val engine = engineIn(directory)
+            val bytes = "hello".encodeToByteArray()
+            val id = WorkspaceStore.digestOf(bytes)
+            val expired = NOW_EPOCH_SECONDS - (WorkspaceLogic.TOMBSTONE_RETENTION_DAYS + 1) * SECONDS_PER_DAY
+            store.saveTombstonesReporting(listOf(WorkspaceTombstone(id, expired)))
+
+            assertTrue(engine.begin(argsFor(bytes), nowEpochSeconds = NOW_EPOCH_SECONDS).accepted)
+        }
+
     // MARK: - 索引查询
 
     @Test
@@ -598,6 +695,12 @@ class WorkspaceTransferTest {
         }
 
     // MARK: - 工具
+
+    private companion object {
+        /** 测试里的「现在」。删除标记按天保留，固定一个值就够了。 */
+        const val NOW_EPOCH_SECONDS = 1_700_000_000L
+        const val SECONDS_PER_DAY = 24L * 60 * 60
+    }
 
     private fun entryFor(
         entryId: String,

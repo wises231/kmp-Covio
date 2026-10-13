@@ -41,7 +41,7 @@
 ```
 
 `incoming` 有三种形态，实现见 `WorkspaceStore` 的暂存区原语。
-`tombstones.json` 属于复制阶段，当前不写。
+`tombstones.json` 属于复制阶段，当前只写本机的删除标记，广播还没接上（第 10.3 节）。
 
 macOS 上 `<应用数据根>` 是 `~/Library/Application Support`。
 路径与现有晾衣线的 `Covio/Screenshots/shelf.json` 同级。
@@ -387,7 +387,7 @@ iOS 上分享扩展只执行第 1 步与第 4 步的前半段。
 
 ### 10.3 阶段 3：复制
 
-状态：第 1 至 3 项的逻辑层已在 `feature/swiftui-macos` 分支落地。其余三项未开始。
+状态：第 1 至 3 项与第 5 项的本机部分已在 `feature/swiftui-macos` 分支落地。第 4 项与第 6 项未开始。
 
 1. 实现 `workspace.put` 与 `workspace.list`。
 2. 实现分块传输与校验。
@@ -405,6 +405,9 @@ iOS 上分享扩展只执行第 1 步与第 4 步的前半段。
 | 1 | `kmpDomain/src/com/wyz/covio/core/WorkspaceStore.kt` | 暂存区原语。路径是 `incoming/<摘要>.part`。 |
 | 2 | 同上 | 每块核对偏移。提交时核对摘要与字节数。 |
 | 3 | 同上 | `begin` 返回已经收到的字节数。偏移不符时 `chunk` 回已收长度。 |
+| 5 | `kmpDomain/src/com/wyz/covio/core/WorkspaceTransfer.kt` | `delete` 处理收到的 `workspace.delete`：删索引与内容，留标记。 |
+| 5 | `kmpDomain/src/com/wyz/covio/core/WorkspaceStore.kt` | `markDeleted`、`loadTombstones`、`sweep` 清过期标记。存放位置是 `tombstones.json`。 |
+| 5 | `macosApp/src/Workspace/WorkspaceRuntime.swift` | 界面上的删除走同一条路径，本机删除也留标记。 |
 
 偏差：
 
@@ -416,12 +419,19 @@ iOS 上分享扩展只执行第 1 步与第 4 步的前半段。
 - 收到的字节超过条目声明的字节数时立刻回 `checksum_mismatch`，不等到提交。
 - 零字节条目在 `begin` 时先建空暂存文件，提交时才有东西可校验、可改名。
 - 索引写盘失败时 `WorkspacePutResult.persisted` 为假，界面报错而不报成功。
+- 删除标记写在索引与内容之前。标记写不进去时这次删除算失败，条目留着等重试（方案第 3.4 节要求先删本机再广播，但标记是拦住对端复活的那一道，顺序反了会丢内容）。
+- 本机删过的摘要回 `entry_not_found`，不再接收对端晚一步的 `workspace.put`。
+- 摘要不合法的删除请求回 `entry_not_found`，不写标记：拼不出路径的标识不能进标记文件。
+- 标记单独存一个文件，不并进 `index.json`。索引每次放入都要写，标记很少变。
+- 本机重新放入一份删过的内容时，标记不清。第 3.4 节写「删除是全局操作」，所以删过的那一端在保留期内仍然不收这一条。用户要让它回到那一端，只能等保留期过去。
 
 未做：
 
 - 传输层。第 2.1 节要求复用跨设备主题的会话通道。那个通道还没实现。
 - 进程中途退出时，`fetching` 状态的条目要等下一次 `begin` 或 `cancel` 才收敛。
-- 按需取回、删除广播与删除标记、HTTP 后台端点。
+- 删除广播本身。`delete` 已经能处理收到的请求，还没有代码把本机的删除发出去。
+- `sweep` 淘汰与过期的条目不写标记（第 3.5 节第 6 项要求广播）。淘汰是本机的空间策略，标记要等广播接上再写。
+- 按需取回、HTTP 后台端点。
 - 界面。macOS 上还没有对端，所以没有可接的入口。
 
 ### 10.4 阶段 4：加固
@@ -435,7 +445,7 @@ iOS 上分享扩展只执行第 1 步与第 4 步的前半段。
 
 审计范围是阶段 1 至 3 的已落地部分。
 三条视角：安全与隐私、发布就绪、文档一致性。
-下面的结论都在本机复现过。修复已在 `feature/swiftui-macos` 分支落地，尚未提交。
+下面的结论都在本机复现过。修复已在 `feature/swiftui-macos` 分支落地，提交是 `97cefd5`。
 
 已修的缺陷：
 
@@ -469,7 +479,7 @@ iOS 上分享扩展只执行第 1 步与第 4 步的前半段。
 - 工作区目录没有设 `0700`（第 5 节第 4 项）。权限现在由 umask 决定，阶段 4 加固时补。
 - 目前没有任何日志。第 5 节第 7 项因此成立，但没有可核对的内容。
 - 并发传输数没有策略字段（第 4 节第 4 项），等传输层落地时再定。
-- 阶段 3 的代码没有生产调用方，只被测试覆盖。上面三条缺陷因此都还没在真机上出现过。
+- 阶段 3 的传输引擎没有生产调用方，只被测试覆盖。上面三条缺陷因此都还没在真机上出现过。
 
 发布阻塞项都不在本次改动范围内，见 `docs/covio-macos-swiftui-migration-plan.md` 第 10 节与第 13 节。
 

@@ -88,11 +88,11 @@ final class WorkspaceStoreClient: @unchecked Sendable {
         return store.setPinned(state: state, entryId: entryId, pinned: pinned)
     }
 
-    /// 删掉一条条目及其内容。
-    func remove(state: WorkspaceState, entryId: String) -> WorkspaceState {
+    /// 删掉一条条目及其内容，并留下删除标记。
+    func remove(state: WorkspaceState, entryId: String, nowEpochSeconds: Int64) -> WorkspaceState {
         lock.lock()
         defer { lock.unlock() }
-        return store.remove(state: state, entryId: entryId)
+        return store.remove(state: state, entryId: entryId, nowEpochSeconds: nowEpochSeconds)
     }
 
     /// 执行一次过期与淘汰。
