@@ -8,6 +8,9 @@ milestone: "P1 · 挂帘内核"
 blocked-by: [E01]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 5 节为准。
+> 本文的接口契约见 `E10-S02`（`ADR-005`）。
+
 ## 背景
 
 挂帘外壳已经存在。`ShellPanel` 的层级、Space 行为和 Escape 处理都有实测结论。
@@ -55,3 +58,5 @@ blocked-by: [E01]
 `ShellPanel` 的初始化顺序有实测约束。
 `isFloatingPanel` 必须在 `level` 之前设置，否则层级被重置为 3。
 改动时不要调整这个顺序。
+
+**待裁决**：`CurtainController` 改名的范围只含类型，还是同时含文件与目录。归 `E10-S02`（`ADR-005`）。

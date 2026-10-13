@@ -8,6 +8,9 @@ milestone: "P2 · 工作区模型"
 blocked-by: [E04-S01]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 6 节为准。
+> 本文的接口契约见 `E10-S03`（`ADR-006`）。
+
 ## 背景
 
 `macosApp/src/Hub/HubNavRail.swift:65` 用 `ForEach(HubTab.allCases)` 渲染。
@@ -16,11 +19,11 @@ blocked-by: [E04-S01]
 
 ## 目标
 
-导航栏渲染工作区实例列表，并支持拖动排序。
+导航栏渲染 `PaneInstance` 列表，并支持拖动排序。
 
 ## 实施要点
 
-1. 列表来源改为工作区实例。
+1. 列表来源改为 `PaneInstance`。
 2. 每一项显示图标与标题。标题过长时截断。
 3. 选中态沿用 `matchedGeometryEffect`，标识改为实例 id。
 4. 底部组保持不变。

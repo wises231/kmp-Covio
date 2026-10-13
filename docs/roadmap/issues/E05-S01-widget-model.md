@@ -8,6 +8,9 @@ milestone: "P3 · Widgets 首页"
 blocked-by: [E03-S01]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 7 节为准。
+> 本文的接口契约见 `E10-S04`（`ADR-007`）。
+
 ## 背景
 
 组件需要一个可序列化的实例模型。模型要能嵌进 `PaneInstance`。
@@ -38,3 +41,5 @@ blocked-by: [E03-S01]
 ## 依赖
 
 `E03-S01`。
+
+**待裁决**：组件实例的标识符用 `WidgetInstance`，还是用骨架第 7 节的 `Widget`。归 `E10-S04`（`ADR-007`）。

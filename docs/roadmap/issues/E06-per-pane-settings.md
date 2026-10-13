@@ -8,13 +8,16 @@ milestone: "P3 · Widgets 首页"
 blocked-by: [E04]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 6 节为准。
+> 本文的接口契约见 `E10-S03`（`ADR-006`）。
+
 ## 背景
 
 需求要求每个工作区都支持设置。
 现有设置是固定的六节目录。设置行集中在 `SettingsRows.swift`，
 搜索元数据在 `SettingsCatalog.entries`（`SettingsCatalog.swift:69`）。
 
-工作区是数据，所以设置也要是数据。工作区类型声明自己的设置项。
+工作区是数据，所以设置也要是数据。工作区类型（`PaneKind`）声明自己的设置项。
 
 ## 目标
 
@@ -45,7 +48,7 @@ blocked-by: [E04]
 
 1. 每个工作区类型都能声明设置项。
 2. 设置项用现有控件渲染，不新造控件。
-3. 设置变更立即生效并持久化。
+3. 设置变更立即生效，并持久化到 `workbench.json`。
 4. 设置项能被全局搜索找到。
 
 ## 依赖

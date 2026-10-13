@@ -21,7 +21,7 @@
 
 | 主题 | 状态 | 平台范围 | 阶段 | 说明 |
 | --- | --- | --- | --- | --- |
-| [挂帘式工作台](curtain-workbench.md) | 待评审 | macOS | P0–P5 | 把 Hub 改造成可编辑的挂帘工作台。10 个 epic。 |
+| [挂帘式工作台](curtain-workbench.md) | 待评审 | macOS | P0–P6 | 把 Hub 改造成可编辑的挂帘工作台。11 个 epic。 |
 
 ## 目录结构
 

@@ -8,9 +8,12 @@ milestone: "P1 · 挂帘内核"
 blocked-by: []
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 5 节为准。
+> 本文的接口契约见 `E10-S02`（`ADR-005`）。
+
 ## 背景
 
-`macosApp/src/NotchShell/HubStateMachine.swift:101` 的迁移表当前是
+`macosApp/src/NotchShell/HubStateMachine.swift:108` 的迁移表当前是
 `HIDDEN → HOVER → OPEN → ACTIVE → EXIT → HIDDEN`，另有 `ERROR → OPEN`。
 
 设计合同 `states.menuBarAndNotchHub.hubStates` 定义六个状态：
@@ -43,3 +46,5 @@ blocked-by: []
 ## 依赖
 
 无。
+
+**待裁决**：`PREVIEW` 与 `EDITING` 的进入与退出条件，以及完整八态迁移表。归 `E10-S02`（`ADR-005`）。

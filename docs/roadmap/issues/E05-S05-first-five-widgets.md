@@ -8,6 +8,9 @@ milestone: "P3 · Widgets 首页"
 blocked-by: [E05-S03]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 7 节为准。
+> 本文的接口契约见 `E10-S04`（`ADR-007`）。
+
 ## 背景
 
 首页需要一组初始组件。组件只做摘要与快捷动作。
@@ -51,3 +54,5 @@ blocked-by: [E05-S03]
 ## 依赖
 
 `E05-S03`。
+
+**待裁决**：`WidgetRegistry` 是否保留，以及它与 `WidgetCatalog` 如何分工。归 `E10-S04`（`ADR-007`）。

@@ -8,9 +8,12 @@ milestone: "P2 · 工作区模型"
 blocked-by: [E00-S03]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 6 节为准。
+> 本文的接口契约见 `E10-S03`（`ADR-006`）。
+
 ## 背景
 
-工作台需要一份可序列化的配置。
+工作台需要一份可序列化的配置，存于 `workbench.json`。
 现有模型的写法在 `kmpDomain/src/com/wyz/covio/core/Models.kt`。
 该文件的既有约定有两条：每个可序列化类型都提供 `companion { fun defaults() }`，
 因为 Kotlin 的默认参数不导出到 Swift；枚举在 Swift 侧导出为小写成员名。
@@ -28,6 +31,7 @@ blocked-by: [E00-S03]
 5. 为每个类型提供 `defaults()`。
 6. 给 `PaneInstance` 预留组件布局字段，或明确该字段由 `E05-S01` 追加。
 7. 保持 `Models.kt` 的注释风格：用中文说明字段用途。
+8. 若需要新端口，加进 `kmpDomain/src/com/wyz/covio/core/Ports.kt`，不要另建文件。
 
 ## 验收标准
 
@@ -40,3 +44,5 @@ blocked-by: [E00-S03]
 ## 依赖
 
 `E00-S03`。
+
+**待裁决**：`WorkbenchConfig` 的字段清单，以及它与持久化层字段清单的分工。归 `E10-S05`（`ADR-008`）。

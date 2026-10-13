@@ -8,6 +8,9 @@ milestone: "P3 · Widgets 首页"
 blocked-by: []
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 6 节为准。
+> 本文的接口契约见 `E10-S03`（`ADR-006`）。
+
 ## 背景
 
 现有设置行的渲染控件已齐备，都在 `macosApp/src/Hub/HubComponents.swift`：
@@ -25,7 +28,7 @@ blocked-by: []
 1. 新增 `PaneSettingDescriptor`，描述一行设置。字段至少包含
    `key`、`titleKey`、`summaryKey`、`control` 和默认值。
 2. `control` 覆盖现有控件类型：开关、数字输入、分段选择、按钮。
-3. 新增 `PaneSettingsSchema`，由每个工作区类型提供。
+3. 新增 `PaneSettingsSchema`，由每个工作区类型（`PaneKind`）提供。
 4. 渲染器把声明映射到 `MacSettingRow` 加对应控件。
 5. 值存进 `PaneInstance.settings` 的键值结构。
 6. 文案从合同文案键取值，不写死字符串。
@@ -34,7 +37,7 @@ blocked-by: []
 ## 验收标准
 
 1. 四种控件类型都能渲染并写回值。
-2. 值变更后立即持久化。
+2. 值变更后立即持久化到 `workbench.json`。
 3. 未知控件类型渲染为只读占位。
 4. 文案全部来自合同文案键。
 5. 渲染器有单元测试。

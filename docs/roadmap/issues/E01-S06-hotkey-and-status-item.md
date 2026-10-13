@@ -8,6 +8,9 @@ milestone: "P1 · 挂帘内核"
 blocked-by: [E01-S01]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 4 节为准。
+> 本文的接口契约见 `E10-S01`（`ADR-004`）。
+
 ## 背景
 
 现有入口有三处：`GlobalHotKey` 的 `Control+Option+T`、
@@ -20,10 +23,10 @@ blocked-by: [E01-S01]
 
 ## 实施要点
 
-1. 快捷键触发源复用现有 `GlobalHotKey` 的 Carbon 实现。
+1. `HotKeyTrigger` 复用现有 `GlobalHotKey` 的 Carbon 实现。
 2. 快捷键字符串沿用现有格式，例如 `shift+cmd+V`。解析逻辑已在 `GlobalHotKey.Spec`。
 3. 默认值保持 `Control+Option+T`，不改变现有用户习惯。
-4. 菜单栏图标触发源调用同一注册表。
+4. `StatusItemTrigger` 调用同一注册表。
 5. 菜单栏菜单增加“打开工作台”项。
 6. 快捷键配置写进工作台配置，不写进 `config.json`。
 

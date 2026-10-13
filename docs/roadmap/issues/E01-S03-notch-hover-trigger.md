@@ -8,6 +8,9 @@ milestone: "P1 · 挂帘内核"
 blocked-by: [E00-S05, E01-S01]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 4 节为准。
+> 本文的接口契约见 `E10-S01`（`ADR-004`）。
+
 ## 背景
 
 现有热区已经覆盖刘海区域。缺少三项能力。
@@ -24,7 +27,7 @@ blocked-by: [E00-S05, E01-S01]
 
 ## 实施要点
 
-1. 把 `PointerTrackingHost` 与 `ScreenGeometry.hotZoneRect` 的逻辑包成一个触发源。
+1. 把 `PointerTrackingHost` 与 `ScreenGeometry.hotZoneRect` 的逻辑包成 `NotchHoverTrigger`。
 2. 指针进入热区后发出预览事件。停留超过阈值后发出打开事件。
 3. 停留阈值放进 `kmpDomain`，与 `ShelfPresencePolicy` 的常量风格一致。
 4. 指针离开热区后取消预览。

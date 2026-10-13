@@ -8,6 +8,9 @@ milestone: "P4 · 模块工作区化"
 blocked-by: [E06-S01]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 6 节为准。
+> 本文的接口契约见 `E10-S03`（`ADR-006`）。
+
 ## 背景
 
 剪切板页面已存在：`macosApp/src/Hub/ClipboardTabView.swift`。
@@ -21,12 +24,14 @@ blocked-by: [E06-S01]
 
 ## 实施要点
 
-1. 页面改为由 `PaneRegistry` 提供。
+1. 本工作区是 `PaneKind` 的一个值；页面改为由 `PaneRegistry` 提供。
 2. 保留现有全部交互：单选复制、双击粘贴、置顶、删除、清空、暂停。
 3. 胶囊动作保持不变。
 4. 新增设置项：保留条数、保留天数、容量上限、暂停状态、两个快捷键。
-5. 设置项写进工作区设置，读取时覆盖 `ClipPolicy` 的默认值。
+5. 设置项写进 `PaneInstance.settings`，读取时覆盖 `ClipPolicy` 的默认值。
 6. 首页的剪切板组件点击后切换到本工作区。
+
+Kotlin 侧若需要新的端口，加进 `kmpDomain/src/com/wyz/covio/core/Ports.kt`，不要另建文件。
 
 ## 验收标准
 

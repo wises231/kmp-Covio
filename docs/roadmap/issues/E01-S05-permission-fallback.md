@@ -8,6 +8,9 @@ milestone: "P1 · 挂帘内核"
 blocked-by: [E01-S01]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 4 节为准。
+> 本文的接口契约见 `E10-S01`（`ADR-004`）。
+
 ## 背景
 
 手势与全局事件需要输入监控或辅助功能权限。
@@ -18,7 +21,7 @@ blocked-by: [E01-S01]
 
 ## 目标
 
-权限被拒时给出明确提示和降级路径。应用的核心功能不依赖任何权限。
+权限被拒时给出明确提示和降级路径。降级路径由 `HotKeyTrigger` 与 `NotchHoverTrigger` 承担。应用的核心功能不依赖任何权限。
 
 ## 实施要点
 

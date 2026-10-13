@@ -8,9 +8,12 @@ milestone: "P3 · Widgets 首页"
 blocked-by: [E05-S01]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 7 节为准。
+> 本文的接口契约见 `E10-S04`（`ADR-007`）。
+
 ## 背景
 
-组件要吸附到网格，不能任意摆放。
+`Widget` 要吸附到网格，不能任意摆放。
 吸附、占位冲突和自动补位是纯逻辑。纯逻辑放在 `kmpDomain` 才能测试。
 现有同类做法的样例是 `WorkspaceLogic`（`WorkspaceStore.kt:611`）与
 `ClipboardLogic`（`ClipboardStore.kt:84`）。

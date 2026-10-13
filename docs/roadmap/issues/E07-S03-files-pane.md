@@ -8,6 +8,9 @@ milestone: "P4 · 模块工作区化"
 blocked-by: [E06-S01]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 6 节为准。
+> 本文的接口契约见 `E10-S03`（`ADR-006`）。
+
 ## 背景
 
 文件页面已存在：`macosApp/src/Hub/FilesTabView.swift`。
@@ -23,13 +26,15 @@ Swift 侧的运行时在 `macosApp/src/Workspace/`。
 
 ## 实施要点
 
-1. 页面改为由 `PaneRegistry` 提供。
+1. 本工作区是 `PaneKind` 的一个值；页面改为由 `PaneRegistry` 提供。
 2. 保留现有交互：拖入、打开、置顶、删除、过期提示。
 3. 新增设置项：保留天数、容量上限、按需取回阈值、单文件上限。
-4. 设置项写进工作区设置，读取时覆盖 `WorkspacePolicy` 的默认值。
+4. 设置项写进 `PaneInstance.settings`，读取时覆盖 `WorkspacePolicy` 的默认值。
 5. 配额与过期策略的纯逻辑在 `kmpDomain`，不在 Swift 里重写。
 6. 首页的文件组件点击后切换到本工作区。
 7. 界面不显示文件的完整路径。产品总稿 6.5 节约束保持。
+
+Kotlin 侧若需要新的端口，加进 `kmpDomain/src/com/wyz/covio/core/Ports.kt`，不要另建文件。
 
 ## 验收标准
 

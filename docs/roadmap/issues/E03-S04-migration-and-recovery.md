@@ -8,6 +8,9 @@ milestone: "P2 · 工作区模型"
 blocked-by: [E03-S01, E03-S03]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 6 节为准。
+> 本文的接口契约见 `E10-S03`（`ADR-006`）。
+
 ## 背景
 
 工作台配置是新增数据。已有用户的 0.5.0 配置里没有这份数据。
