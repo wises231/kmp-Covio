@@ -3,7 +3,19 @@ name: CI
 on:
   push:
     branches: [main, "feature/**"]
+    # 构建与测试不读文档目录。全仓库只有注释提到 docs/。
+    # 因此纯文档改动跳过全部作业。同时改代码的 PR 照旧全跑。
+    paths-ignore:
+      - "doc/**"
+      - "docs/**"
+      - "research/**"
+      - "*.md"
   pull_request:
+    paths-ignore:
+      - "doc/**"
+      - "docs/**"
+      - "research/**"
+      - "*.md"
 
 jobs:
   kotlin:
