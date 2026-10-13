@@ -47,7 +47,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         shell.start()
         statusItemController = StatusItemController(shell: shell, runtime: runtime)
 
-        // §4.4：Control+Option+T 打开或收起 Hub。
+        // Control+Option+T 打开或收起 Hub。
         let hotKey = GlobalHotKey { [weak self] in
             self?.shell.toggle()
         }

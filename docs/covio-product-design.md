@@ -4,7 +4,6 @@
 
 - 本文档解释 Covio 设计合同。
 - `docs/covio-design-contract.json` 是机器可读设计权威。
-- `docs/covio-product-master.md` 管产品行为。
 - `Covio — Product Design · macOS 27` 是合同的视觉投影。
 - Figma 文件 key 是 `Bktv2SGgjcHuUZ7KJXEkPx`。
 - 源库是 `macOS 27 (Community)`。源库 key 是 `Sh6AKZJPJXTf3GxM0mvBjj`。
@@ -34,7 +33,6 @@
 
 | 层级 | 文件 | 职责 |
 | --- | --- | --- |
-| 产品行为 | `docs/covio-product-master.md` | 产品行为、范围和优先级 |
 | 设计合同 | `docs/covio-design-contract.json` | 机器可读设计权威 |
 | 合同解释 | `docs/covio-product-design.md` | 解释设计合同 |
 | 视觉投影 | `Covio — Product Design · macOS 27` | 合同的可视化表现 |
@@ -311,7 +309,7 @@ Compose 保留给未来的 Windows 与 Android 宿主。
 - `platformMapping` 的 `swiftRuntimeTarget` 与对应组件的 `swiftMapping.target` 一致。
 - 状态机到 Swift 类型的映射在 `states.swiftRuntimeMapping`。
 - `platformMapping.status` 的三个取值：`native-source-mapped` 表示只有原生源码落点，`swift-source-mapped` 表示只有 Swift 落点，`dual-source-mapped` 表示两边都有。
-- 动效时长用 `token/motion/*`。单位是毫秒，曲线描述来自 `covio-product-master.md` 第 6.4 节。
+- 动效时长用 `token/motion/*`。单位是毫秒。
 - 界面用的文案由 `scripts/generate-contract-constants.py` 从合同 `copy` 段生成到 Swift 常量。手抄会漂移。
 
 **警告：** JSON Schema 的 `required` 是全局的，写不出「只在 macOS 下 `swiftMapping` 必填」。

@@ -99,8 +99,8 @@ enum ShelfNative {
 
     /// 一张截图飞进工具栏，或者没拖成时飞回原处。
     ///
-    /// 对应 `CovioDrag.m` 的 `CVStartFlight`。时长 0.65 秒，与产品文档第 6.4 节
-    /// 的「截图捕获 650 毫秒」一致。缓动是 `1 - (1 - t)^3`。
+    /// 对应 `CovioDrag.m` 的 `CVStartFlight`。时长 0.65 秒，与
+    /// 「截图捕获 650 毫秒」一致。缓动是 `1 - (1 - t)^3`。
     ///
     /// - Parameters:
     ///   - fileURL: 要飞的图片。

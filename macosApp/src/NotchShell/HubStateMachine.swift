@@ -73,7 +73,6 @@ enum HubOutputState: String, CaseIterable, Sendable {
 /// 驱动 `HubState` 的事件。
 ///
 /// 事件名不是合同词汇。合同只定义了状态与状态之间的路径，没有定义事件。
-/// 这里的事件逐条对应 `docs/covio-product-master.md` 第 4.4 节的行为列表。
 enum HubEvent: String, CaseIterable, Sendable {
     /// 指针进入顶部热区。
     case pointerEnteredHotZone
@@ -103,8 +102,7 @@ struct HubStateMachine: Sendable {
 
     /// 状态迁移表。
     ///
-    /// 合同 `interactionPath` 里的 6 条边都在表内。其余边是这条路径的逆操作，
-    /// 产品行为在 §4.4 里有对应描述。
+    /// 合同 `interactionPath` 里的 6 条边都在表内。其余边是这条路径的逆操作。
     private static let transitions: [HubState: [HubEvent: HubState]] = [
         .hidden: [
             .pointerEnteredHotZone: .hover,

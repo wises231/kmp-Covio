@@ -8,7 +8,6 @@ It does not use the Tendedero name, icon, or documentation images.
 
 ## Product design
 
-- [Product design master](docs/covio-product-master.md) defines product behavior and priorities.
 - [Design contract](docs/covio-design-contract.json) is the machine-readable design authority.
 - [Design contract schema](docs/covio-design-contract.schema.json) validates the contract structure.
 - [Design contract guide](docs/covio-product-design.md) explains the contract and Figma projection.

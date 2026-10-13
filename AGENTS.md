@@ -53,7 +53,6 @@ Covio 是 macOS 菜单栏应用。界面是 SwiftUI 宿主，放在 `macosApp/`�
 
 | 知识 | 位置 |
 | --- | --- |
-| 产品行为 | `docs/covio-product-master.md` |
 | 设计合同 | `docs/covio-design-contract.json` |
 | 架构决策 | `doc/adr/` |
 | 目标架构 | `docs/design/` |
