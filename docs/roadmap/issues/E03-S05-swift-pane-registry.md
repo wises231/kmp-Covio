@@ -2,6 +2,7 @@
 id: E03-S05
 title: "Swift 侧 PaneRegistry 与 WorkbenchStoreClient"
 labels: [enhancement, phase-2-workspace-model, area/pane, area/swift]
+type: Task
 parent: E03
 milestone: "P2 · 工作区模型"
 blocked-by: [E03-S03]

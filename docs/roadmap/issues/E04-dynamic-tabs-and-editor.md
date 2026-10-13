@@ -2,6 +2,7 @@
 id: E04
 title: "动态页签与工作区编辑器"
 labels: [epic, phase-2-workspace-model, area/pane, area/swift]
+type: Goal
 parent: null
 milestone: "P2 · 工作区模型"
 blocked-by: [E03]

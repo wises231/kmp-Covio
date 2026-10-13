@@ -2,6 +2,7 @@
 id: E09-S02
 title: "性能与资源预算"
 labels: [enhancement, phase-5-quality, area/perf]
+type: Optimization
 parent: E09
 milestone: "P5 · 质量与交付"
 blocked-by: [E05]

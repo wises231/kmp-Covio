@@ -2,6 +2,7 @@
 id: E05
 title: "Widgets 首页与网格引擎"
 labels: [epic, phase-3-widgets, area/widget]
+type: Goal
 parent: null
 milestone: "P3 · Widgets 首页"
 blocked-by: [E04]

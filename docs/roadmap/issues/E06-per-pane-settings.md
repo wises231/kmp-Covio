@@ -2,6 +2,7 @@
 id: E06
 title: "每工作区设置面"
 labels: [epic, phase-3-widgets, area/pane, area/swift]
+type: Goal
 parent: null
 milestone: "P3 · Widgets 首页"
 blocked-by: [E04]

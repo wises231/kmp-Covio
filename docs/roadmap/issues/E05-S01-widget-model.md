@@ -2,6 +2,7 @@
 id: E05-S01
 title: "Widget 实例模型与尺寸档"
 labels: [enhancement, phase-3-widgets, area/widget, area/kmp]
+type: Task
 parent: E05
 milestone: "P3 · Widgets 首页"
 blocked-by: [E03-S01]

@@ -2,6 +2,7 @@
 id: E02
 title: "挂帘外壳：层级、动效与多屏"
 labels: [epic, phase-1-curtain-core, area/shell]
+type: Goal
 parent: null
 milestone: "P1 · 挂帘内核"
 blocked-by: [E01]

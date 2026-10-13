@@ -2,6 +2,7 @@
 id: E02-S02
 title: "展开与收起动效对齐合同"
 labels: [enhancement, phase-1-curtain-core, area/shell, area/contract]
+type: Task
 parent: E02
 milestone: "P1 · 挂帘内核"
 blocked-by: []

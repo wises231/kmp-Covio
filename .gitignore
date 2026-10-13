@@ -9,3 +9,6 @@ dist/
 xcuserdata/
 *.xcuserstate
 *.xcscmblueprint
+
+# Claude Code 个人设置。团队共享的 hook 在 .claude/settings.json。
+.claude/settings.local.json

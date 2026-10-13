@@ -1,0 +1,59 @@
+name: Goal
+description: 跨多个 sub-issue 的目标。要拆成多个工作项才能达成。
+title: "[Goal] "
+labels: ["epic"]
+type: Goal
+body:
+  - type: markdown
+    attributes:
+      value: |
+        目标是跨多个会话才能达成的工作包。
+        目标要能拆成 sub-issue。目标要有可判定的退出条件。
+  - type: textarea
+    id: background
+    attributes:
+      label: 背景
+      description: 为什么需要这个目标。现状是什么。
+    validations:
+      required: true
+  - type: textarea
+    id: aim
+    attributes:
+      label: 目标
+      description: 达成后世界是什么样。逐条写。每条一句话。
+    validations:
+      required: true
+  - type: textarea
+    id: exit
+    attributes:
+      label: 退出条件
+      description: 逐条可判定。全部满足才能关闭这个 goal。
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: children
+    attributes:
+      label: 子项
+      description: 计划拆出的 sub-issue。可以先写标题，建好后回填编号。
+      placeholder: |
+        - [ ] ...
+    validations:
+      required: false
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: 范围外
+      description: 明确不做的事。防止范围蔓延。
+    validations:
+      required: false
+  - type: input
+    id: upstream
+    attributes:
+      label: 上游文档
+      description: 相关的产品设计、路线图或研究文档路径。
+      placeholder: docs/roadmap/curtain-workbench.md
+    validations:
+      required: false

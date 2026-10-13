@@ -2,6 +2,7 @@
 id: E04-S03
 title: "工作区编辑器：添加、删除、改名、排序"
 labels: [enhancement, phase-2-workspace-model, area/pane, area/swift]
+type: Task
 parent: E04
 milestone: "P2 · 工作区模型"
 blocked-by: [E04-S02]

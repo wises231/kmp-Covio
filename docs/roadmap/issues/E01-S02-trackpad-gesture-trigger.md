@@ -2,6 +2,7 @@
 id: E01-S02
 title: "触控板四指下滑触发"
 labels: [enhancement, phase-1-curtain-core, area/trigger, area/swift]
+type: Task
 parent: E01
 milestone: "P1 · 挂帘内核"
 blocked-by: [E00-S01, E01-S01]

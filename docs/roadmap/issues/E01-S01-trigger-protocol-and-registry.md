@@ -2,6 +2,7 @@
 id: E01-S01
 title: "定义 CurtainTrigger 协议与 TriggerRegistry"
 labels: [enhancement, phase-1-curtain-core, area/trigger, area/swift]
+type: Task
 parent: E01
 milestone: "P1 · 挂帘内核"
 blocked-by: [E00-S04]

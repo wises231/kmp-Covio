@@ -2,6 +2,7 @@
 id: E07
 title: "现有模块工作区化"
 labels: [epic, phase-4-module-panes, area/pane, area/swift]
+type: Goal
 parent: null
 milestone: "P4 · 模块工作区化"
 blocked-by: [E04]

@@ -2,6 +2,7 @@
 id: E09-S05
 title: "文档、发布说明与验收清单"
 labels: [documentation, phase-5-quality, area/docs]
+type: Task
 parent: E09
 milestone: "P5 · 质量与交付"
 blocked-by: [E08-S04]

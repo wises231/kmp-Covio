@@ -2,6 +2,7 @@
 id: E04-S04
 title: "改写页签顺序断言与合同测试"
 labels: [enhancement, phase-2-workspace-model, area/test, area/contract]
+type: Task
 parent: E04
 milestone: "P2 · 工作区模型"
 blocked-by: []

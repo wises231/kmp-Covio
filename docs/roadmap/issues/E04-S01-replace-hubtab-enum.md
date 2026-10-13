@@ -2,6 +2,7 @@
 id: E04-S01
 title: "用工作区实例替换 HubTab 枚举"
 labels: [enhancement, phase-2-workspace-model, area/pane, area/swift]
+type: Task
 parent: E04
 milestone: "P2 · 工作区模型"
 blocked-by: [E03-S05, E04-S04]

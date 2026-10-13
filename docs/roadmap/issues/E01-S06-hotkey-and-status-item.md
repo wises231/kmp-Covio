@@ -2,6 +2,7 @@
 id: E01-S06
 title: "快捷键与菜单栏入口收口"
 labels: [enhancement, phase-1-curtain-core, area/trigger, area/swift]
+type: Task
 parent: E01
 milestone: "P1 · 挂帘内核"
 blocked-by: [E01-S01]

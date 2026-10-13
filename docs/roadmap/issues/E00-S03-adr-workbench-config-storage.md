@@ -2,6 +2,7 @@
 id: E00-S03
 title: "ADR-002：工作台配置的存储位置与版本策略"
 labels: [documentation, phase-0-research, area/pane, area/kmp]
+type: Design
 parent: E00
 milestone: "P0 · 调研与决策"
 blocked-by: []

@@ -2,6 +2,7 @@
 id: E06-S01
 title: "工作区设置 schema 与声明式渲染"
 labels: [enhancement, phase-3-widgets, area/pane, area/swift]
+type: Task
 parent: E06
 milestone: "P3 · Widgets 首页"
 blocked-by: []

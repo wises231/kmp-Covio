@@ -2,6 +2,7 @@
 id: E05-S06
 title: "空状态与首次启动默认布局"
 labels: [enhancement, phase-3-widgets, area/widget, area/swift]
+type: Task
 parent: E05
 milestone: "P3 · Widgets 首页"
 blocked-by: [E05-S05]

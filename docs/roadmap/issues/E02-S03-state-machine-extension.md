@@ -2,6 +2,7 @@
 id: E02-S03
 title: "状态机扩展：PREVIEW 与 EDITING"
 labels: [enhancement, phase-1-curtain-core, area/shell, area/contract]
+type: Task
 parent: E02
 milestone: "P1 · 挂帘内核"
 blocked-by: []

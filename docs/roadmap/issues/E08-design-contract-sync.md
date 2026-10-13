@@ -2,6 +2,7 @@
 id: E08
 title: "设计合同与文案同步"
 labels: [epic, phase-5-quality, area/contract, documentation]
+type: Goal
 parent: null
 milestone: "P5 · 质量与交付"
 blocked-by: [E04]

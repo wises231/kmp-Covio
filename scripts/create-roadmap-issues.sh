@@ -10,6 +10,10 @@
 #
 # 脚本可以重复运行。docs/roadmap/issues/.created.json 里已有的编号会跳过。
 #
+# front-matter 的 type 字段是可选的。填了就传给 gh issue create --type。
+# 缺字段时不传 --type，所以账号里没有自定义类型时脚本照样能跑。
+# 自定义类型由 scripts/sync-issue-types.sh 创建。
+#
 # 本脚本兼容 macOS 自带的 bash 3.2。不要引入关联数组（declare -A）和 mapfile。
 
 set -euo pipefail
@@ -138,6 +142,8 @@ for name in sorted(os.listdir(issues_dir)):
             "milestone": fields.get("milestone") or "",
             "blocked_by": fields.get("blocked-by") or [],
             "file": name,
+            # type 是可选的。缺字段时不传 --type，兼容没有自定义类型的账号。
+            "type": fields.get("type") or "",
         }
     )
 
@@ -169,6 +175,8 @@ with open(os.path.join(tmp, "index.tsv"), "w", encoding="utf-8") as handle:
             row["milestone"],
             ",".join(row["blocked_by"]),
             row["file"],
+            # type 放在最后。里程碑靠 cut -f5 取，插在中间会错位。
+            row["type"],
         ]
         handle.write(SEP.join(check_separator(row["id"], f) for f in fields_out) + "\n")
 
@@ -289,7 +297,7 @@ info "3. 创建 issue"
 
 # 第一遍建 epic，第二遍建 sub-issue。父编号在第二遍开始前已知。
 for pass in epic sub; do
-  while IFS="$SEP" read -r id title labels parent milestone blocked_by file; do
+  while IFS="$SEP" read -r id title labels parent milestone blocked_by file issue_type; do
     [ -z "$id" ] && continue
     is_sub=0
     [ -n "$parent" ] && is_sub=1
@@ -316,6 +324,12 @@ for pass in epic sub; do
       milestone_args=(--milestone "$milestone")
     fi
 
+    # 没有 type 字段就不传 --type。账号里没有自定义类型时脚本照样能跑。
+    type_args=()
+    if [ -n "$issue_type" ]; then
+      type_args=(--type "$issue_type")
+    fi
+
     parent_args=()
     if [ "$is_sub" -eq 1 ]; then
       parent_number="$(map_get "$parent")"
@@ -332,7 +346,7 @@ for pass in epic sub; do
 
     info "  创建 ${id}：$title"
     if [ "$DRY_RUN" -eq 1 ]; then
-      info "    gh issue create --title \"$title\" --body-file $TMP/$id.body ${label_args[*]:-} ${milestone_args[*]:-} ${parent_args[*]:-}"
+      info "    gh issue create --title \"$title\" --body-file $TMP/$id.body ${label_args[*]:-} ${milestone_args[*]:-} ${type_args[*]:-} ${parent_args[*]:-}"
       map_put "$id" "-"
       continue
     fi
@@ -342,6 +356,7 @@ for pass in epic sub; do
       --body-file "$TMP/$id.body" \
       ${label_args[@]+"${label_args[@]}"} \
       ${milestone_args[@]+"${milestone_args[@]}"} \
+      ${type_args[@]+"${type_args[@]}"} \
       ${parent_args[@]+"${parent_args[@]}"} \
       ${REPO_ARGS[@]+"${REPO_ARGS[@]}"})"
     number="${url##*/}"
@@ -368,7 +383,7 @@ done
 info ""
 info "4. 阻塞关系"
 
-while IFS="$SEP" read -r id title labels parent milestone blocked_by file; do
+while IFS="$SEP" read -r id title labels parent milestone blocked_by file issue_type; do
   [ -z "$id" ] && continue
   [ -z "$blocked_by" ] && continue
   if ! matches_only "$id"; then continue; fi
@@ -400,7 +415,7 @@ else
 fi
 info ""
 info "本地编号  GitHub 编号"
-while IFS="$SEP" read -r id title labels parent milestone blocked_by file; do
+while IFS="$SEP" read -r id title labels parent milestone blocked_by file issue_type; do
   [ -z "$id" ] && continue
   number="$(map_get "$id")"
   if [ -z "$number" ] || [ "$number" = "-" ]; then

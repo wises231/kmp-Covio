@@ -2,6 +2,7 @@
 id: E01
 title: "触发层：统一的打开入口"
 labels: [epic, phase-1-curtain-core, area/trigger]
+type: Goal
 parent: null
 milestone: "P1 · 挂帘内核"
 blocked-by: [E00]

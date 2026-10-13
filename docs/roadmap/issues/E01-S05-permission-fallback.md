@@ -2,6 +2,7 @@
 id: E01-S05
 title: "权限降级与触发冲突处理"
 labels: [enhancement, phase-1-curtain-core, area/trigger, area/swift]
+type: Task
 parent: E01
 milestone: "P1 · 挂帘内核"
 blocked-by: [E01-S01]

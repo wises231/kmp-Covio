@@ -2,6 +2,7 @@
 id: E04-S02
 title: "导航栏渲染动态页签"
 labels: [enhancement, phase-2-workspace-model, area/pane, area/swift]
+type: Task
 parent: E04
 milestone: "P2 · 工作区模型"
 blocked-by: [E04-S01]
