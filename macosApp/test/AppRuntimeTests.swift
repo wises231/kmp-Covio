@@ -56,7 +56,8 @@ final class AppRuntimeTests: XCTestCase {
             loginItem: loginItem,
             notifier: notifier,
             updateChecker: FakeUpdateChecker(),
-            shelf: makeShelf()
+            shelf: makeShelf(),
+            workspace: makeWorkspace()
         )
         runtime = created
         if engineStarted { created.start() }
@@ -90,6 +91,20 @@ final class AppRuntimeTests: XCTestCase {
             ),
             sound: FakeShelfSound(),
             watcherFactory: FakeWatcherFactory().factory
+        )
+    }
+
+    /// 工作区运行时。索引指向临时目录，打开与显示都不动真实系统。
+    ///
+    /// 不接替身的话，构造时的一次清理会去动真实的 `~/Library/Application Support/Covio/Workspace`，
+    /// 并删掉用户过期的内容。理由同 [makeShelf]。
+    private func makeWorkspace() -> WorkspaceRuntime {
+        var environment = WorkspaceEnvironment()
+        environment.open = { _ in }
+        environment.reveal = { _ in }
+        return WorkspaceRuntime(
+            client: WorkspaceStoreClient(directory: directory.path),
+            environment: environment
         )
     }
 

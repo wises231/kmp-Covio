@@ -228,9 +228,15 @@ final class AppRuntime {
             self.statusMessage = entry.text(for: self.language)
         }
         // 面板反向持有运行时，所以那边用 unowned。
-        shelf.panel = ShelfPanelController(runtime: shelf, language: { [weak self] in
-            self?.language ?? AppLanguage.fromCode(nil)
-        })
+        shelf.panel = ShelfPanelController(
+            runtime: shelf,
+            language: { [weak self] in
+                self?.language ?? AppLanguage.fromCode(nil)
+            },
+            onSaveToWorkspace: { [weak self] item in
+                _ = self?.workspace.save(filesAt: [item.path])
+            }
+        )
         shelf.start()
 
         clipboardBridge.report = { [weak self] entry in

@@ -101,7 +101,12 @@ final class WorkspaceRuntime {
             working = result.state
 
             if result.admission == WorkspaceAdmission.accepted {
-                accepted += 1
+                // 索引没写进磁盘时不算放进去：重启之后这一条就没了。
+                if result.persisted {
+                    accepted += 1
+                } else {
+                    failure = ContractCopy.copyHubFilesErrorSave
+                }
             } else if result.admission == WorkspaceAdmission.duplicate {
                 info = ContractCopy.copyHubFilesNoticeDuplicate
             } else if result.admission == WorkspaceAdmission.quotaExceeded {
@@ -115,8 +120,71 @@ final class WorkspaceRuntime {
 
         adopt(working)
         errorMessage = failure
-        infoMessage = failure == nil ? info : nil
+        infoMessage = failure == nil
+            ? (info ?? (accepted > 0 ? ContractCopy.copyHubFilesNoticeSaved : nil))
+            : nil
         return accepted
+    }
+
+    /// 存入若干已经落盘的文件。返回被接受的条数。
+    @discardableResult
+    func save(filesAt paths: [String]) -> Int {
+        intake(urls: paths.filter { !$0.isEmpty }.map { URL(fileURLWithPath: $0) })
+    }
+
+    /// 存入一段文字。剪切板里的文字、链接与颜色走这里。
+    ///
+    /// 空白文字不存，返回假。文件名由共享层按正文取，四个平台一致。
+    /// 索引没写进磁盘时也返回假：重启之后这一条就没了。
+    @discardableResult
+    func save(text: String) -> Bool {
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return false }
+        let result = client.putText(
+            state: state,
+            text: text,
+            displayName: WorkspaceLogic.shared.suggestedTextName(text: text),
+            contentType: "text/plain",
+            originDeviceId: environment.originDeviceId(),
+            nowEpochSeconds: environment.now()
+        )
+        adopt(result.state)
+        apply(result)
+        return result.accepted && result.persisted
+    }
+
+    /// 存入一条剪切板条目。返回被接受的条数。
+    ///
+    /// 图片与文件条目存它们已经落盘的文件，文字、链接与颜色存正文。
+    /// 哪种条目有文件由共享层判断，见 `ClipboardLogic.importPaths`。
+    @discardableResult
+    func save(clipItem: ClipItem) -> Int {
+        let paths = ClipboardLogic.shared.importPaths(item: clipItem)
+        if paths.isEmpty {
+            return save(text: clipItem.text) ? 1 : 0
+        }
+        return save(filesAt: paths)
+    }
+
+    /// 记下一条放入的结果。说明与失败互斥。
+    private func apply(_ result: WorkspacePutResult) {
+        switch result.admission {
+        case WorkspaceAdmission.accepted:
+            // 内容收下了但索引没落盘：报错，不报成功。
+            errorMessage = result.persisted ? nil : ContractCopy.copyHubFilesErrorSave
+            infoMessage = result.persisted ? ContractCopy.copyHubFilesNoticeSaved : nil
+        case WorkspaceAdmission.duplicate:
+            errorMessage = nil
+            infoMessage = ContractCopy.copyHubFilesNoticeDuplicate
+        case WorkspaceAdmission.tooLarge:
+            errorMessage = ContractCopy.copyHubFilesErrorTooLarge
+            infoMessage = nil
+        case WorkspaceAdmission.quotaExceeded:
+            errorMessage = ContractCopy.copyHubFilesErrorQuota
+            infoMessage = nil
+        default:
+            errorMessage = ContractCopy.copyHubFilesErrorImport
+            infoMessage = nil
+        }
     }
 
     func togglePin(_ entryId: String) {

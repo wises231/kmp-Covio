@@ -60,6 +60,27 @@ final class WorkspaceStoreClient: @unchecked Sendable {
         )
     }
 
+    /// 放入一段文字。没有落盘文件的条目走这里。
+    func putText(
+        state: WorkspaceState,
+        text: String,
+        displayName: String,
+        contentType: String,
+        originDeviceId: String,
+        nowEpochSeconds: Int64
+    ) -> WorkspacePutResult {
+        lock.lock()
+        defer { lock.unlock() }
+        return store.putText(
+            state: state,
+            text: text,
+            displayName: displayName,
+            contentType: contentType,
+            originDeviceId: originDeviceId,
+            nowEpochSeconds: nowEpochSeconds
+        )
+    }
+
     /// 改一条条目的置顶标记。
     func setPinned(state: WorkspaceState, entryId: String, pinned: Bool) -> WorkspaceState {
         lock.lock()

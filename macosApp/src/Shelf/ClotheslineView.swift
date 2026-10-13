@@ -21,6 +21,8 @@ struct ClotheslineView: View {
     let onPreview: (ShelfItem) -> Void
     let onMarkup: (ShelfItem) -> Void
     let onRemove: (ShelfItem) -> Void
+    /// 把这张截图存入工作区。没有工作区时传空，菜单里就不出现这一项。
+    let onSaveToWorkspace: ((ShelfItem) -> Void)?
     let onDragBegin: (ShelfItem, NSView, NSEvent) -> Void
     /// 鼠标进入或离开面板。控制器据此决定什么时候收起。
     let onPointerInside: (Bool) -> Void
@@ -69,7 +71,8 @@ struct ClotheslineView: View {
             onPreview: { onPreview(item) },
             onMarkup: { onMarkup(item) },
             onRemove: { onRemove(item) },
-            onDragBegin: { view, event in onDragBegin(item, view, event) }
+            onDragBegin: { view, event in onDragBegin(item, view, event) },
+            onSaveToWorkspace: onSaveToWorkspace.map { save in { save(item) } }
         )
         .offset(x: cardX, y: cardY)
     }

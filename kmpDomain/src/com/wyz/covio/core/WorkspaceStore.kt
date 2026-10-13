@@ -11,6 +11,7 @@ import okio.HashingSource
 import okio.IOException
 import okio.Path
 import okio.Path.Companion.toPath
+import okio.Source
 
 /** 一次读写内容的字节数。放入大文件时用它分块，不整份进内存。 */
 private const val CHUNK_BYTES = 64L * 1024
@@ -64,14 +65,17 @@ class WorkspaceStore(
     }
 
     /**
-     * 写入索引，返回规范化之后的状态。
+     * 写入索引，并报告是否真的落盘。
      *
-     * **写盘失败不抛异常。** 理由与 [ShelfStore.save] 相同：异常跨到 Swift 没有接收方，
-     * 会直接终止进程。磁盘满、目录被删都会走到这里，而调用方是每次条目变化都会跑的落盘。
+     * 返回 null 表示这次没写进磁盘。调用方据此报错，不能报成功。
+     * 失败不抛异常，理由与 [ShelfStore.save] 相同：异常跨到 Swift 没有接收方，
+     * 会直接终止进程。磁盘满、目录被删都会走到这里。
+     *
+     * 返回 null 时磁盘上还是上一份索引，调用方不要更新内存状态。
      */
-    fun save(state: WorkspaceState): WorkspaceState = lock.withLock {
+    internal fun saveReporting(state: WorkspaceState): WorkspaceState? = lock.withLock {
         val normalized = state.normalized()
-        runCatching {
+        val written = runCatching {
             val target = indexPath.toPath()
             target.parent?.let { fileSystem.createDirectories(it) }
             val temporary = target.parent!!.resolve(target.name + ".tmp")
@@ -79,9 +83,12 @@ class WorkspaceStore(
                 writeUtf8(json.encodeToString(WorkspaceState.serializer(), normalized))
             }
             fileSystem.atomicMove(temporary, target)
-        }
-        normalized
+        }.isSuccess
+        if (written) normalized else null
     }
+
+    /** 写入索引，返回规范化之后的状态。写盘失败时返回规范化后的内存状态，见 [saveReporting]。 */
+    fun save(state: WorkspaceState): WorkspaceState = saveReporting(state) ?: state.normalized()
 
     /** 清空索引与两个内容目录。 */
     fun clear(): Boolean = lock.withLock {
@@ -169,14 +176,77 @@ class WorkspaceStore(
         // 先看一眼文件有多大，超过上限就不必读一遍。
         val declaredSize = runCatching { fileSystem.metadata(source).size }.getOrNull()
         if (declaredSize != null && declaredSize > policy.maxEntryBytes) {
-            return@withLock WorkspacePutResult(state, null, WorkspaceAdmission.TOO_LARGE)
+            return@withLock WorkspacePutResult.rejected(state, WorkspaceAdmission.TOO_LARGE)
         }
 
-        val staged = runCatching { stage(source, policy.maxEntryBytes) }.getOrNull()
-            ?: return@withLock WorkspacePutResult(state, null, WorkspaceAdmission.FAILED)
+        val staged = runCatching { stageFile(source, policy.maxEntryBytes) }.getOrNull()
+            ?: return@withLock WorkspacePutResult.rejected(state, WorkspaceAdmission.FAILED)
+        settle(state, staged, name, contentType, originDeviceId, nowEpochSeconds)
+    }
+
+    /**
+     * 放入一段文字。
+     *
+     * 没有落盘文件的条目走这里，例如剪切板里的文字、链接与颜色。
+     * 编码统一用 UTF-8，四个平台算出的摘要才一样。
+     */
+    fun putText(
+        state: WorkspaceState,
+        text: String,
+        displayName: String,
+        contentType: String,
+        originDeviceId: String,
+        nowEpochSeconds: Long,
+    ): WorkspacePutResult = putBytes(
+        state = state,
+        bytes = text.encodeToByteArray(),
+        displayName = displayName,
+        contentType = contentType,
+        originDeviceId = originDeviceId,
+        nowEpochSeconds = nowEpochSeconds,
+    )
+
+    /**
+     * 放入一段字节。
+     *
+     * 先按字节数比一遍上限，超过就不落盘。
+     */
+    private fun putBytes(
+        state: WorkspaceState,
+        bytes: ByteArray,
+        displayName: String,
+        contentType: String,
+        originDeviceId: String,
+        nowEpochSeconds: Long,
+    ): WorkspacePutResult = lock.withLock {
+        val policy = state.policy.normalized()
+        if (bytes.size.toLong() > policy.maxEntryBytes) {
+            return@withLock WorkspacePutResult.rejected(state, WorkspaceAdmission.TOO_LARGE)
+        }
+
+        val name = normalizeDisplayName(displayName)
+        val staged = runCatching { stage(Buffer().write(bytes), policy.maxEntryBytes) }.getOrNull()
+            ?: return@withLock WorkspacePutResult.rejected(state, WorkspaceAdmission.FAILED)
+        settle(state, staged, name, contentType, originDeviceId, nowEpochSeconds)
+    }
+
+    /**
+     * 把暂存好的内容接进索引。
+     *
+     * 两个放入入口共用这一段：判断接不接受、写索引、或者删掉刚写进去的内容。
+     */
+    private fun settle(
+        state: WorkspaceState,
+        staged: Staged,
+        name: String,
+        contentType: String,
+        originDeviceId: String,
+        nowEpochSeconds: Long,
+    ): WorkspacePutResult {
+        val policy = state.policy.normalized()
         val done = when (staged) {
             is Staged.Done -> staged
-            Staged.TooLarge -> return@withLock WorkspacePutResult(state, null, WorkspaceAdmission.TOO_LARGE)
+            Staged.TooLarge -> return WorkspacePutResult.rejected(state, WorkspaceAdmission.TOO_LARGE)
         }
 
         val entry = WorkspaceEntry(
@@ -190,21 +260,28 @@ class WorkspaceStore(
             expiresAtEpochSeconds = WorkspaceLogic.expiryEpochSeconds(nowEpochSeconds, policy),
         )
 
-        when (val verdict = WorkspaceLogic.admit(entry, state.entries, policy)) {
+        return when (val verdict = WorkspaceLogic.admit(entry, state.entries, policy)) {
             WorkspaceAdmission.ACCEPTED -> {
-                val next = save(state.copy(entries = state.entries + entry))
-                WorkspacePutResult(next, next.entries.firstOrNull { it.entryId == entry.entryId } ?: entry, verdict)
+                val next = saveReporting(state.copy(entries = state.entries + entry))
+                if (next == null) {
+                    // 索引没写进磁盘。内存里也不留这一条：留了会在重启后消失。
+                    // 内容留在 objects 里不删：调用方给的索引状态可能比磁盘旧，那条摘要未必没人用。
+                    WorkspacePutResult(state, null, verdict, persisted = false)
+                } else {
+                    val settled = next.entries.firstOrNull { it.entryId == entry.entryId } ?: entry
+                    WorkspacePutResult(next, settled, verdict, persisted = true)
+                }
             }
 
             WorkspaceAdmission.DUPLICATE -> {
-                // 内容相同，`objects` 里就是同一个文件，不必删。
+                // 内容相同，`objects` 里就是同一个文件，不必删。索引没有变化，也就没有落盘这一步。
                 val existing = WorkspaceLogic.dedupe(state.entries).firstOrNull { it.entryId == entry.entryId }
-                WorkspacePutResult(state, existing, verdict)
+                WorkspacePutResult(state, existing, verdict, persisted = true)
             }
 
             else -> {
                 deleteContent(entry.entryId)
-                WorkspacePutResult(state, null, verdict)
+                WorkspacePutResult(state, null, verdict, persisted = false)
             }
         }
     }
@@ -226,16 +303,24 @@ class WorkspaceStore(
         save(state.copy(entries = entries))
     }
 
+    /** 打开一个文件，读完后关掉。读不动或写不进时抛异常，由 [putFile] 收成 `FAILED`。 */
+    private fun stageFile(source: Path, maxEntryBytes: Long): Staged {
+        val input = fileSystem.source(source)
+        try {
+            return stage(input, maxEntryBytes)
+        } finally {
+            input.close()
+        }
+    }
+
     /**
-     * 把源文件读进 `incoming`，返回摘要与字节数。
+     * 把来源的内容写进 `incoming`，边写边算摘要。
      *
-     * 摘要用 [HashingSink] 边写边算。超过上限时中止，半份文件删掉。
-     * 读不动或写不进时抛异常，由 [putFile] 收成 `FAILED`。
+     * 超过上限就停下，删掉半成品。来源由调用方负责关闭。
      */
-    private fun stage(source: Path, maxEntryBytes: Long): Staged {
+    private fun stage(input: Source, maxEntryBytes: Long): Staged {
         val partial = "$incomingDirectory/${stagingName()}.part".toPath()
         partial.parent?.let { fileSystem.createDirectories(it) }
-        val input = fileSystem.source(source)
         val output = fileSystem.sink(partial)
         var byteSize = 0L
         var entryId: String? = null
@@ -256,7 +341,6 @@ class WorkspaceStore(
             if (!tooLarge) entryId = hashing.hash.hex()
         } finally {
             output.close()
-            input.close()
         }
 
         if (tooLarge || entryId == null) {
@@ -293,6 +377,71 @@ class WorkspaceStore(
         runCatching { fileSystem.delete(path, mustExist = false) }.isSuccess
     }
 
+    // MARK: - 传输暂存
+    //
+    // 对端传来的内容先落在 `incoming/<摘要>.part`，校验通过再改名移入 `objects`。
+    // 后缀 `.part` 让它与 [putContent] 的临时文件分开：那两个是同名的不同阶段。
+
+    /** 一次传输的暂存路径。摘要不合法时返回 null。 */
+    fun stagingPath(taskId: String): String? {
+        val id = normalizeEntryId(taskId)
+        return if (WorkspaceLogic.isValidEntryId(id)) "$incomingDirectory/$id.part" else null
+    }
+
+    /** 已经收到的字节数。没有暂存文件时是 0，续传从这里接着写。 */
+    fun stagingSize(taskId: String): Long {
+        val path = stagingPath(taskId)?.toPath() ?: return 0L
+        // 文件不存在时 `metadata` 抛异常，收成 0。
+        return runCatching { fileSystem.metadata(path).size }.getOrNull() ?: 0L
+    }
+
+    /**
+     * 把一段字节追加到暂存文件末尾，返回追加后的大小。
+     *
+     * 写不进去时返回 null。偏移的核对由调用方做：这里只管写。
+     */
+    fun appendStaging(taskId: String, bytes: ByteArray): Long? = lock.withLock {
+        val path = stagingPath(taskId)?.toPath() ?: return@withLock null
+        runCatching {
+            path.parent?.let { fileSystem.createDirectories(it) }
+            val sink = fileSystem.appendingSink(path)
+            try {
+                val buffer = Buffer().write(bytes)
+                sink.write(buffer, buffer.size)
+            } finally {
+                sink.close()
+            }
+            fileSystem.metadata(path).size
+        }.getOrNull()
+    }
+
+    /** 暂存文件内容的摘要。读不动时返回 null。 */
+    fun digestOfStaging(taskId: String): String? {
+        val path = stagingPath(taskId)?.toPath() ?: return null
+        if (!runCatching { fileSystem.exists(path) }.getOrDefault(false)) return null
+        return digestOfFile(path)
+    }
+
+    /**
+     * 校验通过后把暂存文件移进 `objects`。
+     *
+     * 用原子改名，所以 `objects` 里不会出现半份内容。
+     */
+    fun commitStaging(taskId: String, entryId: String): Boolean = lock.withLock {
+        val source = stagingPath(taskId)?.toPath() ?: return@withLock false
+        val target = contentPath(entryId)?.toPath() ?: return@withLock false
+        runCatching {
+            target.parent?.let { fileSystem.createDirectories(it) }
+            fileSystem.atomicMove(source, target)
+        }.isSuccess
+    }
+
+    /** 删掉暂存文件。取消与校验失败都走这里。 */
+    fun deleteStaging(taskId: String): Boolean = lock.withLock {
+        val path = stagingPath(taskId)?.toPath() ?: return@withLock false
+        runCatching { fileSystem.delete(path, mustExist = false) }.isSuccess
+    }
+
     /**
      * 按策略执行一次过期与淘汰。
      *
@@ -303,7 +452,11 @@ class WorkspaceStore(
         val state = load()
         val plan = WorkspaceLogic.plan(state.entries, policy, nowEpochSeconds)
         plan.removed.forEach { deleteContent(it.entryId) }
-        save(state.copy(policy = policy.normalized(), entries = plan.kept))
+        val next = state.copy(policy = policy.normalized(), entries = plan.kept)
+        // 没有变化就不落盘。应用每次启动都清一次，空转不该建出索引文件。
+        if (plan.changed || next.policy != state.policy) {
+            save(next)
+        }
         plan
     }
 
@@ -379,6 +532,17 @@ object WorkspaceLogic {
 
     private const val SECONDS_PER_DAY = 24L * 60 * 60
 
+    /** 文字名最多留几个字。再长会把索引撑大，列表里也显示不下。 */
+    private const val TEXT_NAME_MAX_CHARS = 40
+
+    /** 正文里取不出名字时用的文件名。 */
+    private const val FALLBACK_TEXT_NAME = "clipboard.txt"
+
+    private val WHITESPACE_PATTERN = Regex("\\s+")
+
+    /** 文件名里不能出现的字符。换成空格，名字仍然读得通。 */
+    private val FORBIDDEN_NAME_PATTERN = Regex("""[/\\:]""")
+
     private val IMAGE_EXTENSIONS = setOf("png", "jpg", "jpeg", "gif", "heic", "heif", "webp", "tiff", "tif", "bmp")
     private val AUDIO_EXTENSIONS = setOf("mp3", "m4a", "aac", "wav", "flac", "ogg", "opus", "aiff")
     private val TEXT_EXTENSIONS =
@@ -409,6 +573,30 @@ object WorkspaceLogic {
             in TEXT_EXTENSIONS -> WorkspaceKind.TEXT
             else -> WorkspaceKind.FILE
         }
+    }
+
+    /**
+     * 一段文字存进工作区时用的文件名。
+     *
+     * 取第一行非空文字，去掉控制字符、路径分隔符与多余空白，最多 [TEXT_NAME_MAX_CHARS] 个字。
+     * 正文取不出名字时用 `clipboard.txt`。
+     *
+     * 名字进索引，会显示在文件页上，所以它同时也是一段说明。
+     */
+    fun suggestedTextName(text: String): String {
+        val firstLine = text.lineSequence()
+            .map(String::trim)
+            .firstOrNull(String::isNotEmpty)
+            .orEmpty()
+        val cleaned = firstLine
+            .filterNot(Char::isISOControl)
+            .replace(FORBIDDEN_NAME_PATTERN, " ")
+            .replace(WHITESPACE_PATTERN, " ")
+            .trim()
+            .take(TEXT_NAME_MAX_CHARS)
+            .trim()
+            .trimEnd('.')
+        return if (cleaned.isEmpty()) FALLBACK_TEXT_NAME else "$cleaned.txt"
     }
 
     /**
@@ -559,20 +747,22 @@ enum class WorkspaceAdmission {
 /**
  * 一次放入的结果。
  *
- * [state] 是放入之后要用的索引状态，写入失败时就是传进来的那一份。
+ * [state] 是放入之后要用的索引状态。写入失败时内存里也有这一条，只是没落盘。
  * [entry] 是被接受或者被合并的那条；被拒绝时为 null。
+ * [persisted] 表示索引是否真的写进了磁盘。写盘失败时是假，界面据此报错而不是报成功。
  */
 data class WorkspacePutResult(
     val state: WorkspaceState,
     val entry: WorkspaceEntry?,
     val admission: WorkspaceAdmission,
+    val persisted: Boolean,
 ) {
     val accepted: Boolean get() = admission == WorkspaceAdmission.ACCEPTED
 
     companion object {
-        /** 空结果。Swift 侧调主构造函数要写全三个参数。 */
+        /** 空结果。Swift 侧调主构造函数要写全参数。 */
         fun rejected(state: WorkspaceState, admission: WorkspaceAdmission): WorkspacePutResult =
-            WorkspacePutResult(state, null, admission)
+            WorkspacePutResult(state, null, admission, persisted = false)
     }
 }
 

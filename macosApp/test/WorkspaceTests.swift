@@ -124,11 +124,13 @@ final class WorkspaceTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: content.path), "过期内容要删掉")
     }
 
-    /// 手动清理给出说明，剩下的条目不受影响。
+    /// 手动清理没有可清的东西时不给说明，剩下的条目不受影响。
     func testSweepKeepsLiveEntries() throws {
         var now: Int64 = 1_000
         let runtime = makeRuntime(now: { now })
         runtime.intake(urls: [try makeFile(named: "note.txt", contents: "hello")])
+        // 放入自己会给一条说明。先清掉，这一条只看清理的结果。
+        runtime.clearMessages()
 
         now += 3_600
         XCTAssertEqual(runtime.sweep(), 0)
@@ -148,6 +150,137 @@ final class WorkspaceTests: XCTestCase {
 
         XCTAssertNil(runtime.infoMessage)
         XCTAssertNil(runtime.errorMessage)
+    }
+
+    // MARK: - 从剪切板与截图存入
+
+    /// 存入一段文字：条目进列表，文件名取自正文第一行。
+    func testSaveTextRecordsTheEntry() {
+        let runtime = makeRuntime()
+
+        XCTAssertTrue(runtime.save(text: "第一行\n第二行"))
+
+        XCTAssertEqual(runtime.entries.count, 1)
+        XCTAssertEqual(runtime.entries.first?.displayName, "第一行.txt")
+        XCTAssertEqual(runtime.entries.first?.kind, WorkspaceKind.text)
+        XCTAssertEqual(
+            runtime.infoMessage?.text,
+            ContractCopy.copyHubFilesNoticeSaved.text
+        )
+    }
+
+    /// 只有空白的文字不存，也不给提示。
+    func testSaveTextRefusesBlankText() {
+        let runtime = makeRuntime()
+
+        XCTAssertFalse(runtime.save(text: "   \n  "))
+
+        XCTAssertTrue(runtime.entries.isEmpty)
+        XCTAssertNil(runtime.infoMessage)
+        XCTAssertNil(runtime.errorMessage)
+    }
+
+    /// 存入一条文字剪切板记录：没有落盘文件，走正文那条路。
+    func testSaveClipItemFallsBackToTheText() {
+        let runtime = makeRuntime()
+
+        XCTAssertEqual(runtime.save(clipItem: makeItem(kind: .text, text: "剪贴板正文")), 1)
+
+        XCTAssertEqual(runtime.entries.count, 1)
+        XCTAssertEqual(runtime.entries.first?.displayName, "剪贴板正文.txt")
+    }
+
+    /// 存入一条图片剪切板记录：走它已经落盘的那个文件。
+    func testSaveClipItemUsesTheFileBehindTheItem() throws {
+        let image = try makeFile(named: "shot.png", contents: "png bytes")
+        let runtime = makeRuntime()
+
+        XCTAssertEqual(runtime.save(clipItem: makeItem(kind: .image, filePath: image.path)), 1)
+
+        XCTAssertEqual(runtime.entries.first?.displayName, "shot.png")
+        XCTAssertEqual(runtime.totalBytes, Int64("png bytes".utf8.count))
+    }
+
+    /// 存入一条文件剪切板记录：多个文件全部存入。
+    func testSaveClipItemTakesEveryPath() throws {
+        let first = try makeFile(named: "a.txt", contents: "aaa")
+        let second = try makeFile(named: "b.txt", contents: "bbb")
+        let runtime = makeRuntime()
+        let item = makeItem(kind: .files, text: "\(first.path)\n\(second.path)", filePath: first.path)
+
+        XCTAssertEqual(runtime.save(clipItem: item), 2)
+
+        XCTAssertEqual(runtime.entries.count, 2)
+    }
+
+    /// 存入一张截图：路径直接给工作区，就是一次普通的放入。
+    func testSaveFilesAtAcceptsAScreenshot() throws {
+        let shot = try makeFile(named: "shot.png", contents: "png bytes")
+        let runtime = makeRuntime()
+
+        XCTAssertEqual(runtime.save(filesAt: [shot.path]), 1)
+
+        XCTAssertEqual(runtime.entries.first?.displayName, "shot.png")
+        XCTAssertEqual(
+            runtime.infoMessage?.text,
+            ContractCopy.copyHubFilesNoticeSaved.text
+        )
+    }
+
+    /// 空路径被跳过，不会当成失败。
+    func testSaveFilesAtSkipsEmptyPaths() {
+        let runtime = makeRuntime()
+
+        XCTAssertEqual(runtime.save(filesAt: ["", ""]), 0)
+
+        XCTAssertTrue(runtime.entries.isEmpty)
+        XCTAssertNil(runtime.errorMessage)
+    }
+
+    // MARK: - 索引写不进去
+
+    /// 内容收下了但索引没落盘：报错，不算成功，列表里也不留这一条。
+    func testIntakeReportsAFailedIndexWrite() throws {
+        let source = try makeFile(named: "note.txt", contents: "hello")
+        let runtime = makeRuntime()
+        blockTheIndexWrite()
+
+        XCTAssertEqual(runtime.intake(urls: [source]), 0)
+
+        XCTAssertTrue(runtime.entries.isEmpty, "没落盘的条目不进列表")
+        XCTAssertNil(runtime.infoMessage)
+        XCTAssertEqual(
+            runtime.errorMessage?.text,
+            ContractCopy.copyHubFilesErrorSave.text
+        )
+    }
+
+    /// 存文字时索引写不进去，返回假并报同一句错。
+    func testSaveTextReportsAFailedIndexWrite() {
+        let runtime = makeRuntime()
+        blockTheIndexWrite()
+
+        XCTAssertFalse(runtime.save(text: "hello"))
+
+        XCTAssertTrue(runtime.entries.isEmpty)
+        XCTAssertEqual(
+            runtime.errorMessage?.text,
+            ContractCopy.copyHubFilesErrorSave.text
+        )
+    }
+
+    /// 索引落盘成功时存文字返回真，并给出说明。
+    func testSaveTextReportsASuccessfulWrite() {
+        let runtime = makeRuntime()
+
+        XCTAssertTrue(runtime.save(text: "hello"))
+
+        XCTAssertEqual(runtime.entries.count, 1)
+        XCTAssertNil(runtime.errorMessage)
+        XCTAssertEqual(
+            runtime.infoMessage?.text,
+            ContractCopy.copyHubFilesNoticeSaved.text
+        )
     }
 
     // MARK: - 页高
@@ -178,6 +311,16 @@ final class WorkspaceTests: XCTestCase {
 
     // MARK: - 工具
 
+    /// 让索引写不进磁盘：把临时文件的位置占成一个目录。
+    ///
+    /// 内容目录照旧，所以内容能落盘，失败的只有索引那一步。
+    private func blockTheIndexWrite() {
+        try? FileManager.default.createDirectory(
+            at: directory.appendingPathComponent("index.json.tmp", isDirectory: true),
+            withIntermediateDirectories: true
+        )
+    }
+
     private func makeClient() -> WorkspaceStoreClient {
         WorkspaceStoreClient(directory: directory.path)
     }
@@ -200,5 +343,19 @@ final class WorkspaceTests: XCTestCase {
         let url = directory.appendingPathComponent(name)
         try contents.write(to: url, atomically: true, encoding: .utf8)
         return url
+    }
+
+    /// 一条剪切板记录。只有测试用到的三项不同，其余给固定值。
+    private func makeItem(kind: ClipKind, text: String = "", filePath: String = "") -> ClipItem {
+        ClipItem(
+            id: UUID().uuidString,
+            kind: kind,
+            text: text,
+            filePath: filePath,
+            byteSize: 0,
+            createdAtEpochSeconds: 0,
+            pinned: false,
+            sourceBundleId: ""
+        )
     }
 }
