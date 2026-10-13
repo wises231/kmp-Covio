@@ -26,6 +26,13 @@ The script also checks the rules that cross two sections of the contract.
 
 - [Research archive](docs/research/README.md) defines the research archive rules and links each research topic.
 
+## Roadmap
+
+- [Roadmap archive](docs/roadmap/README.md) lists the roadmap topics.
+- [Curtain workbench](docs/roadmap/curtain-workbench.md) turns the Hub into an editable curtain workbench.
+  It covers 10 epics and 48 sub-issues. The platform scope is macOS.
+- Run `bash scripts/create-roadmap-issues.sh --dry-run` to preview the GitHub issues.
+
 ## Download (internal test)
 
 This repository is under internal test.
