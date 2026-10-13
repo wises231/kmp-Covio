@@ -1,0 +1,12 @@
+product:
+  type: wasm-js/app
+
+dependencies:
+  - $compose.runtime
+  - $compose.foundation
+  - $compose.material3
+  - $compose.ui
+
+settings:
+  compose:
+    enabled: true
