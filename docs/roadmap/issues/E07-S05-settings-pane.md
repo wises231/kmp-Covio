@@ -8,6 +8,9 @@ milestone: "P4 · 模块工作区化"
 blocked-by: [E06-S01]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 6 节为准。
+> 本文的接口契约见 `E10-S03`（`ADR-006`）。
+
 ## 背景
 
 设置页已存在：`macosApp/src/Hub/Settings/SettingsShell.swift`，
@@ -20,10 +23,10 @@ blocked-by: [E06-S01]
 
 ## 实施要点
 
-1. 页面改为由 `PaneRegistry` 提供。
+1. 本工作区是 `PaneKind` 的一个值；页面改为由 `PaneRegistry` 提供。
 2. 保留六个分节与全部现有设置行。
 3. 胶囊上的分节分段选择器保持不变。
-4. 新增一节“工作台”，集中放触发源开关、工作区管理与重置入口。
+4. 新增一节“工作台”，集中放触发源开关、工作区管理（`WorkbenchLogic` 与 `WorkbenchConfig`）与重置入口。
 5. 搜索仍能跨节跳转与高亮。
 6. 设置行锚点机制不变。
 

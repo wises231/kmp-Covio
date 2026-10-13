@@ -8,6 +8,9 @@ milestone: "P3 · Widgets 首页"
 blocked-by: [E05-S02, E02-S03]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 7 节为准。
+> 本文的接口契约见 `E10-S04`（`ADR-007`）。
+
 ## 背景
 
 挂帘外壳已由 `E02-S03` 增加 `EDITING` 状态。该状态禁止指针移出自动收起。
@@ -15,7 +18,7 @@ blocked-by: [E05-S02, E02-S03]
 
 ## 目标
 
-实现组件的拖动、缩放、删除和撤销。
+实现 `Widget` 的拖动、缩放、删除和撤销。
 
 ## 实施要点
 

@@ -8,6 +8,9 @@ milestone: "P4 · 模块工作区化"
 blocked-by: [E06-S01]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 6 节为准。
+> 本文的接口契约见 `E10-S03`（`ADR-006`）。
+
 ## 背景
 
 截图页面已存在：`macosApp/src/Hub/ScreenshotsTabView.swift`。
@@ -22,10 +25,10 @@ blocked-by: [E06-S01]
 
 ## 实施要点
 
-1. 页面改为由 `PaneRegistry` 提供。
+1. 本工作区是 `PaneKind` 的一个值；页面改为由 `PaneRegistry` 提供。
 2. 保留现有全部交互：复制、预览、标记、右键菜单、拖放四种去向。
 3. 新增设置项：接管开关、工具条高度、卡片数量上下限、显示时长。
-4. 设置项写进工作区设置。
+4. 设置项写进 `PaneInstance.settings`。
 5. 首页的截图组件点击后切换到本工作区。
 6. 截图接管关闭时，设置项显示为不可用并说明原因。
 

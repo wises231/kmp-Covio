@@ -219,6 +219,7 @@ phase-2-workspace-model|C5DEF5|阶段 2 · 工作区模型
 phase-3-widgets|C5DEF5|阶段 3 · Widgets 首页
 phase-4-module-panes|C5DEF5|阶段 4 · 模块工作区化
 phase-5-quality|C5DEF5|阶段 5 · 质量与交付
+phase-6-architecture|C5DEF5|阶段 6 · 架构落地
 area/trigger|D4C5F9|触发层
 area/shell|D4C5F9|挂帘外壳
 area/pane|D4C5F9|工作区
@@ -226,6 +227,7 @@ area/widget|D4C5F9|组件与网格
 area/contract|D4C5F9|设计合同
 area/kmp|D4C5F9|kmpDomain 共享层
 area/swift|D4C5F9|SwiftUI 宿主
+area/architecture|D4C5F9|架构骨架与分层规则
 area/a11y|FBCA04|无障碍
 area/perf|FBCA04|性能与资源
 area/test|FBCA04|测试

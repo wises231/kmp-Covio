@@ -8,13 +8,16 @@ milestone: "P2 · 工作区模型"
 blocked-by: []
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 6 节为准。
+> 本文的接口契约见 `E10-S03`（`ADR-006`）。
+
 ## 背景
 
 `macosApp/test/DesignContractTests.swift` 断言页签顺序与合同一致。
 `kmpDomain/test/com/wyz/covio/core/DesignContractTest.kt` 有 19 条用例。
 `macosApp/test/ContractConstantsTests.swift` 有 27 条用例。
 
-页签改成数据驱动后，顺序断言的对象从枚举变成配置。
+页签改成数据驱动后，顺序断言的对象从枚举变成 `WorkbenchConfig`。
 这些测试必须同步改写。
 
 ## 目标
@@ -25,13 +28,13 @@ blocked-by: []
 
 1. 页签顺序断言改为断言“默认布局的顺序”与合同一致。
 2. 合同新增的字段由 `E08` 提供。本 issue 先建立断言结构。
-3. 保留“合同里的页签都在注册表里”的覆盖断言。
-4. 增加一条断言：注册表里的每个 `PaneKind` 都有对应的视图构造器。
+3. 保留“合同里的页签都在 `PaneRegistry` 里”的覆盖断言。
+4. 增加一条断言：`PaneRegistry` 里的每个 `PaneKind` 都有对应的视图构造器。
 
 ## 验收标准
 
 1. 顺序断言针对默认布局，不针对枚举。
-2. 存在一条断言检查注册表覆盖全部 `PaneKind`。
+2. 存在一条断言检查 `PaneRegistry` 覆盖全部 `PaneKind`。
 3. 改造期间 `DesignContractTests` 保持通过。
 4. 新增断言在缺少视图构造器时失败。
 5. 现有 12 条用例的语义不丢失。

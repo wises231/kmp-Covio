@@ -8,6 +8,9 @@ milestone: "P2 · 工作区模型"
 blocked-by: [E03-S01, E00-S03]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 6 节为准。
+> 本文的接口契约见 `E10-S03`（`ADR-006`）。
+
 ## 背景
 
 持久化已有统一做法。`WorkspaceStore` 与 `ClipboardStore` 都用 okio 加 kotlinx JSON。
@@ -16,7 +19,7 @@ Amper 0.12.1 没有 SQLDelight 插件，所以不要引入数据库。
 
 ## 目标
 
-实现工作台配置的读写。
+实现 `workbench.json` 的读写。
 
 ## 实施要点
 

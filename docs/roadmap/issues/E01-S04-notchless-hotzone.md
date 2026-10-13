@@ -8,6 +8,9 @@ milestone: "P1 · 挂帘内核"
 blocked-by: [E00-S05, E01-S01]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 4 节为准。
+> 本文的接口契约见 `E10-S01`（`ADR-004`）。
+
 ## 背景
 
 非刘海屏没有刘海，热区改成菜单栏下方的一条透明带。

@@ -27,7 +27,7 @@
 | commit | 不是 issue。是 task、problem、optimization 的最小落地单位 | 一个 git commit | 不建 issue | —— | 不适用。由尾行 `Refs:` 挂到 issue 上 |
 
 `phase-*` label 的格式和 milestone 标题的格式见 [../roadmap/AUTHORING.md](../roadmap/AUTHORING.md) 第 2 节。
-sub-issue 的粒度规则见 [roadmap-first.md](roadmap-first.md) 第 2.4 节。
+sub-issue 的粒度规则见 [roadmap-first.md](roadmap-first.md) 第 2.5 节。
 
 ### 1.1 aim 和 commit
 
@@ -364,15 +364,16 @@ blocked-by: []
 
 ## 3. 类型回填
 
-`docs/roadmap/issues/` 下立项时的 58 个文件按下面的规则归类。
+`docs/roadmap/issues/` 下立项时的 66 个文件按下面的规则归类。
 
 | 规则 | type | 数量 |
 | --- | --- | --- |
-| 有 `epic` label | `Goal` | 10 |
+| 有 `epic` label | `Goal` | 11 |
 | 标题含 `ADR` | `Design` | 2 |
 | 有 `area/contract` 和 `documentation` | `Design` | 4 |
+| 有 `area/architecture` 和 `documentation` | `Design` | 6 |
 | 有 `area/perf` | `Optimization` | 1 |
-| 其余 | `Task` | 41 |
+| 其余 | `Task` | 42 |
 
 研究类和 Spike 类归入 `Task` 是过渡安排。
 下次路线图评审时统一改为 `Design`。

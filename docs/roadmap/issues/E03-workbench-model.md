@@ -8,12 +8,16 @@ milestone: "P2 · 工作区模型"
 blocked-by: [E00]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 6 节为准。
+> 本文的接口契约见 `E10-S03`（`ADR-006`）。
+
 ## 背景
 
 `macosApp/src/Hub/HubTab.swift:10` 的 `HubTab` 是六值枚举。
-页面渲染是 `HubView.swift:186` 里的 `switch`。
+页面渲染是 `HubView.swift:194` 里的 `switch`。
 需求要求页签可增删改名排序，并支持每个工作区独立设置。
 枚举无法承载这些能力。
+工作台配置存放在独立文件 `workbench.json`。
 
 ## 目标
 

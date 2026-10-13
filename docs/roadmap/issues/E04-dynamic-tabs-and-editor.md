@@ -8,11 +8,14 @@ milestone: "P2 · 工作区模型"
 blocked-by: [E03]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 6 节为准。
+> 本文的接口契约见 `E10-S03`（`ADR-006`）。
+
 ## 背景
 
 导航栏用 `ForEach(HubTab.allCases)` 渲染（`HubNavRail.swift:65`）。
-内容区用 `switch` 渲染（`HubView.swift:186`）。
-两者都绑定在枚举上。数据模型就位后要改成绑定在实例列表上。
+内容区用 `switch` 渲染（`HubView.swift:194`）。
+两者都绑定在枚举上。数据模型就位后要改成绑定在 `PaneInstance` 列表上。
 
 用户还需要一个编辑入口来增删改名排序工作区。
 
@@ -24,7 +27,7 @@ blocked-by: [E03]
 
 范围内：
 
-- 替换枚举为实例列表。
+- 替换枚举为 `PaneInstance` 列表。
 - 导航栏渲染。
 - 工作区编辑器界面。
 - 相关测试改写。

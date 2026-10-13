@@ -8,10 +8,13 @@ milestone: "P1 · 挂帘内核"
 blocked-by: [E00]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 4 节为准。
+> 本文的接口契约见 `E10-S01`（`ADR-004`）。
+
 ## 背景
 
 现有触发逻辑散落在三处：热区、快捷键和菜单栏图标。
-三者各自直接调用 `NotchShellController.toggle()`。
+三者各自直接调用 `CurtainController.toggle()`。
 需求要新增触控板手势和刘海悬停两种触发。散落的逻辑无法继续扩展。
 
 ## 目标
@@ -23,7 +26,7 @@ blocked-by: [E00]
 范围内：
 
 - `CurtainTrigger` 协议与 `TriggerRegistry`。
-- 四个 macOS 触发源：刘海悬停、触控板手势、快捷键、菜单栏图标。
+- 四个 macOS 触发源：刘海悬停（`NotchHoverTrigger`）、触控板手势（`TrackpadGestureTrigger`）、快捷键（`HotKeyTrigger`）、菜单栏图标（`StatusItemTrigger`）。
 - 权限申请与降级路径。
 - 触发源的持久化开关。
 
@@ -46,7 +49,7 @@ blocked-by: [E00]
 1. 四个触发源在真机上都能打开挂帘。
 2. 关闭任一触发源后，其余触发源不受影响。
 3. 输入监控权限被拒时，应用仍可用快捷键和菜单栏打开。
-4. `NotchShellController` 不再被触发源直接引用。
+4. `CurtainController` 不再被触发源直接引用。
 
 ## 依赖
 
@@ -55,3 +58,5 @@ blocked-by: [E00]
 ## 风险
 
 `E00-S01` 判定手势不可行时，本 epic 的退出条件去掉手势一项。
+
+**待裁决**：四个触发源的确切接口签名。 归 `E10-S01`（`ADR-004`）。

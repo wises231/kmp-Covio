@@ -8,6 +8,9 @@ milestone: "P4 · 模块工作区化"
 blocked-by: [E04]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 6 节为准。
+> 本文的接口契约见 `E10-S03`（`ADR-006`）。
+
 ## 背景
 
 现有六个页面要搬进工作区体系。
@@ -17,6 +20,8 @@ blocked-by: [E04]
 ## 目标
 
 让六个工作区在新外壳下可用，且行为与 0.5.0 一致。
+每个页面成为一个 `PaneKind` 值，并在 `PaneRegistry` 注册一个视图。
+新增工作区不改外壳。每个已放置的工作区是 `PaneInstance`。
 
 ## 范围
 
@@ -48,6 +53,8 @@ blocked-by: [E04]
 ## 依赖
 
 `E04`。各子项之间没有依赖，可以并行。
+
+Kotlin 侧的接口集中在 `kmpDomain/src/com/wyz/covio/core/Ports.kt`。本组新端口加进这个文件，不要另建文件。
 
 ## 风险
 

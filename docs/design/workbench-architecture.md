@@ -10,7 +10,7 @@
 | 适用范围 | macOS 宿主。Windows 与 iOS 只保留抽象接口。 |
 | 当前基线 | `0.5.0`，分支 `feature/swiftui-macos` |
 | 上游文档 | [路线图](../roadmap/curtain-workbench.md)、[产品设计总稿](../covio-product-master.md)、[设计合同](../covio-design-contract.json)、[ADR-001](../adr/ADR-001-macos-ui-swiftui.md) |
-| 下游文档 | ADR-002 工作台配置的存储位置与版本策略、ADR-003 触发层的抽象边界 |
+| 下游文档 | ADR-002 工作台配置的存储位置与版本策略、ADR-003 触发层的抽象边界、ADR-004 到 ADR-009（分层契约，分工见第 10 节） |
 
 本文描述**目标形态**，不描述现状。现状见[路线图](../roadmap/curtain-workbench.md)第 3 节。
 
@@ -147,7 +147,7 @@ Widget 层的模型跟随工作区层，渲染在 Swift 侧。
 
 1. `NotchShellController`（`macosApp/src/NotchShell/NotchShellController.swift:14`）改名为 `CurtainController`。职责不变。
 2. `HubStateMachine`（`macosApp/src/NotchShell/HubStateMachine.swift:8`）当前六态：`HIDDEN`、`HOVER`、`OPEN`、`ACTIVE`、`EXIT`、`ERROR`。新增 `PREVIEW` 和 `EDITING`，共八态。迁移表在 `:108`。
-3. `ShellPanel`（`macosApp/src/NotchShell/ShellPanels.swift:15`）不动。**顺序不能换**：先设 `isFloatingPanel`，再设 `level = .statusBar`。反序会把层级重置为 3。
+3. `ShellPanel`（`macosApp/src/NotchShell/ShellPanels.swift:16`）不动。**顺序不能换**：先设 `isFloatingPanel`，再设 `level = .statusBar`。反序会把层级重置为 3。
 4. `HubTab` 字段从外壳移出。外壳改为持有当前工作区编号。
 
 ## 6. 工作区层
@@ -255,13 +255,22 @@ Widget 层的模型跟随工作区层，渲染在 Swift 侧。
 2. 触发源与注册表之间的事件形状。
 3. 去重在哪一层做。
 
+**交给分层 ADR**（本地编号 `E10-S01` 到 `E10-S06`，产物是 `ADR-004` 到 `ADR-009`）：
+
+| 本文节 | ADR | 要定的事 |
+| --- | --- | --- |
+| 第 4 节 | `ADR-004` | 四个触发源的接口签名。不重复裁 `ADR-003` 的范围。 |
+| 第 5 节 | `ADR-005` | `CurtainController` 的改名范围，`PREVIEW` 与 `EDITING` 的迁移表。 |
+| 第 6 节 | `ADR-006` | `PaneRegistry` 的样板，工作区数量上限，内置工作区能否删除。 |
+| 第 7 节 | `ADR-007` | 组件尺寸档取几档，网格列数与吸附规则，`WidgetCatalog` 放在哪一侧。 |
+| 第 8 节 | `ADR-008` | 这层的字段清单与损坏恢复细节。不重复裁 `ADR-002` 的范围。 |
+| 第 9 节 | `ADR-009` | 扩展点的做法，以及本文第 9 节与 `E00-S04` 验收第 3 条的冲突。 |
+
+**本文内部待裁决**：`WidgetCatalog` 放在哪一侧。
+第 3.1 节说「Widget 层的模型跟随工作区层」，第 7 节又让 `WidgetCatalog` 照 `SettingsCatalog` 写，而 `SettingsCatalog` 在 Swift 侧。两处矛盾。归 `ADR-007`。
+
 **留给实现期**：
 
-1. 工作区数量上限。
-2. 内置工作区能否删除。
-3. 组件尺寸档取几档。
-4. 编辑模式是就地编辑还是独立页面。
-5. 网格列数与吸附规则。
-6. `PREVIEW` 与 `EDITING` 的完整迁移表。
+1. 编辑模式是就地编辑还是独立页面。
 
 **本文不回答的**：`WorkbenchConfig` 的字段清单。字段由 `E03-S01` 定，定完回填本文第 6 节。

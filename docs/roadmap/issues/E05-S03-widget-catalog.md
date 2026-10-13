@@ -8,6 +8,9 @@ milestone: "P3 · Widgets 首页"
 blocked-by: [E05-S02]
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 7 节为准。
+> 本文的接口契约见 `E10-S04`（`ADR-007`）。
+
 ## 背景
 
 用户需要一个地方浏览可添加的组件。
@@ -38,3 +41,5 @@ blocked-by: [E05-S02]
 ## 依赖
 
 `E05-S02`。
+
+**待裁决**：`WidgetCatalog` 位于 Kotlin 侧还是 Swift 侧，以及它与 `PaneRegistry` 是否共用 `SettingsCatalog` 这一声明式条目表样板。归 `E10-S04`（`ADR-007`）。

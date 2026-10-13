@@ -8,6 +8,9 @@ milestone: "P1 · 挂帘内核"
 blocked-by: []
 ---
 
+> 本文的类型名、文件位置与职责边界以 `docs/design/workbench-architecture.md` 第 5 节为准。
+> 本文的接口契约见 `E10-S02`（`ADR-005`）。
+
 ## 背景
 
 `macosApp/src/NotchShell/ShellPanels.swift:16` 的 `ShellPanel` 是全部面板的基类。
