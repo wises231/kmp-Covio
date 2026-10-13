@@ -179,6 +179,36 @@ class WorkspaceStoreTest {
             assertEquals(policy, store.load().policy)
         }
 
+    /**
+     * 没有变化就不落盘。
+     *
+     * 应用每次启动都清一次。空工作区空转时不该建出索引文件，
+     * 否则用户只是打开应用就会多一个目录。
+     */
+    @Test
+    fun `sweep writes nothing when there is nothing to remove`() =
+        withTemporaryDirectory("workspace") { directory ->
+            val store = storeIn(directory)
+            val indexPath = directory.resolve("Workspace/index.json")
+
+            val plan = store.sweep(WorkspacePolicy(), nowEpochSeconds = 1000L)
+
+            assertFalse(plan.changed)
+            assertFalse(FileSystem.SYSTEM.exists(indexPath), "空转不该建索引文件")
+        }
+
+    /** 策略变了要落盘，否则下次启动读到的是旧策略。 */
+    @Test
+    fun `sweep persists a changed policy`() =
+        withTemporaryDirectory("workspace") { directory ->
+            val store = storeIn(directory)
+            val policy = WorkspacePolicy(maxTotalBytes = 1024L, maxEntryBytes = 512L, retentionDays = 3)
+
+            store.sweep(policy, nowEpochSeconds = 1000L)
+
+            assertEquals(policy.normalized(), store.load().policy)
+        }
+
     @Test
     fun `clear removes the index and both content directories`() =
         withTemporaryDirectory("workspace") { directory ->
@@ -211,6 +241,77 @@ class WorkspaceStoreTest {
             assertEquals(1, saved.entries.size)
             assertEquals("not a directory", blocker.readText(), "失败时不该动到那个文件")
             assertEquals(WorkspaceState(), store.load())
+        }
+
+    /**
+     * 写失败时 [WorkspaceStore.saveReporting] 回 null，调用方据此报错。
+     *
+     * [WorkspaceStore.save] 只看状态，分不出写没写进去。
+     */
+    @Test
+    fun `save reporting tells whether the index reached the disk`() =
+        withTemporaryDirectory("workspace") { directory ->
+            val store = storeIn(directory)
+            val state = WorkspaceState(entries = listOf(entry(digestOf("x"))))
+
+            assertEquals(state, store.saveReporting(state))
+
+            // 把临时文件占成一个目录，写索引必然失败。
+            FileSystem.SYSTEM.createDirectories(directory.resolve("Workspace/index.json.tmp"))
+
+            assertNull(store.saveReporting(state.copy(entries = state.entries + entry(digestOf("y")))))
+            assertEquals(state, store.load(), "失败时磁盘上还是上一份索引")
+        }
+
+    /**
+     * 索引没写进磁盘时放入不算成功。
+     *
+     * 内容已经在 `objects` 里了，但重启之后没有索引就找不回来，所以内存里也不留这一条。
+     */
+    @Test
+    fun `put file reports a failed index write`() =
+        withTemporaryDirectory("workspace") { directory ->
+            val store = storeIn(directory)
+            val source = directory.resolve("note.txt")
+            source.writeText("hello")
+            FileSystem.SYSTEM.createDirectories(directory.resolve("Workspace/index.json.tmp"))
+
+            val result = store.putFile(
+                state = WorkspaceState(),
+                sourcePath = source.toString(),
+                displayName = "note.txt",
+                contentType = "text/plain",
+                originDeviceId = "mac-1",
+                nowEpochSeconds = 100L,
+            )
+
+            assertEquals(WorkspaceAdmission.ACCEPTED, result.admission)
+            assertFalse(result.persisted)
+            assertNull(result.entry, "没落盘的条目不报给界面")
+            assertEquals(emptyList(), result.state.entries)
+            assertEquals(WorkspaceState(), store.load())
+        }
+
+    /// 放进去的那一条落盘了，`persisted` 才是真。
+    @Test
+    fun `put file reports a persisted entry`() =
+        withTemporaryDirectory("workspace") { directory ->
+            val store = storeIn(directory)
+            val source = directory.resolve("note.txt")
+            source.writeText("hello")
+
+            val result = store.putFile(
+                state = WorkspaceState(),
+                sourcePath = source.toString(),
+                displayName = "note.txt",
+                contentType = "text/plain",
+                originDeviceId = "mac-1",
+                nowEpochSeconds = 100L,
+            )
+
+            assertTrue(result.persisted)
+            assertNotNull(result.entry)
+            assertEquals(1, store.load().entries.size)
         }
 
     /// 工作区目录沿用 `APP_NAME`，与晾衣线和剪切板同一套写法。
@@ -332,6 +433,57 @@ class WorkspaceStoreTest {
             assertEquals(WorkspaceAdmission.FAILED, result.admission)
             assertNull(result.entry)
             assertEquals(WorkspaceState(), store.load())
+        }
+
+    /// 放入一段文字：内容按摘要落盘，条目进索引。
+    @Test
+    fun `put text writes the content and records the entry`() =
+        withTemporaryDirectory("workspace") { directory ->
+            val store = storeIn(directory)
+
+            val result = store.putText(
+                state = WorkspaceState(),
+                text = "剪贴板里的一段字",
+                displayName = "剪贴板里的一段字.txt",
+                contentType = "text/plain",
+                originDeviceId = "",
+                nowEpochSeconds = 100L,
+            )
+
+            assertEquals(WorkspaceAdmission.ACCEPTED, result.admission)
+            val entry = result.entry!!
+            assertEquals(WorkspaceKind.TEXT, entry.kind)
+            assertEquals("剪贴板里的一段字.txt", entry.displayName)
+            assertEquals(entry.byteSize, "剪贴板里的一段字".encodeToByteArray().size.toLong())
+            assertEquals("剪贴板里的一段字", store.readContent(entry.entryId)?.decodeToString())
+        }
+
+    /// 同一段文字放两次只留一条，不留第二份文件。
+    @Test
+    fun `put text merges the same content into one entry`() =
+        withTemporaryDirectory("workspace") { directory ->
+            val store = storeIn(directory)
+            val first = store.putText(WorkspaceState(), "same", "a.txt", "text/plain", "", 100L)
+
+            val second = store.putText(first.state, "same", "b.txt", "text/plain", "", 200L)
+
+            assertEquals(WorkspaceAdmission.DUPLICATE, second.admission)
+            assertEquals(first.entry?.entryId, second.entry?.entryId)
+            assertEquals(1, FileSystem.SYSTEM.list(directory.resolve("Workspace/objects")).size)
+        }
+
+    /// 内容超过单条目上限时不落盘。
+    @Test
+    fun `put text refuses content over the entry limit`() =
+        withTemporaryDirectory("workspace") { directory ->
+            val store = storeIn(directory)
+            val state = WorkspaceState(policy = WorkspacePolicy(maxTotalBytes = 5L, maxEntryBytes = 5L))
+
+            val result = store.putText(state, "0123456789", "big.txt", "text/plain", "", 100L)
+
+            assertEquals(WorkspaceAdmission.TOO_LARGE, result.admission)
+            assertNull(result.entry)
+            assertFalse(FileSystem.SYSTEM.exists(directory.resolve("Workspace/incoming")), "没有半份文件")
         }
 
     @Test

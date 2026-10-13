@@ -19,6 +19,8 @@ struct ScreenshotCardView: View {
     let onCopy: () -> Void
     let onPreview: () -> Void
     let onMarkup: () -> Void
+    /// 把这张截图存入工作区。没有工作区时是空，菜单里就不出现这一项。
+    let onSaveToWorkspace: (() -> Void)?
     /// 卡片落到底了，可以真的移除。不是用户点「移除」的那一刻。
     let onRemove: () -> Void
     /// 用户开始拖这张卡片。参数是发起拖拽的视图与触发它的鼠标事件。
@@ -39,7 +41,8 @@ struct ScreenshotCardView: View {
         onPreview: @escaping () -> Void,
         onMarkup: @escaping () -> Void,
         onRemove: @escaping () -> Void,
-        onDragBegin: @escaping (NSView, NSEvent) -> Void
+        onDragBegin: @escaping (NSView, NSEvent) -> Void,
+        onSaveToWorkspace: (() -> Void)? = nil
     ) {
         self.item = item
         self.index = index
@@ -49,6 +52,7 @@ struct ScreenshotCardView: View {
         self.onCopy = onCopy
         self.onPreview = onPreview
         self.onMarkup = onMarkup
+        self.onSaveToWorkspace = onSaveToWorkspace
         self.onRemove = onRemove
         self.onDragBegin = onDragBegin
         _visualState = State(initialValue: flying ? .flying : .default)
@@ -109,13 +113,18 @@ struct ScreenshotCardView: View {
     /// 卡片的辅助功能描述。
     ///
     /// 四个动作连起来读，最后跟文件路径。与 Compose 版的 `contentDescription` 同序。
+    /// 有工作区时把「存入工作区」插在移除前面。
     private var cardDescription: String {
-        [
+        var actions = [
             ContractCopy.copyTopShelfActionCopy.text(for: language),
             ContractCopy.copyTopShelfActionPreview.text(for: language),
             ContractCopy.copyTopShelfActionMarkup.text(for: language),
-            ContractCopy.copyTopShelfActionRemoveFromShelf.text(for: language),
-        ].joined(separator: ", ") + ": " + item.path
+        ]
+        if onSaveToWorkspace != nil {
+            actions.append(ContractCopy.copyTopShelfActionWorkspace.text(for: language))
+        }
+        actions.append(ContractCopy.copyTopShelfActionRemoveFromShelf.text(for: language))
+        return actions.joined(separator: ", ") + ": " + item.path
     }
 
     /// 退出与进入动画的时长。减弱动态效果时用短的那一档。
@@ -189,6 +198,11 @@ struct ScreenshotCardView: View {
         })
         menu.addItem(menuItem(ContractCopy.copyTopShelfActionPreview.text(for: language)) { [self] in onPreview() })
         menu.addItem(menuItem(ContractCopy.copyTopShelfActionMarkup.text(for: language)) { [self] in onMarkup() })
+        if let onSaveToWorkspace {
+            menu.addItem(menuItem(ContractCopy.copyTopShelfActionWorkspace.text(for: language)) { [self] in
+                onSaveToWorkspace()
+            })
+        }
         menu.addItem(.separator())
         // 只切状态。真的移除在卡片落到底之后，这样用户看得见卡片掉下去。
         menu.addItem(menuItem(ContractCopy.copyTopShelfActionRemoveFromShelf.text(for: language)) { [self] in
@@ -235,6 +249,9 @@ struct ScreenshotCardView: View {
             }
             Button(ContractCopy.copyTopShelfActionPreview.text(for: language), action: onPreview)
             Button(ContractCopy.copyTopShelfActionMarkup.text(for: language), action: onMarkup)
+            if let onSaveToWorkspace {
+                Button(ContractCopy.copyTopShelfActionWorkspace.text(for: language), action: onSaveToWorkspace)
+            }
             Divider()
             Button(ContractCopy.copyTopShelfActionRemoveFromShelf.text(for: language)) { visualState = .falling }
         } label: {

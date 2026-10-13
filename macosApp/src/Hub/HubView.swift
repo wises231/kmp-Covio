@@ -195,7 +195,11 @@ struct HubTabContent: View {
         if let runtime, tab == .settings {
             SettingsTabView(runtime: runtime, section: chrome.settingsSection, chrome: chrome)
         } else if let runtime, tab == .screenshots {
-            ScreenshotsTabView(shelf: runtime.shelf, language: language)
+            ScreenshotsTabView(
+                shelf: runtime.shelf,
+                language: language,
+                onSaveToWorkspace: { item in _ = runtime.workspace.save(filesAt: [item.path]) }
+            )
         } else if let runtime, tab == .clipboard {
             ClipboardTabView(clipboard: runtime.clipboard, runtime: runtime)
         } else if let runtime, tab == .files {

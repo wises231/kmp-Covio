@@ -229,4 +229,30 @@ class WorkspaceLogicTest {
         assertEquals(3, plan.kept.size)
         assertEquals(80L, plan.totalBytes)
     }
+
+    /// 文字名取第一行，去掉路径分隔符与控制字符。
+    @Test
+    fun `suggested text name takes the first line and drops forbidden characters`() {
+        assertEquals("hello.txt", WorkspaceLogic.suggestedTextName("hello"))
+        assertEquals("first.txt", WorkspaceLogic.suggestedTextName("\n\n  first  \nsecond"))
+        assertEquals("a b.txt", WorkspaceLogic.suggestedTextName("a   b"))
+    }
+
+    /// 名字不能带路径分隔符，否则拼路径时会被当成目录。
+    @Test
+    fun `suggested text name drops separators and control characters`() {
+        assertEquals("etc passwd.txt", WorkspaceLogic.suggestedTextName("/etc/passwd"))
+        assertEquals("C Users w.txt", WorkspaceLogic.suggestedTextName("C:\\Users\\w"))
+        assertEquals("ab.txt", WorkspaceLogic.suggestedTextName("a\u0000b"))
+        assertEquals("hello.txt", WorkspaceLogic.suggestedTextName("hello."))
+    }
+
+    /// 名字有长度上限，正文取不出名字时用固定的那一个。
+    @Test
+    fun `suggested text name is capped and has a fallback`() {
+        assertEquals("clipboard.txt", WorkspaceLogic.suggestedTextName("   \n\t "))
+        assertEquals("clipboard.txt", WorkspaceLogic.suggestedTextName(""))
+        assertEquals("clipboard.txt", WorkspaceLogic.suggestedTextName("///"))
+        assertEquals(44, WorkspaceLogic.suggestedTextName("x".repeat(200)).length)
+    }
 }

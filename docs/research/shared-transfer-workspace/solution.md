@@ -32,11 +32,16 @@
 
 ```text
 <应用数据根>/Covio/Workspace/
-  index.json          条目索引，原子写入
-  objects/<sha256>    内容字节，按摘要命名
-  incoming/<task-id>  未完成的传输，校验后改名移入 objects
-  tombstones.json     删除标记，保留 30 天
+  index.json             条目索引，原子写入
+  objects/<sha256>       内容字节，按摘要命名
+  incoming/<随机名>.part 放入时的半成品，摘要算完就改名
+  incoming/<sha256>      摘要算完，等待移入 objects
+  incoming/<sha256>.part 传输中的暂存，收到多少就有多大
+  tombstones.json        删除标记，保留 30 天
 ```
+
+`incoming` 有三种形态，实现见 `WorkspaceStore` 的暂存区原语。
+`tombstones.json` 属于复制阶段，当前不写。
 
 macOS 上 `<应用数据根>` 是 `~/Library/Application Support`。
 路径与现有晾衣线的 `Covio/Screenshots/shelf.json` 同级。
@@ -45,8 +50,8 @@ Android 上 `<应用数据根>` 是应用私有的 `files` 目录。
 iOS 上 `<应用数据根>` 是应用容器的 `Library/Application Support`。
 iOS 的目录选择依据见 [evidence.md](evidence.md) 的 `E-19`。
 工作区不放在缓存目录或临时目录（`E-09`、`E-15`、`E-19`）。
-四个平台的根目录尚未在 `AppDirectories` 的 actual 中实现。
-实施阶段 1 先补齐这三个 actual。
+`AppDirectories` 的 actual 已实现 macOS、Windows 与 Linux 三个根目录。
+iOS 与 Android 的目标还没进构建，补齐要等目标加入（第 10.1 节）。
 iOS 的 `Workspace` 目录设置备份排除标记，不进 iCloud 备份。
 备份排除标记只是提示，过期仍由 Covio 自己执行（`E-19`）。
 
@@ -241,6 +246,8 @@ iOS 上分享扩展只执行第 1 步与第 4 步的前半段。
 策略函数是纯函数：输入条目列表、策略与当前时间，输出保留列表。
 纯函数形式与 `ClipboardStore.prune` 相同，便于单元测试。
 
+第 4 项还没有对应的策略字段，等传输层落地时再定（第 10.3 节）。
+
 ## 5. 安全设计
 
 1. 内容只在已配对设备之间传输。
@@ -350,13 +357,37 @@ iOS 上分享扩展只执行第 1 步与第 4 步的前半段。
 
 ### 10.2 阶段 2：放入入口
 
+状态：第 1 项与第 5 项已在 `feature/swiftui-macos` 分支落地。其余三项未开始。
+
 1. 实现 macOS 拖放与应用内选择。
 2. 实现 Windows 拖放与应用内选择。
 3. 实现 iOS 分享扩展与 App Group 共享容器（`E-17`）。
 4. 实现 Android 分享意图接收。
 5. 实现剪切板条目与截图条目保存到工作区。
 
+落地位置：
+
+| 第几项 | 文件 | 说明 |
+| --- | --- | --- |
+| 1 | `macosApp/src/Hub/FilesTabView.swift` | 页内容接收文件拖放。胶囊里的「放入文件」开系统选择面板。 |
+| 5 | `kmpDomain/src/com/wyz/covio/core/WorkspaceStore.kt` | `putText` 直接写正文。它与 `putFile` 共用 `settle`。 |
+| 5 | 同上，`WorkspaceLogic.suggestedTextName` | 按正文第一行取文件名。四个平台共用一条规则。 |
+| 5 | `kmpDomain/src/com/wyz/covio/core/ClipboardStore.kt` | `ClipboardLogic.importPaths` 给出条目背后的落盘文件。 |
+| 5 | `macosApp/src/Workspace/WorkspaceRuntime.swift` | `save(text:)`、`save(filesAt:)`、`save(clipItem:)`。 |
+| 5 | `macosApp/src/Hub/ClipboardTabView.swift` | 每条记录加「存入工作区」。图片与文件存文件，其余存正文。 |
+| 5 | `macosApp/src/Shelf/ScreenshotCardView.swift` | 右键菜单与溢出菜单加「存入工作区」。没有工作区时这一项不出现。 |
+
+偏差：来源页没有就地提示。
+
+- 剪切板页高固定 344 点，放不下第二条提示。
+- `ClipboardRuntime` 只有失败通道，没有成功通道。
+- 因此存入结果只在文件页显示。
+
+未做：这两项的界面动作只有单元测试与编译覆盖，尚未手工验证。
+
 ### 10.3 阶段 3：复制
+
+状态：第 1 至 3 项的逻辑层已在 `feature/swiftui-macos` 分支落地。其余三项未开始。
 
 1. 实现 `workspace.put` 与 `workspace.list`。
 2. 实现分块传输与校验。
@@ -365,12 +396,82 @@ iOS 上分享扩展只执行第 1 步与第 4 步的前半段。
 5. 实现删除广播与删除标记。
 6. 实现 HTTP 后台传输端点，供 iOS 的后台会话使用。
 
+落地位置：
+
+| 第几项 | 文件 | 说明 |
+| --- | --- | --- |
+| 1 | `kmpDomain/src/com/wyz/covio/core/WorkspaceWire.kt` | 第 2 节的线格式：操作名、请求与响应信封、错误码。 |
+| 1 | `kmpDomain/src/com/wyz/covio/core/WorkspaceTransfer.kt` | `begin`、`chunk`、`commit`、`cancel`、`list`、`stat`。 |
+| 1 | `kmpDomain/src/com/wyz/covio/core/WorkspaceStore.kt` | 暂存区原语。路径是 `incoming/<摘要>.part`。 |
+| 2 | 同上 | 每块核对偏移。提交时核对摘要与字节数。 |
+| 3 | 同上 | `begin` 返回已经收到的字节数。偏移不符时 `chunk` 回已收长度。 |
+
+偏差：
+
+- 任务标识就是条目摘要，不是独立的 `task-NNNN`。内容寻址让一次传输只对应一份内容。
+- 时间在线格式上是毫秒，在索引里是秒。换算只在 `WorkspaceWire` 的两处。
+- 摘要不合法回 `checksum_mismatch`，因为摘要本身就是校验和。
+- 类别不在支持列表里回 `unsupported_kind`。
+- 超过工作区上限回 `quota_exceeded`。`storage_full` 留给写盘失败。
+- 收到的字节超过条目声明的字节数时立刻回 `checksum_mismatch`，不等到提交。
+- 零字节条目在 `begin` 时先建空暂存文件，提交时才有东西可校验、可改名。
+- 索引写盘失败时 `WorkspacePutResult.persisted` 为假，界面报错而不报成功。
+
+未做：
+
+- 传输层。第 2.1 节要求复用跨设备主题的会话通道。那个通道还没实现。
+- 进程中途退出时，`fetching` 状态的条目要等下一次 `begin` 或 `cancel` 才收敛。
+- 按需取回、删除广播与删除标记、HTTP 后台端点。
+- 界面。macOS 上还没有对端，所以没有可接的入口。
+
 ### 10.4 阶段 4：加固
 
 1. 实现配额设置界面。
 2. 实现空间不足与权限不足的提示。
 3. 实现索引重建。
 4. 完成无障碍与双语验收。
+
+### 10.5 发布级审计（2026-10-13）
+
+审计范围是阶段 1 至 3 的已落地部分。
+三条视角：安全与隐私、发布就绪、文档一致性。
+下面的结论都在本机复现过。修复已在 `feature/swiftui-macos` 分支落地，尚未提交。
+
+已修的缺陷：
+
+1. **暂存字节可以越过总上限。** 修复前的复现：单条目上限 100 字节，总上限 100 字节，40 条各声明 1 字节的条目，各收到 100 字节。磁盘上留下 4000 字节。原因：`chunk` 只按单条目上限比对，不比条目声明的字节数。声明因此形同虚设。修法：`chunk` 按声明的字节数拒收。
+2. **零字节条目永远提交不了。** 原因：`begin` 不建暂存文件，`commit` 找不到文件就回 `checksum_mismatch`。修法：`begin` 先建空暂存文件；建不出来就回 `storage_full`，连索引都不写。
+3. **索引写盘失败时报成功。** 原因：`save` 把写盘结果吞掉，界面只看条目有没有进内存。修法：新增 `saveReporting`；`WorkspacePutResult.persisted` 把结果交给界面。没落盘时报错，条目不进列表。
+
+新增的测试：
+
+| 测试 | 覆盖 |
+| --- | --- |
+| `chunk refuses to grow past the declared size` | 超过声明立刻回 `checksum_mismatch` |
+| `chunk refuses to grow past the entry limit` | 声明大于上限时回 `quota_exceeded` |
+| `chunk refuses bytes for an empty entry` | 零字节条目收不下字节 |
+| `an empty entry round trips through begin and commit` | 零字节条目能提交 |
+| `begin refuses an empty entry when the staging cannot be created` | 建不出暂存文件时不写索引 |
+| `chunk reports a full disk` | `storage_full`，条目留在 `fetching` |
+| `commit reports a full disk` | `storage_full`，条目退回 `remote` |
+| `commit refuses a task that is not in the index` | `entry_not_found`，半份内容删掉 |
+| `begin counts the transfers in flight against the quota` | 在传的条目占配额 |
+| `stat counts the transfers in flight` | 在传的条目按声明计入占用 |
+| `save reporting tells whether the index reached the disk` | 写盘结果的两种取值 |
+| `put file reports a failed index write` | `persisted` 为假，条目不进内存 |
+| `put file reports a persisted entry` | `persisted` 为真 |
+| `testIntakeReportsAFailedIndexWrite` | 放入时索引写不进去，报错不报成功 |
+| `testSaveTextReportsAFailedIndexWrite` | 存文字时索引写不进去，返回假 |
+| `testSaveTextReportsASuccessfulWrite` | 存文字成功时的说明 |
+
+未修：
+
+- 工作区目录没有设 `0700`（第 5 节第 4 项）。权限现在由 umask 决定，阶段 4 加固时补。
+- 目前没有任何日志。第 5 节第 7 项因此成立，但没有可核对的内容。
+- 并发传输数没有策略字段（第 4 节第 4 项），等传输层落地时再定。
+- 阶段 3 的代码没有生产调用方，只被测试覆盖。上面三条缺陷因此都还没在真机上出现过。
+
+发布阻塞项都不在本次改动范围内，见 `docs/covio-macos-swiftui-migration-plan.md` 第 10 节与第 13 节。
 
 ## 11. 回滚条件
 

@@ -49,6 +49,7 @@ final class ShelfPanelController: ShelfPresenting {
     private unowned let runtime: ShelfRuntime
     private let pointerLocation: () -> CGPoint
     private let language: () -> AppLanguage
+    private let onSaveToWorkspace: ((ShelfItem) -> Void)?
     private var panel: ShelfPanel?
     private var host: NSHostingView<ShelfPanelContent>?
     /// 面板当前的矩形。判定卡片命中时要用它换算坐标。
@@ -58,11 +59,13 @@ final class ShelfPanelController: ShelfPresenting {
     init(
         runtime: ShelfRuntime,
         pointerLocation: @escaping () -> CGPoint = { NSEvent.mouseLocation },
-        language: @escaping () -> AppLanguage
+        language: @escaping () -> AppLanguage,
+        onSaveToWorkspace: ((ShelfItem) -> Void)? = nil
     ) {
         self.runtime = runtime
         self.pointerLocation = pointerLocation
         self.language = language
+        self.onSaveToWorkspace = onSaveToWorkspace
     }
 
     var isVisible: Bool { panel?.isVisible ?? false }
@@ -83,7 +86,8 @@ final class ShelfPanelController: ShelfPresenting {
             runtime: runtime,
             containerWidth: rect.width,
             language: language(),
-            reduceMotion: reduceMotion
+            reduceMotion: reduceMotion,
+            onSaveToWorkspace: onSaveToWorkspace
         )
         // `orderFrontRegardless` 不激活 Covio，前台应用不变。
         panel.orderFrontRegardless()
@@ -133,7 +137,8 @@ final class ShelfPanelController: ShelfPresenting {
                 runtime: runtime,
                 containerWidth: rect.width,
                 language: language(),
-                reduceMotion: reduceMotion
+                reduceMotion: reduceMotion,
+                onSaveToWorkspace: onSaveToWorkspace
             )
         )
         // 背景透明，绳子和卡片之间的空隙要让桌面透出来。
@@ -153,6 +158,8 @@ struct ShelfPanelContent: View {
     let containerWidth: CGFloat
     let language: AppLanguage
     let reduceMotion: Bool
+    /// 把一张截图存入工作区。没有工作区时是空，菜单里就不出现这一项。
+    var onSaveToWorkspace: ((ShelfItem) -> Void)?
 
     var body: some View {
         ClotheslineView(
@@ -165,6 +172,7 @@ struct ShelfPanelContent: View {
             onPreview: { runtime.openItem($0) },
             onMarkup: { runtime.markupItem($0) },
             onRemove: { runtime.removeItem($0) },
+            onSaveToWorkspace: onSaveToWorkspace,
             onDragBegin: { item, view, event in
                 runtime.beginDrag(item: item, from: view, event: event)
             },

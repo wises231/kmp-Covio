@@ -35,6 +35,8 @@ enum ContractCopy {
     static let copyClipboardActionRemove = LocalizedCopy(key: "copy/clipboard/action/remove", en: "Remove", zhHans: "删除")
     /// `copy/clipboard/action/unpin`
     static let copyClipboardActionUnpin = LocalizedCopy(key: "copy/clipboard/action/unpin", en: "Unpin", zhHans: "取消置顶")
+    /// `copy/clipboard/action/workspace`
+    static let copyClipboardActionWorkspace = LocalizedCopy(key: "copy/clipboard/action/workspace", en: "Save to Workspace", zhHans: "存入工作区")
     /// `copy/clipboard/empty`
     static let copyClipboardEmpty = LocalizedCopy(key: "copy/clipboard/empty", en: "Nothing copied yet", zhHans: "还没有复制内容")
     /// `copy/clipboard/error/accessibility`
@@ -169,12 +171,16 @@ enum ContractCopy {
     static let copyHubFilesErrorMissing = LocalizedCopy(key: "copy/hub/files/error/missing", en: "This device no longer has the content.", zhHans: "本机已经没有这份内容。")
     /// `copy/hub/files/error/quota`
     static let copyHubFilesErrorQuota = LocalizedCopy(key: "copy/hub/files/error/quota", en: "The workspace is full. Remove an entry or raise the limit.", zhHans: "工作区已满。删除一些条目，或调高上限。")
+    /// `copy/hub/files/error/save`
+    static let copyHubFilesErrorSave = LocalizedCopy(key: "copy/hub/files/error/save", en: "Cannot write to the workspace.", zhHans: "写不进工作区。")
     /// `copy/hub/files/error/too-large`
     static let copyHubFilesErrorTooLarge = LocalizedCopy(key: "copy/hub/files/error/too-large", en: "This file is over the single entry limit.", zhHans: "这个文件超过单条目上限。")
     /// `copy/hub/files/hint`
     static let copyHubFilesHint = LocalizedCopy(key: "copy/hub/files/hint", en: "Drop files here, or use Import Files.", zhHans: "把文件拖到这里，或点「放入文件」。")
     /// `copy/hub/files/notice/duplicate`
     static let copyHubFilesNoticeDuplicate = LocalizedCopy(key: "copy/hub/files/notice/duplicate", en: "The workspace already has this content.", zhHans: "工作区里已经有这份内容。")
+    /// `copy/hub/files/notice/saved`
+    static let copyHubFilesNoticeSaved = LocalizedCopy(key: "copy/hub/files/notice/saved", en: "Saved to the workspace.", zhHans: "已存入工作区。")
     /// `copy/hub/files/notice/swept`
     static let copyHubFilesNoticeSwept = LocalizedCopy(key: "copy/hub/files/notice/swept", en: "Removed expired entries.", zhHans: "已清理过期条目。")
     /// `copy/hub/files/usage`
@@ -489,6 +495,8 @@ enum ContractCopy {
     static let copyTopShelfActionRemoveFromShelf = LocalizedCopy(key: "copy/top-shelf/action/remove-from-shelf", en: "Remove from Shelf", zhHans: "从工具栏移除")
     /// `copy/top-shelf/action/show-toolbar`
     static let copyTopShelfActionShowToolbar = LocalizedCopy(key: "copy/top-shelf/action/show-toolbar", en: "Show Toolbar", zhHans: "显示工具栏")
+    /// `copy/top-shelf/action/workspace`
+    static let copyTopShelfActionWorkspace = LocalizedCopy(key: "copy/top-shelf/action/workspace", en: "Save to Workspace", zhHans: "存入工作区")
     /// `copy/top-shelf/clear`
     static let copyTopShelfClear = LocalizedCopy(key: "copy/top-shelf/clear", en: "Clear Shelf", zhHans: "清空挂帘")
     /// `copy/top-shelf/empty`
@@ -577,6 +585,7 @@ enum ContractCopy {
         copyClipboardActionPin,
         copyClipboardActionRemove,
         copyClipboardActionUnpin,
+        copyClipboardActionWorkspace,
         copyClipboardEmpty,
         copyClipboardErrorAccessibility,
         copyClipboardErrorHotKey,
@@ -644,9 +653,11 @@ enum ContractCopy {
         copyHubFilesErrorImport,
         copyHubFilesErrorMissing,
         copyHubFilesErrorQuota,
+        copyHubFilesErrorSave,
         copyHubFilesErrorTooLarge,
         copyHubFilesHint,
         copyHubFilesNoticeDuplicate,
+        copyHubFilesNoticeSaved,
         copyHubFilesNoticeSwept,
         copyHubFilesUsage,
         copyHubLogExport,
@@ -804,6 +815,7 @@ enum ContractCopy {
         copyTopShelfActionRemove,
         copyTopShelfActionRemoveFromShelf,
         copyTopShelfActionShowToolbar,
+        copyTopShelfActionWorkspace,
         copyTopShelfClear,
         copyTopShelfEmpty,
         copyTopShelfEnabled,

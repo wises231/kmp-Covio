@@ -204,4 +204,30 @@ class ClipboardStoreTest {
         )
         assertEquals(ClipboardStore.defaultDirectory(), path.removeSuffix("/clipboard.json"))
     }
+
+    /// 图片与文件条目有落盘文件，可以导入工作区。
+    @Test
+    fun `import paths lists the files behind an item`() {
+        val image = ClipItem("a", ClipKind.IMAGE, filePath = "/tmp/a.png")
+        assertEquals(listOf("/tmp/a.png"), ClipboardLogic.importPaths(image))
+
+        // 文件条目可能复制了多个文件：第一个在 filePath，完整列表在 text。
+        val files = ClipItem(
+            "b",
+            ClipKind.FILES,
+            text = "/tmp/a.png\n/tmp/b.png",
+            filePath = "/tmp/a.png",
+        )
+        assertEquals(listOf("/tmp/a.png", "/tmp/b.png"), ClipboardLogic.importPaths(files))
+    }
+
+    /// 文字、链接与颜色条目没有落盘文件，导入时走另一条路。
+    @Test
+    fun `import paths is empty for text items`() {
+        assertEquals(emptyList(), ClipboardLogic.importPaths(ClipItem("a", ClipKind.TEXT, text = "hello")))
+        assertEquals(emptyList(), ClipboardLogic.importPaths(ClipItem("b", ClipKind.LINK, text = "https://a.example")))
+        assertEquals(emptyList(), ClipboardLogic.importPaths(ClipItem("c", ClipKind.COLOR, text = "#ff0000")))
+        // 路径为空的坏数据也不该给出空串。
+        assertEquals(emptyList(), ClipboardLogic.importPaths(ClipItem("d", ClipKind.IMAGE, filePath = "  ")))
+    }
 }

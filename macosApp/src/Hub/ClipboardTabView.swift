@@ -68,6 +68,7 @@ struct ClipboardTabView: View {
                         onCopy: { clipboard.copyToPasteboard(item.id) },
                         onPaste: { clipboard.paste(item.id) },
                         onPin: { clipboard.togglePin(item.id) },
+                        onSave: { _ = runtime.workspace.save(clipItem: item) },
                         onRemove: { clipboard.remove(item.id) }
                     )
                 }
@@ -150,6 +151,8 @@ private struct ClipboardRow: View {
     let onCopy: () -> Void
     let onPaste: () -> Void
     let onPin: () -> Void
+    /// 把这一条存入工作区。图片与文件存它们的文件，其余存正文。
+    let onSave: () -> Void
     let onRemove: () -> Void
 
     var body: some View {
@@ -213,6 +216,7 @@ private struct ClipboardRow: View {
                 kind: .plain,
                 action: onPin
             )
+            MacButton(title: ContractCopy.copyClipboardActionWorkspace.text(for: language), kind: .plain, action: onSave)
             MacButton(title: ContractCopy.copyClipboardActionRemove.text(for: language), kind: .plain, action: onRemove)
         }
     }

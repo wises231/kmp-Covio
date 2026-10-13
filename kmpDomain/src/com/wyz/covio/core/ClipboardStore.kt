@@ -174,6 +174,22 @@ object ClipboardLogic {
     fun pushPasteStack(stack: List<String>, id: String): List<String> =
         stack.filterNot { it == id } + id
 
+    /**
+     * 条目里已经落盘、可以直接导入工作区的文件路径。
+     *
+     * 图片与文件条目才有路径。文件条目可能复制了多个文件：
+     * `filePath` 是第一个，完整列表按行放在 `text` 里。
+     * 文字、链接与颜色条目没有落盘文件，返回空表。
+     */
+    fun importPaths(item: ClipItem): List<String> = when (item.kind) {
+        ClipKind.IMAGE -> listOf(item.filePath.trim()).filter(String::isNotEmpty)
+        ClipKind.FILES -> (item.text.split('\n') + item.filePath)
+            .map(String::trim)
+            .filter(String::isNotEmpty)
+            .distinct()
+        else -> emptyList()
+    }
+
     private fun hasContent(item: ClipItem, exists: (String) -> Boolean): Boolean = when (item.kind) {
         ClipKind.IMAGE, ClipKind.FILES -> item.filePath.isNotBlank() && exists(item.filePath)
         else -> item.text.isNotBlank()

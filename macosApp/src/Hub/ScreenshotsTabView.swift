@@ -14,6 +14,8 @@ struct ScreenshotsTabView: View {
     let shelf: ShelfRuntime
     /// 界面语言。晾衣线上的卡片按它取文案。
     let language: AppLanguage
+    /// 把一张截图存入工作区。没有工作区时传空，菜单里就不出现这一项。
+    var onSaveToWorkspace: ((ShelfItem) -> Void)?
 
     private var layout: ShelfLayout { ShelfLayout.shared }
 
@@ -36,6 +38,7 @@ struct ScreenshotsTabView: View {
             onPreview: { shelf.openItem($0) },
             onMarkup: { shelf.markupItem($0) },
             onRemove: { shelf.removeItem($0) },
+            onSaveToWorkspace: onSaveToWorkspace,
             onDragBegin: { item, view, event in
                 shelf.beginDrag(item: item, from: view, event: event)
             },
