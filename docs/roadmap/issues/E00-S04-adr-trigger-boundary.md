@@ -2,6 +2,7 @@
 id: E00-S04
 title: "ADR-003：触发层的抽象边界"
 labels: [documentation, phase-0-research, area/trigger, area/shell]
+type: Design
 parent: E00
 milestone: "P0 · 调研与决策"
 blocked-by: []

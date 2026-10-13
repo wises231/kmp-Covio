@@ -2,6 +2,7 @@
 id: E09-S01
 title: "无障碍与键盘操作"
 labels: [accessibility, phase-5-quality, area/a11y]
+type: Task
 parent: E09
 milestone: "P5 · 质量与交付"
 blocked-by: [E05-S04, E04-S03]

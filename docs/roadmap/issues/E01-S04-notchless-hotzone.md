@@ -2,6 +2,7 @@
 id: E01-S04
 title: "非刘海屏热区与全屏 Space 抑制"
 labels: [enhancement, phase-1-curtain-core, area/trigger, area/shell]
+type: Task
 parent: E01
 milestone: "P1 · 挂帘内核"
 blocked-by: [E00-S05, E01-S01]

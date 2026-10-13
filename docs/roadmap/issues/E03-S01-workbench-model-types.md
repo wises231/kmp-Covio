@@ -2,6 +2,7 @@
 id: E03-S01
 title: "WorkbenchConfig 与 PaneInstance 数据模型"
 labels: [enhancement, phase-2-workspace-model, area/pane, area/kmp]
+type: Task
 parent: E03
 milestone: "P2 · 工作区模型"
 blocked-by: [E00-S03]

@@ -2,6 +2,7 @@
 id: E08-S04
 title: "重跑校验与生成脚本"
 labels: [documentation, phase-5-quality, area/contract]
+type: Design
 parent: E08
 milestone: "P5 · 质量与交付"
 blocked-by: [E08-S01, E08-S02, E08-S03]

@@ -2,6 +2,7 @@
 id: E02-S04
 title: "挂帘尺寸自适应"
 labels: [enhancement, phase-1-curtain-core, area/shell]
+type: Task
 parent: E02
 milestone: "P1 · 挂帘内核"
 blocked-by: []

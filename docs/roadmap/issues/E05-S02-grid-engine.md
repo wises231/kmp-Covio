@@ -2,6 +2,7 @@
 id: E05-S02
 title: "网格布局引擎"
 labels: [enhancement, phase-3-widgets, area/widget, area/kmp]
+type: Task
 parent: E05
 milestone: "P3 · Widgets 首页"
 blocked-by: [E05-S01]

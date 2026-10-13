@@ -2,6 +2,7 @@
 id: E09
 title: "质量、测试与交付"
 labels: [epic, phase-5-quality, area/test, area/a11y, area/perf]
+type: Goal
 parent: null
 milestone: "P5 · 质量与交付"
 blocked-by: [E05]

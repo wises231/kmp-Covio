@@ -2,6 +2,7 @@
 id: E00-S05
 title: "Spike：刘海几何与多显示器实测"
 labels: [spike, phase-0-research, area/shell]
+type: Task
 parent: E00
 milestone: "P0 · 调研与决策"
 blocked-by: []

@@ -2,6 +2,7 @@
 id: E03
 title: "工作区模型：把页签变成数据"
 labels: [epic, phase-2-workspace-model, area/pane, area/kmp]
+type: Goal
 parent: null
 milestone: "P2 · 工作区模型"
 blocked-by: [E00]

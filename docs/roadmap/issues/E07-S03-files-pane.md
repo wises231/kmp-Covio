@@ -2,6 +2,7 @@
 id: E07-S03
 title: "文件与暂存工作区"
 labels: [enhancement, phase-4-module-panes, area/pane, area/swift]
+type: Task
 parent: E07
 milestone: "P4 · 模块工作区化"
 blocked-by: [E06-S01]

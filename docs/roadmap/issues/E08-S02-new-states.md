@@ -2,6 +2,7 @@
 id: E08-S02
 title: "新增状态与交互路径"
 labels: [documentation, phase-5-quality, area/contract]
+type: Design
 parent: E08
 milestone: "P5 · 质量与交付"
 blocked-by: [E02-S03]

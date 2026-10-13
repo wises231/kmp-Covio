@@ -2,6 +2,7 @@
 id: E02-S01
 title: "面板层级与 Space 行为收口"
 labels: [enhancement, phase-1-curtain-core, area/shell, area/swift]
+type: Task
 parent: E02
 milestone: "P1 · 挂帘内核"
 blocked-by: []

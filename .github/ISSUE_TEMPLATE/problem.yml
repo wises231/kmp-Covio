@@ -1,0 +1,58 @@
+name: Problem
+description: 实际行为与预期不符。有可复现步骤。
+title: "[Problem] "
+labels: ["bug"]
+type: Bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        没有可复现步骤的，先补复现步骤再提。
+        有可测量基线数字的改进走 Optimization，不走这里。
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 编号列表。一步一个动作。写明确切的操作和输入。
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期
+      description: 应该发生什么。
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际
+      description: 实际发生了什么。附错误信息和日志。
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: 环境
+      description: 系统版本、构建版本、硬件。
+      placeholder: macOS 27.0.1，Covio 0.5.0，Apple Silicon
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: 影响范围
+      description: 影响哪些功能。有没有数据丢失或权限风险。
+    validations:
+      required: true
+  - type: input
+    id: regression
+    attributes:
+      label: 回归测试
+      description: 要补哪个测试文件。防的是哪一类回归。没想好就写「待定」。
+      placeholder: macosApp/test/ShellPanelTests.swift
+    validations:
+      required: false

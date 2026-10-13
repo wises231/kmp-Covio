@@ -2,6 +2,7 @@
 id: E05-S04
 title: "编辑模式：拖动、缩放、删除、撤销"
 labels: [enhancement, phase-3-widgets, area/widget, area/swift]
+type: Task
 parent: E05
 milestone: "P3 · Widgets 首页"
 blocked-by: [E05-S02, E02-S03]

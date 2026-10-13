@@ -2,6 +2,7 @@
 id: E03-S02
 title: "WorkbenchLogic 纯逻辑"
 labels: [enhancement, phase-2-workspace-model, area/pane, area/kmp]
+type: Task
 parent: E03
 milestone: "P2 · 工作区模型"
 blocked-by: [E03-S01]

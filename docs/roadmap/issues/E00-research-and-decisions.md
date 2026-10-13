@@ -2,6 +2,7 @@
 id: E00
 title: "调研与决策：挂帘工作台的前置结论"
 labels: [epic, phase-0-research, documentation]
+type: Goal
 parent: null
 milestone: "P0 · 调研与决策"
 blocked-by: []

@@ -2,6 +2,7 @@
 id: E00-S01
 title: "调研：macOS 触控板多指手势入口"
 labels: [research, phase-0-research, area/trigger, documentation]
+type: Task
 parent: E00
 milestone: "P0 · 调研与决策"
 blocked-by: []

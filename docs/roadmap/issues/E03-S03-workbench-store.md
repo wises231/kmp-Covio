@@ -2,6 +2,7 @@
 id: E03-S03
 title: "WorkbenchStore 持久化"
 labels: [enhancement, phase-2-workspace-model, area/pane, area/kmp]
+type: Task
 parent: E03
 milestone: "P2 · 工作区模型"
 blocked-by: [E03-S01, E00-S03]

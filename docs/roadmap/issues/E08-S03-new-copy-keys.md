@@ -2,6 +2,7 @@
 id: E08-S03
 title: "新增文案键与中英对照"
 labels: [documentation, phase-5-quality, area/contract]
+type: Design
 parent: E08
 milestone: "P5 · 质量与交付"
 blocked-by: []

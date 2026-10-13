@@ -2,6 +2,7 @@
 id: E06-S03
 title: "设置搜索纳入工作区设置"
 labels: [enhancement, phase-3-widgets, area/pane, area/swift]
+type: Task
 parent: E06
 milestone: "P3 · Widgets 首页"
 blocked-by: [E06-S02, E04-S01]

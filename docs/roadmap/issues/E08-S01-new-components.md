@@ -2,6 +2,7 @@
 id: E08-S01
 title: "新增组件：widget-card、widget-grid、pane-editor"
 labels: [documentation, phase-5-quality, area/contract]
+type: Design
 parent: E08
 milestone: "P5 · 质量与交付"
 blocked-by: []

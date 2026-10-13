@@ -1,0 +1,54 @@
+name: Task
+description: 有明确验收标准的实现工作。一个会话能做完。
+title: "[Task] "
+labels: ["enhancement"]
+type: Task
+body:
+  - type: markdown
+    attributes:
+      value: |
+        一个会话做不完的，先建 Goal，再拆 sub-issue。
+        验收标准要逐条可判定。
+  - type: textarea
+    id: background
+    attributes:
+      label: 背景
+      description: 现状是什么。为什么要改。写清相关的文件和函数。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 实施要点
+      description: 编号列表。一步一件事。写清文件和函数名。
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 验收标准
+      description: 逐条可判定。需要测试时写明测试数量和覆盖范围。
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+  - type: input
+    id: dependencies
+    attributes:
+      label: 依赖
+      description: 前置 issue 的本地编号。没有就写「无」。
+      placeholder: E03-S01
+    validations:
+      required: false
+  - type: input
+    id: local-id
+    attributes:
+      label: 本地编号
+      description: 路线图里的编号。没有就留空。
+      placeholder: E03-S02
+    validations:
+      required: false

@@ -2,6 +2,7 @@
 id: E09-S03
 title: "Kotlin 测试补齐"
 labels: [enhancement, phase-5-quality, area/test, area/kmp]
+type: Task
 parent: E09
 milestone: "P5 · 质量与交付"
 blocked-by: [E03-S03, E05-S02]

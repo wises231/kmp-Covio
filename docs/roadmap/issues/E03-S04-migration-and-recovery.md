@@ -2,6 +2,7 @@
 id: E03-S04
 title: "迁移、回退与损坏恢复"
 labels: [enhancement, phase-2-workspace-model, area/pane, area/kmp]
+type: Task
 parent: E03
 milestone: "P2 · 工作区模型"
 blocked-by: [E03-S01, E03-S03]

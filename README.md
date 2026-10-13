@@ -33,6 +33,29 @@ The script also checks the rules that cross two sections of the contract.
   It covers 10 epics and 48 sub-issues. The platform scope is macOS.
 - Run `bash scripts/create-roadmap-issues.sh --dry-run` to preview the GitHub issues.
 
+## Workflow
+
+The project uses an issue-first workflow.
+No code change starts without an issue.
+
+- [Agent contract](AGENTS.md) is the rule set that Claude Code and Codex load each session.
+- [Workflow index](docs/workflow/README.md) links the full rules.
+- [issue-first rules](docs/workflow/issue-first.md) define the issue lifecycle, the branch names, the commit trailers, and the pull request rules.
+- [Work types](docs/workflow/work-types.md) maps each work type to its artifact and its GitHub issue type.
+
+The integration branch is `feature/swiftui-macos`.
+Each issue gets one short branch from the integration branch.
+The integration branch merges into `main` at the end of a phase.
+
+A hook checks each commit and each pull request.
+The hook blocks the commit when the message has no issue reference.
+
+Run the guard self-test:
+
+```sh
+bash scripts/hooks/test-guard.sh
+```
+
 ## Download (internal test)
 
 This repository is under internal test.
@@ -216,7 +239,7 @@ Run every test:
 bash scripts/test-all.sh
 ```
 
-The script runs the Kotlin tests, checks the design-contract constants, checks the contract rules that the schema cannot express, checks with the helper cutover script, and runs the macOS XCTest suite.
+The script runs the Kotlin tests, checks the design-contract constants, checks the contract rules that the schema cannot express, checks with the helper cutover script, runs the macOS XCTest suite, and runs the issue-first guard self-test.
 
 Build one side only:
 

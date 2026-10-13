@@ -2,6 +2,7 @@
 id: E05-S05
 title: "首批五个组件"
 labels: [enhancement, phase-3-widgets, area/widget, area/swift]
+type: Task
 parent: E05
 milestone: "P3 · Widgets 首页"
 blocked-by: [E05-S03]
