@@ -9,8 +9,8 @@
 # 本脚本只创建缺失的类型。不动 GitHub 自带的 Task / Bug / Feature。
 # 本脚本只做新增，不做修改，也不删除。
 #
-# 需要 read:user scope。缺失时脚本会打印补救命令：
-#   gh auth refresh -h github.com -s read:user
+# 需要 user scope。缺失时脚本会打印补救命令：
+#   gh auth refresh -h github.com -s user
 #
 # 类型定义见 docs/workflow/work-types.md。
 #
@@ -50,13 +50,13 @@ EOF
 
 info() { printf '%s\n' "$*" >&2; }
 
-# ---- 1. scope 检查 ---------------------------------------------------------
-# /user/issue-types 需要 read:user。repo scope 不够。
-if ! gh auth status 2>&1 | grep -q "'read:user'"; then
-  info "错误：当前 token 没有 read:user scope。"
+# 读 /user/issue-types 要 read:user，POST 建类型要 user。user 包含 read:user。
+# 请求 user 一个 scope 就够。repo scope 不够。
+if ! gh auth status 2>&1 | grep -qE "'(user|read:user)'"; then
+  info "错误：当前 token 没有 user scope。"
   info ""
   info "先运行下面这条命令，按提示完成浏览器授权："
-  info "  gh auth refresh -h github.com -s read:user"
+  info "  gh auth refresh -h github.com -s user"
   info ""
   info "这条命令是交互式的，只能由人执行。"
   exit 1

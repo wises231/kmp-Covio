@@ -63,14 +63,28 @@ GitHub 的 Issue Type 是账号级对象，不属于仓库。
 因此 type 失败时 issue 已经建出来了，只是 type 是空的。
 `--parent` 和后续步骤也可能跟着中断。
 
-查询账号里的类型需要 `read:user` scope。
+读账号里的类型要 `read:user` scope。建类型要 `user` scope。
+`user` 包含 `read:user`，所以申请 `user` 一个就够。
 scope 不足时 `gh api /user/issue-types` 返回 403。
 
 修复分两步。第一步必须由人执行：
 
 ```sh
-gh auth refresh -h github.com -s read:user
+gh auth refresh -h github.com -s user
 bash scripts/sync-issue-types.sh
+```
+
+`gh api /repos/<owner>/<repo>/issue-types` 不需要这个 scope。
+它返回仓库已启用的类型，不是账号里的全部类型。
+仓库默认带 GitHub 内置的 `Task`、`Bug`、`Feature` 三个。
+`gh issue edit --type` 读的是账号级列表。
+账号级列表读不到时，内置的三个也设不上。
+
+`gh auth status` 显示的账号名可能是改名前的旧名。
+判断当前身份用：
+
+```sh
+gh api /user --jq .login
 ```
 
 **警告：** 账号没有对应类型时 `type:` 字段静默失效。
