@@ -159,10 +159,10 @@ data class TouchFrame(
 1. 在 `kmpDomain` 增加 `TouchFrame` 与 `GestureRecognizer`。识别器用纯函数，配单元测试。
 2. 在 `macosApp` 增加 `MultitouchContactSource`。用 `dlopen` 加 `dlsym`，不静态链接。
 3. 在 `macosApp` 增加 `TriggerAvailability`。启动时探测并记录结果。
-4. 在 `macosApp` 增加 `TrackpadGestureTrigger`，实现 `E01-S01` 定义的 `CurtainTrigger`。
+4. 在 `macosApp` 增加 `TrackpadGestureTrigger`，实现 `CurtainTrigger` 协议。
 5. 执行 [validation/case-macos-trackpad-gesture.md](validation/case-macos-trackpad-gesture.md)，标定识别阈值。
 6. 把阈值写进 `workbench.json`，并加设置项。
-7. 更新 `E01-S02` 的验收标准。
+7. 按本文结论更新触控板触发项的验收标准。
 
 用 `dlopen` 而不是静态链接的理由：静态链接会让应用在私有框架被移除时无法启动。
 `dlopen` 让缺失变成可处理的运行时状态。

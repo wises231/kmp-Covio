@@ -1,8 +1,1 @@
-blank_issues_enabled: false
-contact_links:
-  - name: 工作流规则
-    url: https://github.com/wyz541/kmp-Covio/blob/feature/swiftui-macos/AGENTS.md
-    about: 建 issue 之前先读这里。没有 issue 就不改代码。
-  - name: issue 正文模板
-    url: https://github.com/wyz541/kmp-Covio/blob/feature/swiftui-macos/docs/workflow/work-types.md
-    about: 八种工作类型的判断依据和正文骨架。
+blank_issues_enabled: true

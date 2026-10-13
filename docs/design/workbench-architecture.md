@@ -9,10 +9,10 @@
 | 日期 | `2026-10-13` |
 | 适用范围 | macOS 宿主。Windows 与 iOS 只保留抽象接口。 |
 | 当前基线 | `0.5.0`，分支 `feature/swiftui-macos` |
-| 上游文档 | [路线图](../roadmap/curtain-workbench.md)、[产品设计总稿](../covio-product-master.md)、[设计合同](../covio-design-contract.json)、[ADR-001](../adr/ADR-001-macos-ui-swiftui.md) |
+| 上游文档 | [产品设计总稿](../covio-product-master.md)、[设计合同](../covio-design-contract.json)、[ADR-001](../adr/ADR-001-macos-ui-swiftui.md) |
 | 下游文档 | ADR-002 工作台配置的存储位置与版本策略、ADR-003 触发层的抽象边界、ADR-004 到 ADR-009（分层契约，分工见第 10 节） |
 
-本文描述**目标形态**，不描述现状。现状见[路线图](../roadmap/curtain-workbench.md)第 3 节。
+本文描述**目标形态**，不描述现状。现状以代码为准。
 
 ## 1. 目标与非目标
 
@@ -30,17 +30,17 @@
 
 ## 2. 需求映射
 
-| 需求 | 承担层 | 关键类型 | 阶段 |
-| --- | --- | --- | --- |
-| R1 触控板四指下滑打开 | 触发层 | `TrackpadGestureTrigger` | P1 |
-| R2 鼠标悬停刘海区域触发 | 触发层 | `NotchHoverTrigger` | P1 |
-| R3 展开后是层级最高的组合式工作区域 | 挂帘外壳 | `CurtainController`、`ShellPanel` | P1 |
-| R4 页签显示不同工作区，首页是 Widgets | 工作区层、Widget 层 | `PaneRegistry`、`WorkbenchConfig` | P2、P3 |
-| R5 每个工作区支持编辑和设置 | 工作区层 | `WorkbenchLogic`、`PaneRegistry` | P2、P3 |
-| R6 Windows 用固定区域触发 | 触发层 | `CurtainTrigger` 的新实现 | 不在本路线图 |
-| R7 iOS 主页上滑带出 bottom sheet | 无 | 无 | 不可行 |
+| 需求 | 承担层 | 关键类型 |
+| --- | --- | --- |
+| R1 触控板四指下滑打开 | 触发层 | `TrackpadGestureTrigger` |
+| R2 鼠标悬停刘海区域触发 | 触发层 | `NotchHoverTrigger` |
+| R3 展开后是层级最高的组合式工作区域 | 挂帘外壳 | `CurtainController`、`ShellPanel` |
+| R4 页签显示不同工作区，首页是 Widgets | 工作区层、Widget 层 | `PaneRegistry`、`WorkbenchConfig` |
+| R5 每个工作区支持编辑和设置 | 工作区层 | `WorkbenchLogic`、`PaneRegistry` |
+| R6 Windows 用固定区域触发 | 触发层 | `CurtainTrigger` 的新实现 |
+| R7 iOS 主页上滑带出 bottom sheet | 无 | 无 |
 
-R6 和 R7 只影响触发层的形状，不增加新层。R7 没有承担层，理由见[路线图](../roadmap/curtain-workbench.md)第 9.1 节的 `U-01`。
+R6 和 R7 只影响触发层的形状，不增加新层。R7 没有承担层：系统不向第三方应用开放主屏手势入口，iOS 侧只能改用交互小组件。结论见 [iOS 免打开入口](../research/mobile-ambient-entry/README.md)。
 
 ## 3. 分层与依赖方向
 
@@ -80,7 +80,7 @@ Widget 层的模型跟随工作区层，渲染在 Swift 侧。
 
 ### 3.2 命名
 
-概念名沿用[路线图](../roadmap/curtain-workbench.md)第 4 节。
+概念名如下。
 
 | 概念 | 标识符 | 中文 |
 | --- | --- | --- |
@@ -255,7 +255,7 @@ Widget 层的模型跟随工作区层，渲染在 Swift 侧。
 2. 触发源与注册表之间的事件形状。
 3. 去重在哪一层做。
 
-**交给分层 ADR**（本地编号 `E10-S01` 到 `E10-S06`，产物是 `ADR-004` 到 `ADR-009`）：
+**交给分层 ADR**（`ADR-004` 到 `ADR-009`）：
 
 | 本文节 | ADR | 要定的事 |
 | --- | --- | --- |
@@ -264,7 +264,7 @@ Widget 层的模型跟随工作区层，渲染在 Swift 侧。
 | 第 6 节 | `ADR-006` | `PaneRegistry` 的样板，工作区数量上限，内置工作区能否删除。 |
 | 第 7 节 | `ADR-007` | 组件尺寸档取几档，网格列数与吸附规则，`WidgetCatalog` 放在哪一侧。 |
 | 第 8 节 | `ADR-008` | 这层的字段清单与损坏恢复细节。不重复裁 `ADR-002` 的范围。 |
-| 第 9 节 | `ADR-009` | 扩展点的做法，以及本文第 9 节与 `E00-S04` 验收第 3 条的冲突。 |
+| 第 9 节 | `ADR-009` | 扩展点的做法，以及本文第 9 节与 `ADR-003` 的冲突。 |
 
 **本文内部待裁决**：`WidgetCatalog` 放在哪一侧。
 第 3.1 节说「Widget 层的模型跟随工作区层」，第 7 节又让 `WidgetCatalog` 照 `SettingsCatalog` 写，而 `SettingsCatalog` 在 Swift 侧。两处矛盾。归 `ADR-007`。
@@ -273,4 +273,4 @@ Widget 层的模型跟随工作区层，渲染在 Swift 侧。
 
 1. 编辑模式是就地编辑还是独立页面。
 
-**本文不回答的**：`WorkbenchConfig` 的字段清单。字段由 `E03-S01` 定，定完回填本文第 6 节。
+**本文不回答的**：`WorkbenchConfig` 的字段清单。字段在实现时定，定完回填本文第 6 节。

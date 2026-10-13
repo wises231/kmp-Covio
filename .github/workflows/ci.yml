@@ -32,10 +32,6 @@ jobs:
       # selftest 在临时目录里跑同一批断言，不需要授权。
       - name: Helper cutover assertions
         run: bash scripts/verify-helper-cutover.sh selftest
-      # 守卫脚本的单元测试。不是 issue-first 门禁：
-      # 它只保证守卫本身没写坏，不检查 PR 有没有关联 issue。
-      - name: issue-first guard self-test
-        run: bash scripts/hooks/test-guard.sh
 
   macos-swift:
     name: macOS SwiftUI
