@@ -34,6 +34,10 @@
 | [issue-first.md](issue-first.md) | issue 生命周期、分支命名、commit 格式、PR 规则、例外清单 |
 | [roadmap-first.md](roadmap-first.md) | 路线图的立项、拆解、排期、进度汇总、阶段收口和变更 |
 | [work-types.md](work-types.md) | 八种工作类型到产物和 Issue Type 的映射，以及 issue 正文模板 |
+| [issue-first-flow.html](issue-first-flow.html) | 流程图。两幅图：主流程和分支拓扑。用浏览器打开。 |
+
+`issue-first-flow.html` 是上面三份文档的图示，不是规则来源。
+图与正文不一致时，以正文为准。
 
 agent 的强制契约在仓库根目录的 `AGENTS.md`。
 `CLAUDE.md` 只有一行 `@AGENTS.md`，供 Claude Code 导入。

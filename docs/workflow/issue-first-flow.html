@@ -1,0 +1,416 @@
+<title>issue-first 工作流</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600&display=swap">
+<style>
+  /* 单栏阅读宽度，图整幅展开；左轨 GitHub 对象，右轨 git 分支 */
+  :root{
+    --bg:#F5F7FA;
+    --surface:#FFFFFF;
+    --surface-2:#EAEEF5;
+    --fg:#12171F;
+    --muted:#5A6473;
+    --line:#DBE1EA;
+    --line-strong:#B4BECC;
+    --accent:#2C5C9E;
+    --accent-soft:#E3EDFA;
+    --warn:#9E4A1C;
+    --warn-soft:#FBEADB;
+    --font-display:"Noto Serif SC","Songti SC",Georgia,serif;
+    --font-body:"Noto Sans SC",system-ui,-apple-system,"PingFang SC",sans-serif;
+    --font-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0E1218;
+      --surface:#161B23;
+      --surface-2:#1E242E;
+      --fg:#E7EBF1;
+      --muted:#9AA5B4;
+      --line:#2A323E;
+      --line-strong:#3E4A5A;
+      --accent:#8FB4E4;
+      --accent-soft:#1A2634;
+      --warn:#E0A075;
+      --warn-soft:#2E2118;
+      color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0E1218;
+    --surface:#161B23;
+    --surface-2:#1E242E;
+    --fg:#E7EBF1;
+    --muted:#9AA5B4;
+    --line:#2A323E;
+    --line-strong:#3E4A5A;
+    --accent:#8FB4E4;
+    --accent-soft:#1A2634;
+    --warn:#E0A075;
+    --warn-soft:#2E2118;
+    color-scheme:dark;
+  }
+
+  body{
+    background:var(--bg);
+    color:var(--fg);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.75;
+    padding-inline:20px;
+    padding-block:40px 72px;
+  }
+  .wrap{max-width:820px;margin-inline:auto;display:flex;flex-direction:column;gap:44px}
+
+  .masthead{display:flex;flex-direction:column;gap:14px}
+  .eyebrow{
+    font-family:var(--font-mono);font-size:11.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted);margin:0;
+  }
+  h1{
+    font-family:var(--font-display);font-weight:600;
+    font-size:clamp(30px,6vw,44px);line-height:1.2;letter-spacing:-.01em;
+    margin:0;text-wrap:balance;
+  }
+  .lede{margin:0;font-size:17px;color:var(--fg);max-width:36em}
+  .meta{
+    list-style:none;display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 0;padding:0;
+  }
+  .meta li{
+    display:flex;align-items:baseline;gap:7px;
+    border:1px solid var(--line);border-radius:999px;
+    padding:4px 12px;background:var(--surface);
+    font-size:12px;color:var(--muted);
+  }
+  .meta code{font-family:var(--font-mono);font-size:11.5px;color:var(--fg)}
+
+  section{display:flex;flex-direction:column;gap:16px}
+  h2{
+    font-family:var(--font-display);font-weight:600;font-size:22px;
+    margin:0;padding-bottom:10px;border-bottom:1px solid var(--line);
+    text-wrap:balance;
+  }
+  h2 .num{
+    font-family:var(--font-mono);font-size:12px;font-weight:500;color:var(--muted);
+    margin-right:10px;letter-spacing:.06em;
+  }
+  p{margin:0;max-width:34em}
+  .stack{display:flex;flex-direction:column;gap:12px}
+
+  figure{margin:0;display:flex;flex-direction:column;gap:12px}
+  .fig-scroll{
+    overflow-x:auto;background:var(--surface);
+    border:1px solid var(--line);border-radius:12px;
+    padding:16px 18px;
+  }
+  figure svg{display:block;width:100%;height:auto}
+  .f1{min-width:700px}
+  .f2{min-width:700px}
+  figcaption{font-size:13.5px;color:var(--muted);max-width:38em}
+  figcaption b{color:var(--fg);font-weight:500}
+
+  /* 图内元素 */
+  .sv-box{fill:var(--surface);stroke:var(--line-strong);stroke-width:1.25}
+  .sv-box--soft{fill:var(--surface-2);stroke:var(--line-strong);stroke-width:1.25}
+  .sv-box--accent{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.4;stroke-dasharray:6 4}
+  .sv-box--warn{fill:var(--warn-soft);stroke:var(--warn);stroke-width:1.4}
+  .sv-t{font-family:var(--font-body);font-size:14px;font-weight:600;fill:var(--fg)}
+  .sv-d{font-family:var(--font-body);font-size:12px;font-weight:400;fill:var(--muted)}
+  .sv-m{font-family:var(--font-mono);font-size:11.5px;font-weight:400;fill:var(--fg)}
+  .sv-tag{font-family:var(--font-mono);font-size:10.5px;font-weight:500;fill:var(--muted);letter-spacing:.04em}
+  .sv-lane-t{font-family:var(--font-body);font-size:11px;font-weight:500;fill:var(--muted);letter-spacing:.1em}
+  .sv-acc{fill:var(--accent);font-weight:500}
+  .sv-warn{fill:var(--warn);font-weight:500}
+  .sv-line{stroke:var(--line-strong);stroke-width:1.3;fill:none}
+  .sv-acc-line{stroke:var(--accent);stroke-width:1.4;fill:none}
+  .sv-lane{stroke:var(--line);stroke-width:1;fill:none}
+  .sv-node{fill:var(--accent)}
+  .sv-node--open{fill:var(--surface);stroke:var(--accent);stroke-width:1.5}
+  .sv-dash{stroke:var(--accent);stroke-width:1.2;stroke-dasharray:5 4;fill:none}
+  .sv-mk{fill:var(--line-strong)}
+  .sv-mk-acc{fill:var(--accent)}
+
+  .rules{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+  .rules li{
+    display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
+    border-left:2px solid var(--accent);padding:2px 0 2px 16px;
+  }
+  .rules .k{
+    font-family:var(--font-mono);font-size:12px;color:var(--accent);
+    padding-top:3px;letter-spacing:.04em;
+  }
+  .rules p{font-size:15px}
+  .rules b{font-weight:500}
+
+  .table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+  table{border-collapse:collapse;width:100%;font-size:14px}
+  th,td{text-align:left;padding:11px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  th{font-weight:500;font-size:12px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;font-family:var(--font-mono)}
+  td:first-child{white-space:nowrap}
+  td code,li code,p code{
+    font-family:var(--font-mono);font-size:12.5px;
+    background:var(--surface-2);border-radius:4px;padding:1px 5px;
+  }
+
+  .note{
+    background:var(--surface);border:1px solid var(--line);
+    border-left:2px solid var(--warn);border-radius:10px;
+    padding:16px 20px;display:flex;flex-direction:column;gap:8px;
+  }
+  .note .lbl{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--warn)}
+
+  @media (max-width:520px){
+    body{font-size:15px;padding-block:28px 56px}
+    .fig-scroll{padding:12px}
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Covio · docs/workflow</p>
+    <h1>issue-first 工作流</h1>
+    <p class="lede">这套工作流只有一条主路径。想法先变成一个 issue。大功能升级成路线图。工作落在 sub-issue 上。最后经集成分支合入 main。</p>
+    <ul class="meta">
+      <li>集成分支 <code>feature/swiftui-macos</code></li>
+      <li>主干 <code>main</code></li>
+      <li>真相来源 GitHub 上的 issue 状态</li>
+    </ul>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>主流程</h2>
+
+    <figure>
+      <div class="fig-scroll">
+        <svg class="f1" viewBox="0 0 760 1120" role="img" aria-label="从大功能 issue 到 main 的七个节点：提 issue、判据、提升为 epic、立项产物、sub-issue 循环、阶段收口、合入 main">
+          <defs>
+            <marker id="f1ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" class="sv-mk"/>
+            </marker>
+            <marker id="f1ar-acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" class="sv-mk-acc"/>
+            </marker>
+          </defs>
+
+          <!-- 轨道 -->
+          <path class="sv-lane" d="M 90 40 H 84 V 592 H 90"/>
+          <text class="sv-lane-t" x="56" y="316" text-anchor="middle" transform="rotate(-90 56 316)">GitHub 对象轨</text>
+          <path class="sv-lane" d="M 90 622 H 84 V 1100 H 90"/>
+          <text class="sv-lane-t" x="56" y="861" text-anchor="middle" transform="rotate(-90 56 861)">git 分支轨</text>
+
+          <!-- 主轴箭头 -->
+          <path class="sv-line" d="M 378 116 V 140" marker-end="url(#f1ar)"/>
+          <path class="sv-line" d="M 378 276 V 300" marker-end="url(#f1ar)"/>
+          <path class="sv-line" d="M 378 410 V 434" marker-end="url(#f1ar)"/>
+          <path class="sv-line" d="M 378 592 V 616" marker-end="url(#f1ar)"/>
+          <path class="sv-line" d="M 378 818 V 842" marker-end="url(#f1ar)"/>
+          <path class="sv-line" d="M 378 1004 V 1028" marker-end="url(#f1ar)"/>
+
+          <!-- S0 入口 -->
+          <rect class="sv-box" x="116" y="40" width="524" height="76" rx="9"/>
+          <text class="sv-t" x="136" y="72">提一个大功能 issue</text>
+          <text class="sv-d" x="136" y="96">用 issue 表单。表单自动设 Issue Type 和 label。</text>
+          <text class="sv-tag" x="624" y="72" text-anchor="end">已登记</text>
+
+          <!-- 判据 -->
+          <rect class="sv-box--accent" x="116" y="146" width="524" height="130" rx="9"/>
+          <text class="sv-t" x="136" y="176">要开新路线图吗</text>
+          <text class="sv-d" x="136" y="200">① 覆盖一个可判定的产品结果</text>
+          <text class="sv-d" x="136" y="220">② 需要 3 个或更多 epic</text>
+          <text class="sv-d" x="136" y="240">③ 需要一段新的阶段编号序列</text>
+          <text class="sv-d sv-acc" x="136" y="262">三条全中才开新路线图。否则并入现有路线图。</text>
+          <text class="sv-tag" x="624" y="176" text-anchor="end">判定</text>
+
+          <!-- S1 提升 -->
+          <rect class="sv-box" x="116" y="306" width="524" height="104" rx="9"/>
+          <text class="sv-t" x="136" y="336">原 issue 提升为 epic</text>
+          <text class="sv-d" x="136" y="360">设 Type = Goal，加 epic 和 phase-* label，挂 milestone。</text>
+          <text class="sv-d" x="136" y="380">正文写路线图指针：文档路径、所属阶段、阶段退出条件。</text>
+          <text class="sv-m sv-acc" x="136" y="400">不另建 epic。原 issue 就是 epic。</text>
+          <text class="sv-tag" x="624" y="336" text-anchor="end">E03</text>
+
+          <!-- S2 立项产物 -->
+          <rect class="sv-box" x="116" y="440" width="524" height="152" rx="9"/>
+          <text class="sv-t" x="136" y="470">立项产物一次建齐</text>
+          <text class="sv-d" x="136" y="494">文档</text>
+          <text class="sv-m" x="214" y="494">docs/roadmap/&lt;slug&gt;.md</text>
+          <text class="sv-d" x="136" y="516">里程碑</text>
+          <text class="sv-m" x="214" y="516">P&lt;n&gt; · 阶段名称</text>
+          <text class="sv-d" x="136" y="538">阶段 label</text>
+          <text class="sv-m" x="214" y="538">phase-&lt;n&gt;-&lt;slug&gt;</text>
+          <text class="sv-d" x="136" y="560">子项</text>
+          <text class="sv-m" x="214" y="560">E03-S01 … E03-S05，挂到 epic 下</text>
+          <text class="sv-d" x="136" y="582">索引</text>
+          <text class="sv-m" x="214" y="582">docs/roadmap/README.md 加一行</text>
+          <text class="sv-tag" x="624" y="470" text-anchor="end">产物</text>
+
+          <!-- S3 循环 -->
+          <rect class="sv-box" x="116" y="622" width="524" height="196" rx="9"/>
+          <text class="sv-t" x="136" y="652">一个 sub-issue 一个循环</text>
+          <circle class="sv-node--open" cx="146" cy="674" r="8"/>
+          <text class="sv-tag" x="146" y="678" text-anchor="middle">1</text>
+          <text class="sv-m" x="164" y="678">从 feature/swiftui-macos 切短分支</text>
+          <circle class="sv-node--open" cx="146" cy="698" r="8"/>
+          <text class="sv-tag" x="146" y="702" text-anchor="middle">2</text>
+          <text class="sv-m" x="164" y="702">需要并行时开 worktree，一个 worktree 一条分支</text>
+          <circle class="sv-node--open" cx="146" cy="722" r="8"/>
+          <text class="sv-tag" x="146" y="726" text-anchor="middle">3</text>
+          <text class="sv-m" x="164" y="726">commit 尾行写 Refs: E03-S02</text>
+          <circle class="sv-node--open" cx="146" cy="746" r="8"/>
+          <text class="sv-tag" x="146" y="750" text-anchor="middle">4</text>
+          <text class="sv-m" x="164" y="750">PR 目标 feature/swiftui-macos，body 写 Refs #27</text>
+          <circle class="sv-node--open" cx="146" cy="770" r="8"/>
+          <text class="sv-tag" x="146" y="774" text-anchor="middle">5</text>
+          <text class="sv-m" x="164" y="774">合入后关 issue，评论写结论和证据</text>
+          <text class="sv-tag" x="624" y="652" text-anchor="end">循环</text>
+
+          <path class="sv-acc-line" d="M 656 792 H 700 V 646 H 648" marker-end="url(#f1ar-acc)"/>
+          <text class="sv-d sv-acc" x="700" y="626" text-anchor="middle">下一个 sub-issue</text>
+
+          <!-- S4 收口 -->
+          <rect class="sv-box--warn" x="116" y="848" width="524" height="156" rx="9"/>
+          <text class="sv-t" x="136" y="878">阶段收口</text>
+          <text class="sv-d" x="136" y="902">milestone 关闭率 100%</text>
+          <text class="sv-d" x="136" y="924">路线图第 6 节的退出条件逐条满足</text>
+          <text class="sv-d" x="136" y="946">bash scripts/test-all.sh 全绿</text>
+          <text class="sv-m sv-warn" x="136" y="976">开 PR 到 main，body 汇总写 Closes #N</text>
+          <text class="sv-tag" x="624" y="878" text-anchor="end">不可逆</text>
+
+          <!-- S5 main -->
+          <rect class="sv-box" x="116" y="1034" width="524" height="66" rx="9"/>
+          <text class="sv-t" x="136" y="1064">合入 main</text>
+          <text class="sv-d" x="136" y="1086">Closes #N 生效，issue 自动关闭。</text>
+          <text class="sv-tag" x="624" y="1064" text-anchor="end">终态</text>
+        </svg>
+      </div>
+      <figcaption><b>图 1</b>　从大功能 issue 到 main 的七个节点。左轨是 GitHub 对象，右轨是 git 分支和文档。</figcaption>
+    </figure>
+
+    <div class="stack">
+      <p>入口是一个 issue，不是一个空目录。用户为大功能提一个 issue，工作流在提完之后判断要不要立项。</p>
+      <p>立项的动作是提升原 issue，不是另建。另建会让两个 issue 指向同一项功能。</p>
+      <p>一个 sub-issue 必须能在一个会话内做完。一个 sub-issue 对应一条分支和一个 PR。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>分支拓扑</h2>
+
+    <figure>
+      <div class="fig-scroll">
+        <svg class="f2" viewBox="0 0 780 400" role="img" aria-label="短分支从集成分支切出并逐个合回，两个 issue 同时开工时用两条 worktree；只有阶段收口那一次合并进 main">
+          <defs>
+            <marker id="f2ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" class="sv-mk-acc"/>
+            </marker>
+          </defs>
+
+          <text class="sv-tag" x="740" y="40" text-anchor="end">时间 →</text>
+
+          <text class="sv-m" x="140" y="74" text-anchor="end">main</text>
+          <path class="sv-line" d="M 170 70 H 740"/>
+          <text class="sv-d" x="200" y="56">阶段收口前 main 不动</text>
+          <circle class="sv-node" cx="700" cy="70" r="5.5"/>
+
+          <text class="sv-d" x="140" y="174" text-anchor="end">集成分支</text>
+          <path class="sv-line" d="M 170 170 H 740"/>
+          <text class="sv-m" x="178" y="196">feature/swiftui-macos</text>
+          <text class="sv-d" x="178" y="150">短分支从这条线切出</text>
+
+          <text class="sv-d" x="140" y="274" text-anchor="end">短分支</text>
+
+          <!-- 短分支 A -->
+          <path class="sv-acc-line" d="M 190 170 V 270 H 300 V 170"/>
+          <circle class="sv-node--open" cx="190" cy="170" r="4"/>
+          <circle class="sv-node--open" cx="300" cy="170" r="4"/>
+          <circle class="sv-node" cx="240" cy="270" r="4.5"/>
+          <text class="sv-m" x="240" y="294" text-anchor="middle">E03-S01</text>
+
+          <!-- 短分支 B -->
+          <path class="sv-acc-line" d="M 340 170 V 270 H 440 V 170"/>
+          <circle class="sv-node--open" cx="340" cy="170" r="4"/>
+          <circle class="sv-node--open" cx="440" cy="170" r="4"/>
+          <circle class="sv-node" cx="390" cy="270" r="4.5"/>
+          <text class="sv-m" x="390" y="294" text-anchor="middle">E03-S02</text>
+
+          <!-- worktree 并行 -->
+          <rect class="sv-dash" x="455" y="238" width="210" height="140" rx="10"/>
+          <text class="sv-d sv-acc" x="455" y="230">worktree ×2：一个 worktree 一条分支</text>
+          <path class="sv-acc-line" d="M 480 170 V 270 H 620 V 170"/>
+          <circle class="sv-node--open" cx="480" cy="170" r="4"/>
+          <circle class="sv-node--open" cx="620" cy="170" r="4"/>
+          <circle class="sv-node" cx="530" cy="270" r="4.5"/>
+          <text class="sv-m" x="530" y="294" text-anchor="middle">E03-S03</text>
+          <path class="sv-acc-line" d="M 500 170 V 330 H 640 V 170"/>
+          <circle class="sv-node--open" cx="500" cy="170" r="4"/>
+          <circle class="sv-node--open" cx="640" cy="170" r="4"/>
+          <circle class="sv-node" cx="570" cy="330" r="4.5"/>
+          <text class="sv-m" x="570" y="354" text-anchor="middle">E05-S01</text>
+
+          <!-- 收口合并 -->
+          <path class="sv-acc-line" d="M 700 170 V 78" marker-end="url(#f2ar)"/>
+          <text class="sv-d sv-acc" x="692" y="112" text-anchor="end">阶段收口 PR</text>
+          <text class="sv-d sv-acc" x="692" y="130" text-anchor="end">body 写 Closes #N</text>
+        </svg>
+      </div>
+      <figcaption><b>图 2</b>　短分支从集成分支切出，逐个合回。只有阶段收口那一次合并进 main。</figcaption>
+    </figure>
+
+    <div class="stack">
+      <p>集成分支承接全部短分支。集成分支在阶段收口时一次合入 main。</p>
+      <p>同一 epic 的 sub-issue 依次合入集成分支。一次一个，不合批。</p>
+      <p>两个 issue 同时开工时用 <code>git worktree</code>。一个 worktree 一条分支。worktree 让两条分支不争同一个工作目录。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>三条容易记错的规则</h2>
+    <ul class="rules">
+      <li>
+        <span class="k">epic</span>
+        <p>原 issue 就是 epic。<b>立项时提升它，不另建。</b></p>
+      </li>
+      <li>
+        <span class="k">Closes</span>
+        <p><code>Closes #N</code> 只在目标分支是 main 时生效。<b>短分支到集成分支的 PR 写 <code>Refs #N</code>。</b>关闭动作固定在合入集成分支之后，由 agent 手工执行。</p>
+      </li>
+      <li>
+        <span class="k">milestone</span>
+        <p>一个 issue 只挂一个 milestone。<b>sub-issue 跟随它的 epic。</b></p>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>每一步的载体</h2>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>步骤</th><th>谁做</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>提出功能</td><td>人</td></tr>
+          <tr><td>判定是否立项</td><td>agent 读 <code>roadmap-first.md</code> 第 2.2 节的三条判据</td></tr>
+          <tr><td>提升原 issue、建 milestone 和 label</td><td>agent 用 <code>gh</code></td></tr>
+          <tr><td>批量建 issue</td><td><code>scripts/create-roadmap-issues.sh</code></td></tr>
+          <tr><td>校验 commit 和 PR</td><td><code>scripts/hooks/guard.py</code></td></tr>
+          <tr><td>合入集成分支</td><td>人</td></tr>
+          <tr><td>合入 main</td><td>人</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>还没自动化的一步</h2>
+    <div class="note">
+      <span class="lbl">现状</span>
+      <p>「识别这个大功能需要路线图」目前由 agent 按判据执行。判据写在 <code>docs/workflow/roadmap-first.md</code> 第 2.2 节，共三条。仓库里没有脚本自动做这个判断。</p>
+      <p>已经自动化的部分是校验和建单。<code>guard.py</code> 拦下不合规的 commit 和 PR，<code>create-roadmap-issues.sh</code> 按定义文件批量建 issue。</p>
+    </div>
+  </section>
+
+</div>
