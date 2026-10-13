@@ -7,13 +7,27 @@ body:
       value: |
         判断大功能：需要 2 个以上 PR；预计超过 5 个工作日；需要先改设计。满足任一条就用本表单。
         标题写成「动词 对象」，例如「Add the workbench store」。
-        拆法与回链格式见 [研发工作流](../../doc/process/workflow.md) 的 S5 与 S6。
+        涉及 UI 变化时，先出 web 预览并通过评审，再拆实施 sub-issue。
+        拆法与回链格式见 [研发工作流](../../doc/process/workflow.md) 的 S5、S6 与设计闸门。
 
   - type: textarea
     id: goal
     attributes:
       label: 目标
       description: 交付后用户能做什么。不写实现细节。
+    validations:
+      required: true
+
+  - type: textarea
+    id: expectation
+    attributes:
+      label: 表现预期
+      description: |
+        界面变化的可判断描述，一行一条。预览评审对照本栏逐条判断。
+        没有界面变化时填「无」。
+      placeholder: |
+        - <界面变化一：可判断的描述>
+        - <界面变化二：可判断的描述>
     validations:
       required: true
 
