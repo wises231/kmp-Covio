@@ -28,8 +28,9 @@
 |---|---|---|
 | 标签 `idea`、`research`、`feature`、`task` | 已完成 | `gh label create` |
 | Discussions | 已完成 | 仓库 Settings 页 |
-| Project | 已完成 | [Project 8](https://github.com/users/wyz541/projects/8)，视图配置见 S7 |
-| Project 字段名 | **待核对** | 按 S7 的字段表核对一遍 |
+| Project | 已完成 | [Project 8](https://github.com/users/wyz541/projects/8) |
+| Project 字段名 | 已核对 | 见 [Project 字段](project-fields.md) |
+| 自动加入 | **待人工打开** | 见 S7 第 5 步 |
 
 > issue forms 仍是 public preview，结构可能变动。
 
@@ -201,27 +202,20 @@ GitHub 的 issue 搜索不保证支持标点。命令里只写关键词 `decisio
 **何时用：** 建好 Feature 之后配置一次。之后每周看一次。
 **谁做：** 维护人。
 
-1. 核对字段。Project 是字段的唯一来源。
-
-   | 字段 | 配置 |
-   |---|---|
-   | Status | 单选项：`Todo`、`In Progress`、`Done` |
-   | Priority | 单选项：`P0`、`P1`、`P2`、`P3` |
-   | Effort | 数字 |
-   | Start date | 日期 |
-   | Target date | 日期 |
-   | Iteration | 可选项。需要按周期排期时建 |
-
+1. 核对字段。字段的唯一来源是 [Project 字段](project-fields.md)。该文件记录实测的名字与取值。
 2. 打开 table 视图，按 `Parent issue` 分组。
-3. 打开隐藏字段 `Sub-issue progress`。
+3. 打开隐藏字段 `Sub-issues progress`。
 4. 新建 roadmap 视图，用 `Target date` 或 iteration 字段定位。
-5. 每周过一遍带 `Blocked` 标记的 issue。
+5. 打开自动加入。位置是 Project 的 `⋯` 菜单，`Workflows`，`Auto-add to project`。筛选条件填 `repo:wyz541/kmp-Covio is:issue`。
+6. 每周过一遍带 `Blocked` 标记的 issue。
 
-**完成标准：** Feature 的进度看 Sub-issue progress 就能读到，不需要问人。
+> **警告：** 不打开第 5 步的自动加入，`gh` 建的 issue 不会出现在 Project 里。表单建的 issue 也不会。只有手工添加或开自动加入才会进。
+
+> **关于权限：** 读字段需要 `read:project`。用 `gh project item-add` 手工加条目需要 `project`。开了自动加入就不需要后者。
+
+**完成标准：** Feature 的进度看 Sub-issues progress 就能读到，不需要问人。
 
 > **警告：** roadmap 视图不能展开子项。要看子项进度时切回 table 视图。
-
-> **注意：** `Status`、`Priority`、`Effort`、`Start date`、`Target date` 是自定义字段。team planning 模板自带的那几个名字可能不同，以实际名字为准。字段名与本表的差一处，后面的检查命令就对不上。
 
 ---
 
@@ -241,17 +235,11 @@ GitHub 默认只有 task、bug、feature 三种 issue type，且只在组织账�
 
 ### 字段
 
-个人账号没有 issue fields。Priority 与 Effort 由 `feature.yml` 的表单下拉收集，写在 issue 正文里。Start date 与 Target date 只在 Project 里维护，不写进正文，避免两处维护。
+个人账号没有 issue fields。Priority 与 Size 由 `feature.yml` 的表单下拉收集，写在 issue 正文里。Start date 与 Target date 只在 Project 里维护，不写进正文，避免两处维护。
 
-| 字段 | 位置 | 取值 | 用在哪 |
-|---|---|---|---|
-| Status | Project | TODO、In Progress、Done | 全部 issue |
-| Priority | 表单与 Project | P0 到 P3 | Feature issue |
-| Effort | 表单与 Project | 1 到 5 | Feature issue，由负责人打分 |
-| Start date | Project | 日期 | Feature issue |
-| Target date | Project | 日期 | Feature issue，roadmap 视图读它 |
+字段的名字与取值见 [Project 字段](project-fields.md)。
 
-`Parent issue`、`Sub-issue progress` 与 iteration 是 Project 自带的字段，不需要另建。
+`Parent issue`、`Sub-issues progress` 与 iteration 是 Project 自带的字段，不需要另建。
 
 ### 目录
 
@@ -285,7 +273,7 @@ repo/
 1. 搜 `decision pending`，找出超期的，通知负责人回填。
 2. 过一遍带 `Blocked` 标记的 issue，有阻塞就找人解开。
 3. 跑 `gh issue list --label research --state open`，找出创建超过 3 个工作日的。提醒负责人结题，不代为关闭。
-4. 检查 Feature 的 Sub-issue progress。进度停滞时问一次原因。
+4. 检查 Feature 的 Sub-issues progress。进度停滞时问一次原因。
 5. 检查已合并的 ADR 是否仍带 `proposed`。带的话说明作者漏改，通知负责人。
 6. 检查 roadmap 视图的 Target date。日期过期就改或删。
 

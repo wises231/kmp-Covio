@@ -39,21 +39,16 @@ body:
     id: priority
     attributes:
       label: Priority
-      options: [P0, P1, P2, P3]
+      options: [P0, P1, P2]
     validations:
       required: true
 
   - type: dropdown
-    id: effort
+    id: size
     attributes:
-      label: Effort
-      description: 由负责人打分。
-      options:
-        - "1"
-        - "2"
-        - "3"
-        - "4"
-        - "5"
+      label: Size
+      description: 由负责人打分。取值与 Project 的 `Size` 字段一致。
+      options: [XS, S, M, L, XL]
     validations:
       required: true
 

@@ -43,7 +43,8 @@ Covio 是 macOS 菜单栏应用。界面是 SwiftUI 宿主，放在 `macosApp/`�
 7. 引用另一个对象时走 S6。值未定时写 `pending`，5 个工作日内回填。
 8. 对象用标签区分。建 issue 时带对应的标签：调研 `research`，大功能 `feature`，小功能与 sub-issue `task`。
 9. 个人账号没有 issue types 与 issue fields。不要用 `--type`，也不要找 issue fields。
-   字段用 Project 8 的字段。Start date 与 Target date 只在 Project 里维护。
+   字段用 Project 8 的字段，名字见 `doc/process/project-fields.md`。
+   Start date 与 Target date 只在 Project 里维护，不写进 issue 正文。
 10. 需要你在 Web 界面操作的步骤，写明操作位置，不要跳过。
 
 ## 5. 文档
@@ -58,6 +59,7 @@ Covio 是 macOS 菜单栏应用。界面是 SwiftUI 宿主，放在 `macosApp/`�
 | 目标架构 | `docs/design/` |
 | 研究结论 | `docs/research/` 与 `research/` |
 | 工作流规则 | `doc/process/workflow.md` |
+| Project 字段 | `doc/process/project-fields.md` |
 | 进度 | [Project 8](https://github.com/users/wyz541/projects/8) |
 
 文档用中文。命令、路径、API 名称和版本号保留原文。不写本机绝对路径。

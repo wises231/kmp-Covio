@@ -76,7 +76,9 @@ GitHub、Linear、Jira 三者的数据模型里都没有「决策」这个对象
 | issue types | **个人账号没有。** 类型属于组织级。 | GraphQL 的 `repository.issueTypes` 返回 `null`；`gh issue create --type` 报 `available types:` 为空 |
 | issue fields | **个人账号没有。** | `GET /user/issue-fields` 返回 404 |
 | 标签 | 可用。两种账号都一样。 | 已建四个标签并验证加得上 |
-| Project 字段 | 可用。两种账号都一样。 | 个人级 Project 可以自建字段 |
+| Project 字段 | 可用。两种账号都一样。 | 已核对 Project 8 的 19 个字段，见 [Project 字段](../doc/process/project-fields.md) |
+| 读 Project 字段 | 需要 `read:project` 权限。 | 无该权限时 `gh project field-list` 报错；加上后成功 |
+| 写 Project 字段 | 需要 `project` 权限。 | 只有 `read:project` 的令牌改不了字段 |
 | 表单自动加标签 | 可用。标签不存在时不加。 | 官方文档：`labels` 接受数组或逗号分隔字符串 |
 | 表单字段类型 | `markdown`、`textarea`、`input`、`dropdown`、`checkboxes`、`upload` | 官方文档的表单 schema 页 |
 | Discussions | 仓库开关无 REST 接口。 | 仓库 Settings 页手工启用 |
@@ -98,11 +100,10 @@ GitHub、Linear、Jira 三者的数据模型里都没有「决策」这个对象
 ## 4. 已知缺口
 
 1. spike 的具体数值没有 A 级来源。2 到 3 个工作日是经验值。团队可以按实际情况改。
-2. Project 的字段名未核对。team planning 模板自带的名字可能与流程文件里的不同。字段名对不上，每周检查的命令就失效。
-3. `Parent issue` 与 `Sub-issue progress` 是 Project 的内置字段。Project 已建，但本流程尚未实测这两个字段。
-4. 「每周检查」的执行成本没有数据。维护人需要在运行几周后自行评估。
-5. 标签是弱约束。issue 建好后忘了加标签，工具不会拦。缓解办法是每周检查时按标签过一遍。
-6. 个人账号是否将来会提供 issue types 与 issue fields，未知。若提供，本流程可以用类型替代部分标签。
+2. `Parent issue` 与 `Sub-issues progress` 是 Project 的内置字段。两者的名字已核对，读写未实测。
+3. 「每周检查」的执行成本没有数据。维护人需要在运行几周后自行评估。
+4. 标签是弱约束。issue 建好后忘了加标签，工具不会拦。缓解办法是每周检查时按标签过一遍。
+5. 个人账号是否将来会提供 issue types 与 issue fields，未知。若提供，本流程可以用类型替代部分标签。
 
 ## 5. 反证与限制
 
