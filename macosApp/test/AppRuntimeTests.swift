@@ -329,9 +329,9 @@ final class AppRuntimeTests: XCTestCase {
 
     // MARK: - 开关分组
 
-    /// 挂帘相关的开关现在只写配置。行为属于 P3。
+    /// 挂帘相关的开关现在只写配置。行为属于 M3。
     ///
-    /// 这条用例是给 P3 的锚点：接上行为时它会失败，提醒把注释一起改掉。
+    /// 这条用例是给 M3 的锚点：接上行为时它会失败，提醒把注释一起改掉。
     func testShelfSwitchesOnlyWriteConfig() throws {
         let created = makeRuntime()
 

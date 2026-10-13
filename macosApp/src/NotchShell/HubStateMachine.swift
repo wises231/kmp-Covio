@@ -42,7 +42,7 @@ enum HubState: String, CaseIterable, Sendable {
 /// `HubOutputState` 管内容区显示什么。合同给了两条独立的 `interactionPath`，
 /// 说明设计上本来就是两台机器。
 ///
-/// P1 只把内容区固定为 `collapsed`。P3 的截图与 P4 的剪贴板会驱动它。
+/// M1 只把内容区固定为 `collapsed`。M3 的截图与 M4 的剪贴板会驱动它。
 enum HubOutputState: String, CaseIterable, Sendable {
     case collapsed = "COLLAPSED"
     case ready = "READY"

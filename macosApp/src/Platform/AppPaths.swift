@@ -6,7 +6,7 @@ import Foundation
 /// `app/src/com/wyz/covio/app/platform/SingleInstanceLock.kt` 保持一致：
 /// 数据目录都是 `~/Library/Application Support/com.wyz.covio/`。
 ///
-/// 唯一的差别是 lock 文件名。计划的 P1 完成判据要求两版能同时运行，
+/// 唯一的差别是 lock 文件名。计划的 M1 完成判据要求两版能同时运行，
 /// 所以 SwiftUI 版用 `app.swiftui.lock`，Compose 版继续用 `app.lock`。
 enum AppPaths {
     /// 与 `core/src/com/wyz/covio/Models.kt` 的 `APP_ID` 一致。
@@ -25,7 +25,7 @@ enum AppPaths {
         return root.appendingPathComponent(appID, isDirectory: true)
     }
 
-    /// 两版共用的配置文件。P2 要求它与 0.4.2 双向兼容。
+    /// 两版共用的配置文件。M2 要求它与 0.4.2 双向兼容。
     static var configFile: URL {
         supportDirectory.appendingPathComponent("config.json")
     }

@@ -1,7 +1,7 @@
 package com.wyz.covio.domain
 
 /**
- * P2 探针。确定 `Engine` 迁移到 common 所需的平台原语。
+ * M2 探针。确定 `Engine` 迁移到 common 所需的平台原语。
  *
  * `Engine` 需要三样东西，它们在 JVM 上分别来自 `Thread` 与 `System`：
  * 一个后台执行器、一个阻塞延时、一个当前时间。本文件确定它们在

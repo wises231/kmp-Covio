@@ -2,7 +2,7 @@ import XCTest
 import AppKit
 import ApplicationServices
 
-/// P0 spike：窗口层级与事件权限。
+/// M0 spike：窗口层级与事件权限。
 ///
 /// 三个问题：
 /// 1. NSPanel 相对系统 UI 的正确 `level`。
@@ -70,7 +70,7 @@ final class WindowLayerTests: XCTestCase {
         withoutFloating.level = .statusBar
         print("level without isFloatingPanel -> \(withoutFloating.level.rawValue)")
 
-        // 这是 P1 必须遵守的顺序。
+        // 这是 M1 必须遵守的顺序。
         XCTAssertEqual(
             levelFirst.level.rawValue,
             NSWindow.Level.statusBar.rawValue,

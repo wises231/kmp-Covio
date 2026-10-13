@@ -93,7 +93,7 @@ final class ShelfGeometryContractTests: XCTestCase {
     /// - 200 高的卡片底边会落到 282 点，超出面板 72 点。
     ///
     /// 结论：合同的 `nativeSize` 记的是 Figma 里组件的画框尺寸，不是运行期尺寸。
-    /// P5 与 Figma 文件核对后，把这条写进 `metadata.knownDifferences`。
+    /// M5 与 Figma 文件核对后，把这条写进 `metadata.knownDifferences`。
     func testScreenshotCardContractSizeDiffersFromRuntime() throws {
         let size = try nativeSize("component/screenshot-card")
         XCTAssertEqual(size.width, 150, accuracy: 0.001, "合同值变了，重新评估这条已知差异")

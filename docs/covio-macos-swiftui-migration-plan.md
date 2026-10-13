@@ -8,9 +8,9 @@
 | 状态 | 已定稿，执行中 |
 | 日期 | `2026-10-12` |
 | 适用对象 | Covio 研发、测试和发布人员 |
-| 迁移策略 | 一次性切换，全部工作在一条长特性分支完成 |
+| 迁移策略 | 集成分支承接全部短分支，阶段收口时一次合入主干 |
 | 切换版本 | `0.5.0` |
-| 当前阶段 | `P6` 已完成 |
+| 当前阶段 | `M6` 已完成 |
 | 完成判据 | 每阶段结束 `/bin/sh ./kotlin test` 全绿 |
 
 ### 文档链
@@ -61,17 +61,17 @@ KMP 保留为共享底座。
 另有四处现状落差：
 
 1. Hub 挂帘、剪贴板、临时文件、局域网互传全部零实现。代码里只有睡眠控制、截图工具栏、Tray 菜单、设置窗口。
-2. `docs/covio-product-master.md` 第 655 行写死「macOS 宿主 = Compose Desktop 加平台桥接」。该文档自称唯一决策来源。本次迁移必须先改这一条。已在 P5 改为「SwiftUI 加 KMP 共享层」。
-3. 设计合同 `docs/covio-design-contract.json` 的 22 条 `components` 都带 `composeMapping`。`composeMapping` 在 schema 的 `$defs.component.required` 里。`platformMapping.status` 是单值枚举 `["native-source-mapped"]`。已在 P5 加 `swiftMapping`、加宽枚举、加 `swiftRuntimeTarget`。
-4. 设计合同没有 motion token。动效参数只在 `covio-product-master.md` §6.4 的表格里。已在 P5 补进 `token/motion/*`。
+2. `docs/covio-product-master.md` 第 655 行写死「macOS 宿主 = Compose Desktop 加平台桥接」。该文档自称唯一决策来源。本次迁移必须先改这一条。已在 M5 改为「SwiftUI 加 KMP 共享层」。
+3. 设计合同 `docs/covio-design-contract.json` 的 22 条 `components` 都带 `composeMapping`。`composeMapping` 在 schema 的 `$defs.component.required` 里。`platformMapping.status` 是单值枚举 `["native-source-mapped"]`。已在 M5 加 `swiftMapping`、加宽枚举、加 `swiftRuntimeTarget`。
+4. 设计合同没有 motion token。动效参数只在 `covio-product-master.md` §6.4 的表格里。已在 M5 补进 `token/motion/*`。
 
 ### 本次沉淀时的复核修正
 
 | 项目 | 计划原文 | 仓库实测 | 影响 |
 | --- | --- | --- | --- |
-| `app/src/com/wyz/covio/app/platform/` 文件数 | 21 | 22 | P6 删除清单的判据 |
-| `app/test/com/wyz/covio/` 测试文件数 | 19 | 18 | P6 保留清单的判据 |
-| `copy/notch-hub/*` 文案键数 | 23 | 14 | P1 状态机文案覆盖的判据 |
+| `app/src/com/wyz/covio/app/platform/` 文件数 | 21 | 22 | M6 删除清单的判据 |
+| `app/test/com/wyz/covio/` 测试文件数 | 19 | 18 | M6 保留清单的判据 |
+| `copy/notch-hub/*` 文案键数 | 23 | 14 | M1 状态机文案覆盖的判据 |
 
 `copy/notch-hub/*` 的 14 条键含 11 条状态键与 3 条布局键。
 11 条状态键覆盖 `menuBarAndNotchHub` 的 6 个状态与 `notchOutputHub` 的 6 个状态，其中 `error` 与 `copy/notch-hub/state/error` 共用。
@@ -80,7 +80,7 @@ KMP 保留为共享底座。
 
 | 决策项 | 结论 |
 | --- | --- |
-| 迁移策略 | 一次性切换。全部工作在一个长特性分支完成，切换日一次合入主干 |
+| 迁移策略 | 一次性切换。集成分支是 `feature/swiftui-macos`。每个 issue 切一条短分支，阶段收口时一次合入主干 |
 | KMP 边界 | `kmpDomain` 加 `macosArm64`，产出 framework 供 Xcode 链接 |
 | 平台实现 | 与操作系统相关的引擎和底层按平台分开实现，由 KMP 统一管理接口 |
 | 剪贴板数据 | `kmpDomain` common 模型 + SQLDelight |
@@ -134,7 +134,7 @@ Kotlin/Native 导出 interface 为 Objective-C protocol。
 Swift 类可以实现并回传实例。
 这是标准的依赖注入模式。
 
-退路：如果 P0 验证发现 Swift 实现 Kotlin protocol 有阻碍，就在 Kotlin/Native 写 `actual`。
+退路：如果 M0 验证发现 Swift 实现 Kotlin protocol 有阻碍，就在 Kotlin/Native 写 `actual`。
 退路的代价是约 600 到 1000 行 cinterop 代码。
 
 ## 6. 工程结构改动
@@ -175,7 +175,7 @@ Swift 类可以实现并回传实例。
 
 ### 6.2 不改动的文件
 
-`app/module.yaml`、`core/module.yaml`、`scripts/package-macos.sh`、`scripts/create-release.sh` 在 P6 之前不动。
+`app/module.yaml`、`core/module.yaml`、`scripts/package-macos.sh`、`scripts/create-release.sh` 在 M6 之前不动。
 Compose 版继续是发布物。
 
 ### 6.3 引入 Xcode 硬依赖
@@ -190,7 +190,7 @@ SwiftUI 的 `@Observable` 要求 macOS 14。
 
 每个阶段结束都要满足：`/bin/sh ./kotlin test` 全绿。
 
-### P0 — Spike 与脚手架
+### M0 — Spike 与脚手架
 
 交付：
 
@@ -198,7 +198,7 @@ SwiftUI 的 `@Observable` 要求 macOS 14。
 2. `macosApp` 模块，`product: type: macos/app`，含 `@main` SwiftUI 空窗口。
 3. Xcode 工程链接 `kmpDomain` framework，Swift 成功调用该 Kotlin 类。
 4. 一个 spike 打印 `NSScreen.safeAreaInsets`、`auxiliaryTopLeftArea`、`NSWorkspace.frontmostApplication`。
-5. `ADR-001` 记录 P0 结论。
+5. `ADR-001` 记录 M0 结论。
 
 完成判据：
 
@@ -206,7 +206,7 @@ SwiftUI 的 `@Observable` 要求 macOS 14。
 - `/bin/sh ./kotlin build` 仍然全绿。
 - 下面 5 个未知项全部结案，结论写进 `ADR-001`。
 
-必须在 P0 结案的未知项：
+必须在 M0 结案的未知项：
 
 | 未知项 | 确认方法 |
 | --- | --- |
@@ -220,7 +220,7 @@ SwiftUI 的 `@Observable` 要求 macOS 14。
 
 此阶段不触碰 Compose 版。发布物仍是 `0.4.2`。
 
-### P1 — Notch Shell 骨架
+### M1 — Notch Shell 骨架
 
 交付：
 
@@ -233,7 +233,7 @@ SwiftUI 的 `@Observable` 要求 macOS 14。
 
 | 项 | 值 | 理由 |
 | --- | --- | --- |
-| `styleMask` | `[.nonactivatingPanel, .borderless]` | 非激活是粘贴回填的硬前提。见 P4 |
+| `styleMask` | `[.nonactivatingPanel, .borderless]` | 非激活是粘贴回填的硬前提。见 M4 |
 | `level` | `.statusBar` | 必须高于菜单栏。现有 Compose 的 `3` 太低 |
 | `collectionBehavior` | `[.canJoinAllSpaces, .stationary, .fullScreenAuxiliary, .ignoresCycle]` | 对齐现有 `0x51`，补 `.ignoresCycle` |
 | `isFloatingPanel` | `true` | 标准做法 |
@@ -267,7 +267,7 @@ SwiftUI 的 `@Observable` 要求 macOS 14。
 - 非刘海屏降级可用。
 - Compose 版与 SwiftUI 版可同时运行（两版用不同的 lock 文件路径）。
 
-### P2 — 能力平迁
+### M2 — 能力平迁
 
 交付：
 
@@ -293,7 +293,7 @@ SwiftUI 的 `@Observable` 要求 macOS 14。
 
 **警告：** 特权 helper 是 LaunchDaemon `com.wyz.covio.helper`。它的 `ProgramArguments[0]` 是旧可执行文件的绝对路径。切换二进制前先卸载旧 helper。否则新 app 判定版本不匹配。
 
-### P3 — 截图模块与切换
+### M3 — 截图模块与切换
 
 交付：
 
@@ -320,7 +320,7 @@ SwiftUI 的 `@Observable` 要求 macOS 14。
 
 **这是切换点。** SwiftUI 版成为发布物，建议版本 `0.5.0`。Compose 版进维护分支。
 
-### P4 — 剪贴板模块
+### M4 — 剪贴板模块
 
 交付：
 
@@ -333,7 +333,7 @@ SwiftUI 的 `@Observable` 要求 macOS 14。
 7. 粘贴回填用 `CGEvent` 合成 `⌘V`。
 8. 辅助功能权限引导。
 
-**警告：** 粘贴回填必须先捕获 `NSWorkspace.shared.frontmostApplication`，再显示 Hub。Hub 面板必须是非激活面板。否则 Hub 一弹出就改变前台应用，`⌘V` 无处可发。这条约束同时决定 P1 的面板配置。
+**警告：** 粘贴回填必须先捕获 `NSWorkspace.shared.frontmostApplication`，再显示 Hub。Hub 面板必须是非激活面板。否则 Hub 一弹出就改变前台应用，`⌘V` 无处可发。这条约束同时决定 M1 的面板配置。
 
 **警告：** 全局快捷键与其它 App 冲突时 Carbon 静默失败。设置页必须暴露「注册失败」状态并允许改键。
 
@@ -352,7 +352,7 @@ SwiftUI 的 `@Observable` 要求 macOS 14。
 - `⇧⌘V` 冲突时设置页可见失败。
 - 权限被拒后有降级路径。
 
-### P5 — 合同与文档同步
+### M5 — 合同与文档同步
 
 严格按 `docs/covio-product-design.md` 的 ①→⑩ 顺序执行。
 
@@ -389,11 +389,11 @@ Hub 若需要合同外的新组件，只能映射到已有的 `component/tab-bar
 
 - `docs/covio-product-master.md` §7.1 第 655 行：macOS 宿主改为「SwiftUI 加 KMP 共享层」。
 - `docs/covio-product-design.md`：新增「SwiftUI 映射」一节；「修改流程」由 10 步扩为 12 步，加入合同校验器与常量生成器。
-- `docs/adr/ADR-001-macos-ui-swiftui.md`：「阶段」一行由「P0 结案，P1 结案」改为指向本文档的进度表。
+- `docs/adr/ADR-001-macos-ui-swiftui.md`：「阶段」一行由「M0 结案，M1 结案」改为指向本文档的进度表。
 - `README.md`：更新 Requirements、构建命令、目录说明。
 - 设计合同的修改顺序是：先改 contract → 更新 schema → 校验 → 再改 Figma。本次视觉不变，Figma 步骤评估为 no-op，但要在提交信息里显式记录。
 
-### P6 — 退役 Compose macOS 宿主
+### M6 — 退役 Compose macOS 宿主
 
 交付：
 
@@ -455,12 +455,12 @@ JNA 保留：`HelperServer` 用它做 Unix 域套接字的 `getpeereid`。
 
 | 编号 | 风险 | 验证手段 |
 | --- | --- | --- |
-| R1 | Amper 的 `macosArm64` framework 管线无本机先例 | P0 spike。失败则退到手写 Xcode 工程加 Run Script |
+| R1 | Amper 的 `macosArm64` framework 管线无本机先例 | M0 spike。失败则退到手写 Xcode 工程加 Run Script |
 | R2 | 面板行为回归：鼠标穿透、非激活、全屏 Space | 手工矩阵：刘海与非刘海 × 单双显示器 × 全屏 Space × 明暗 × 减少动态开关。插桩 HUD 常显 `hubState` 与 `frontmostApplication` |
-| R3 | 长特性分支期间无 CI、Swift 侧零测试 | 分支上先建 XCTest target 与 `.github/workflows/ci.yml`。每次 rebase 到主干后必须全绿 |
+| R3 | 集成分支期间无 CI、Swift 侧零测试 | 已在集成分支上建 XCTest target 与 `.github/workflows/ci.yml`。短分支合入集成分支前 CI 必须全绿 |
 | R4 | 特权 helper 割接断裂 | `scripts/verify-helper-cutover.sh`。检查 LaunchDaemon plist、`APP_PATH_FILE`、`VERSION_PATH` |
 | R5 | 两版共存互相干扰 | 新 app 用不同的 lock 文件路径。`config.json` 双向兼容测试 |
-| R6 | 长分支合并冲突集中爆发 | 每两周 rebase 一次主干。分支内保持 `./kotlin test` 全绿。P3 切换窗口尽量短 |
+| R6 | 集成分支与主干的合并冲突集中爆发 | 集成分支每两周 rebase 一次主干。短分支只存活一个 issue 的时长，冲突面因此收窄。M3 切换窗口尽量短 |
 | R7 | 最低系统版本从 12 提到 14，影响存量用户 | 在 README 与发布说明中明示。`0.4.x` 继续服务 macOS 12 |
 
 ## 9. 验证方案
@@ -472,20 +472,20 @@ JNA 保留：`HelperServer` 用它做 Unix 域套接字的 `getpeereid`。
 /bin/sh ./kotlin build
 ```
 
-P0 之后叠加：
+M0 之后叠加：
 
 ```sh
 bash scripts/build-macos-swift.sh
 bash scripts/test-macos-swift.sh
 ```
 
-P2 之后叠加：
+M2 之后叠加：
 
 ```sh
 bash scripts/verify-helper-cutover.sh
 ```
 
-P6 之后叠加：
+M6 之后叠加：
 
 ```sh
 bash scripts/package-macos-swift.sh
@@ -493,7 +493,7 @@ bash scripts/package-macos-swift.sh
 
 打包脚本自己断言：`ARCHIVE SUCCEEDED`、`codesign --verify --deep --strict` 通过、DMG 内同时有 `Covio.app` 与指向 `/Applications` 的链接、`hdiutil verify` 报 checksum VALID。
 
-P5 之后执行合同校验：
+M5 之后执行合同校验：
 
 ```sh
 python3 -m json.tool docs/covio-design-contract.json > /dev/null
@@ -511,7 +511,7 @@ git diff --check
 
 ## 10. 未确认项
 
-P0 阶段提出的五项，结论已记入 `docs/adr/ADR-001-macos-ui-swiftui.md`。
+M0 阶段提出的五项，结论已记入 `docs/adr/ADR-001-macos-ui-swiftui.md`。
 
 | 未确认项 | 结论 |
 | --- | --- |
@@ -526,8 +526,8 @@ P0 阶段提出的五项，结论已记入 `docs/adr/ADR-001-macos-ui-swiftui.md
 | 项目 | 状态 |
 | --- | --- |
 | `bash scripts/verify-helper-cutover.sh all` | 待人工执行。需要管理员授权，执行期间会短暂失去合盖保护 |
-| P4 粘贴回填在原生 App、Electron、终端、安全输入框四类目标中的验证 | 待人工执行。自动化测试覆盖到「写回剪贴板」与「合成 ⌘V 的调用」，覆盖不到目标应用是否接受合成事件 |
-| `README.md` 的 41 项真机验收清单 | 待人工执行。第 34 到 41 项是 P8 的 Hub 外壳 |
+| M4 粘贴回填在原生 App、Electron、终端、安全输入框四类目标中的验证 | 待人工执行。自动化测试覆盖到「写回剪贴板」与「合成 ⌘V 的调用」，覆盖不到目标应用是否接受合成事件 |
+| `README.md` 的 41 项真机验收清单 | 待人工执行。第 34 到 41 项是 M8 的 Hub 外壳 |
 | `node .git/covio-figma/proto_status.mjs` 与 `verify_text.mjs` | 待人工执行。两个脚本要连本机 `127.0.0.1:3055` 的 Figma 桥。桥没开时连接被拒。本次视觉不变，预期结果是 42 reactions 与 1259 文字节点 |
 
 
@@ -535,12 +535,12 @@ P0 阶段提出的五项，结论已记入 `docs/adr/ADR-001-macos-ui-swiftui.md
 
 | 文件 | 作用 |
 | --- | --- |
-| `app/src/com/wyz/covio/app/ui/AppRuntime.kt` | 892 行。状态编排的唯一大脑。Swift 侧 `HubStore` 的对照物与行为基线来源。P6 已删除 |
-| `app/src/com/wyz/covio/app/platform/MacShelfNative.kt` | 232 行。JNA 加 AWT peer 反射加 `objc_msgSend`。迁移收益最集中的删除目标。P6 已删除 |
+| `app/src/com/wyz/covio/app/ui/AppRuntime.kt` | 892 行。状态编排的唯一大脑。Swift 侧 `HubStore` 的对照物与行为基线来源。M6 已删除 |
+| `app/src/com/wyz/covio/app/platform/MacShelfNative.kt` | 232 行。JNA 加 AWT peer 反射加 `objc_msgSend`。迁移收益最集中的删除目标。M6 已删除 |
 | `core/src/com/wyz/covio/Engine.kt` | 632 行。`synchronized` / `Thread` / `AtomicBoolean` 集中地。决定 KMP native 可行性的关键 |
 | `core/src/com/wyz/covio/Ports.kt` | 73 行。9 个端口接口。Swift 侧 macOS 实现的契约 |
 | `core/src/com/wyz/covio/ShelfLogic.kt` | 204 行。晾衣线几何。参数化后可复用于全宽面板与 Hub 内嵌 |
-| `docs/covio-design-contract.schema.json` | `additionalProperties: false` 加 22 条数量锁加单值枚举。P5 全部约束的来源 |
+| `docs/covio-design-contract.schema.json` | `additionalProperties: false` 加 22 条数量锁加单值枚举。M5 全部约束的来源 |
 | `/Users/wyz/repo/kmp-translator/iosApp/` | Amper 原生 app 的可照抄模板 |
 | `/Users/wyz/repo/kmp-translator/shared/module.yaml` | SQLDelight 与多平台的 Amper 配置模板 |
 
@@ -548,17 +548,17 @@ P0 阶段提出的五项，结论已记入 `docs/adr/ADR-001-macos-ui-swiftui.md
 
 | 阶段 | 状态 | 完成日期 |
 | --- | --- | --- |
-| P0 Spike 与脚手架 | 已完成。结论见 `docs/adr/ADR-001-macos-ui-swiftui.md` | 2026-10-12 |
-| P1 Notch Shell 骨架 | 已完成 | 2026-10-12 |
-| P2 能力平迁 | 已完成。helper 割接脚本待人工执行 | 2026-10-12 |
-| P3 截图模块与切换 | 已完成。版本切到 `0.5.0` | 2026-10-12 |
-| P4 剪贴板模块 | 已完成。交付偏差见下节 | 2026-10-12 |
-| P5 合同与文档同步 | 已完成。交付偏差见下节 | 2026-10-12 |
-| P6 退役 Compose macOS 宿主 | 已完成。交付偏差见下节 | 2026-10-12 |
-| P7 按产品主文档 §7.1 对齐共享层边界 | 已完成。结论见 `docs/adr/ADR-001-macos-ui-swiftui.md` 实测 26 到 28 | 2026-10-12 |
-| P8 Hub 外壳按 macOS 27 版式重做 | 已完成。结论见同文件实测 31 到 33。真机清单未跑 | 2026-10-12 |
+| M0 Spike 与脚手架 | 已完成。结论见 `docs/adr/ADR-001-macos-ui-swiftui.md` | 2026-10-12 |
+| M1 Notch Shell 骨架 | 已完成 | 2026-10-12 |
+| M2 能力平迁 | 已完成。helper 割接脚本待人工执行 | 2026-10-12 |
+| M3 截图模块与切换 | 已完成。版本切到 `0.5.0` | 2026-10-12 |
+| M4 剪贴板模块 | 已完成。交付偏差见下节 | 2026-10-12 |
+| M5 合同与文档同步 | 已完成。交付偏差见下节 | 2026-10-12 |
+| M6 退役 Compose macOS 宿主 | 已完成。交付偏差见下节 | 2026-10-12 |
+| M7 按产品主文档 §7.1 对齐共享层边界 | 已完成。结论见 `docs/adr/ADR-001-macos-ui-swiftui.md` 实测 26 到 28 | 2026-10-12 |
+| M8 Hub 外壳按 macOS 27 版式重做 | 已完成。结论见同文件实测 31 到 33。真机清单未跑 | 2026-10-12 |
 
-## 12.1 P8：Hub 外壳按 macOS 27 版式重做
+## 12.1 M8：Hub 外壳按 macOS 27 版式重做
 
 用户要求设置界面按 macOS 27 的样子重写：左侧悬浮导航栏，顶部悬浮紧凑胶囊。范围是整个 Hub，不只是设置页。
 
@@ -633,7 +633,7 @@ P0 阶段提出的五项，结论已记入 `docs/adr/ADR-001-macos-ui-swiftui.md
 
 ### 测试
 
-新增纯类型套件：`HubMetricsTests`、`SettingsCatalogTests`、`SettingsSearchIndexTests`、`SettingsRowAnchorCoverageTests`。`ScreenshotsTabTests` 与 `ContractConstantsTests` 的高度加法按新公式改写。Swift 测试从 332 条增加到 375 条，全绿。375 这个数含并行工作流 P1 的 Files 页签与其测试。
+新增纯类型套件：`HubMetricsTests`、`SettingsCatalogTests`、`SettingsSearchIndexTests`、`SettingsRowAnchorCoverageTests`。`ScreenshotsTabTests` 与 `ContractConstantsTests` 的高度加法按新公式改写。Swift 测试从 332 条增加到 375 条，全绿。375 这个数含并行工作流 M1 的 Files 页签与其测试。
 
 `ScreenGeometryTests` 随后补了三条用例，把 CI 运行器的屏幕形状钉下来。`HubChromeModelTests` 与 `ShellPanelTests` 又补了八条，覆盖 Escape 的两段行为。Swift 测试因此是 386 条。见下条。
 
@@ -664,14 +664,14 @@ P0 阶段提出的五项，结论已记入 `docs/adr/ADR-001-macos-ui-swiftui.md
 | D2 | 复制 tendedero 源码进 `macosApp/src/Vendored/Tendedero/` | 未执行 | 外部源码未获授权进入仓库。截图挂帘按计划的行为描述重建 |
 | D3 | 复制 dodoclip 源码进 `macosApp/src/Vendored/DodoClip/` | 未执行 | 同上。因此 `THIRD_PARTY_NOTICES.md` 不加 dodoclip 条目：没有复制任何文件，也没有据此实现 |
 | D4 | 剪贴板监听用 `NSPasteboard` 变更通知 | 按 `NSPasteboard.changeCount` 轮询，间隔 0.5 秒 | AppKit 在 `NSPasteboard` 上没有通知、代理或 KVO，只有这个计数器 |
-| D5 | `kmpDomain` 的 `metadata.kotlinInterfaces` 四个接口本次落地 | 已在 P5 落地 | P5 的合同改动。见 `kmpDomain/src/com/wyz/covio/core/DesignContract.kt` |
+| D5 | `kmpDomain` 的 `metadata.kotlinInterfaces` 四个接口本次落地 | 已在 M5 落地 | M5 的合同改动。见 `kmpDomain/src/com/wyz/covio/core/DesignContract.kt` |
 | D6 | 补 §6.4 的 9 条动效参数 | 补了 10 条，多的 1 条来自 §4.4 | `HubMotion` 里已有「指针移出后收起 500 毫秒」。不补进合同，这条数值就没有权威来源，测试也覆盖不到 |
-| D7 | P3 交付「删除 `libCovioDrag.dylib` 与 JNA」 | 删了 `native/`，JNA 保留 | `HelperServer` 用 JNA 调 `getpeereid` 校验 Unix 域套接字的对端 UID。`libCovioDrag.dylib` 的那个用途已由 Swift 重写，JNA 的另一个用途还在 |
-| D8 | P6「移除 `scripts/package-macos.sh` 的发布职责」 | 删除该脚本，另建 `scripts/package-macos-swift.sh` | `app` 的 `product` 已降为 `jvm/lib`，没有 main class，`jpackage` 那条链路无法执行。留一个跑不通的脚本比删掉更糟 |
-| D9 | P6「保留 `app/test` 的 18 个测试文件」 | 保留 8 个，删除 10 个 | 10 个测试的被测对象都在 `platform/` 里。删除清单见 §7 的 P6 一节 |
-| D10 | P8 的界面改动记在 `0.6.0` 名下 | 并入 `0.5.0` 的说明 | `0.5.0` 还没发布（见 §13.2），`APP_VERSION` 还是 `0.5.0`。另开一个版本号会描述一个不存在的版本 |
-| D11 | P8 把三个 CI 作业都移到 `macos-26` | 只移 Swift 作业 | Kotlin 与合同校验两个作业不构建宿主应用，也不受部署目标影响。少依赖一个未确认的运行器标签 |
-| D12 | P8 的胶囊在设置页放页标题加六个分节 | 设置页只放六个分节 | 内容列 712 点放不下 420 点的标题加六个分节。选中的分节本身就是标题 |
+| D7 | M3 交付「删除 `libCovioDrag.dylib` 与 JNA」 | 删了 `native/`，JNA 保留 | `HelperServer` 用 JNA 调 `getpeereid` 校验 Unix 域套接字的对端 UID。`libCovioDrag.dylib` 的那个用途已由 Swift 重写，JNA 的另一个用途还在 |
+| D8 | M6「移除 `scripts/package-macos.sh` 的发布职责」 | 删除该脚本，另建 `scripts/package-macos-swift.sh` | `app` 的 `product` 已降为 `jvm/lib`，没有 main class，`jpackage` 那条链路无法执行。留一个跑不通的脚本比删掉更糟 |
+| D9 | M6「保留 `app/test` 的 18 个测试文件」 | 保留 8 个，删除 10 个 | 10 个测试的被测对象都在 `platform/` 里。删除清单见 §7 的 M6 一节 |
+| D10 | M8 的界面改动记在 `0.6.0` 名下 | 并入 `0.5.0` 的说明 | `0.5.0` 还没发布（见 §13.2），`APP_VERSION` 还是 `0.5.0`。另开一个版本号会描述一个不存在的版本 |
+| D11 | M8 把三个 CI 作业都移到 `macos-26` | 只移 Swift 作业 | Kotlin 与合同校验两个作业不构建宿主应用，也不受部署目标影响。少依赖一个未确认的运行器标签 |
+| D12 | M8 的胶囊在设置页放页标题加六个分节 | 设置页只放六个分节 | 内容列 712 点放不下 420 点的标题加六个分节。选中的分节本身就是标题 |
 
 改键功能另有两处范围限定，需要写进合同与用户文档：
 
@@ -679,7 +679,7 @@ P0 阶段提出的五项，结论已记入 `docs/adr/ADR-001-macos-ui-swiftui.md
 2. 组合写法是 `shift+cmd+V` 这样的字符串，存在 `config.json` 的
    `clipboardPasteStackHotKey` 与 `clipboardCaptureHotKey`。只认字母与数字键。
 
-### 13.1 P5 遗留的一处不一致（已解决）
+### 13.1 M5 遗留的一处不一致（已解决）
 
 **2026-10-12 结案。** 下面是原记录，留作历史。
 
@@ -710,7 +710,7 @@ P0 阶段提出的五项，结论已记入 `docs/adr/ADR-001-macos-ui-swiftui.md
 所以直接执行发布流程会发一个 `v0.5.0` 的标签，配一份 `0.4.2` 的说明。
 
 本次没有改写 `RELEASE_NOTES.md` 的正文：发布说明要写「已通过真机验收」，而 §10 的 41 项清单还没跑。
-2026-10-12 补：头部警告已按 P8 更新，并列出 0.5.0 会改什么。正文仍是 `0.4.2` 的描述。
+2026-10-12 补：头部警告已按 M8 更新，并列出 0.5.0 会改什么。正文仍是 `0.4.2` 的描述。
 顺序应该是先跑完真机清单，再按结果改写发布说明。
 
 2026-10-12 加了一条头部警告，指向本节。正文仍是 `0.4.2` 的描述。

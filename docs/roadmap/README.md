@@ -4,7 +4,7 @@
 
 | 项目 | 内容 |
 | --- | --- |
-| 文档版本 | `1.0` |
+| 文档版本 | `2.0` |
 | 状态 | 待评审 |
 | 日期 | `2026-10-13` |
 | 适用范围 | `docs/roadmap/` 下的路线图与 issue 定义 |
@@ -13,17 +13,22 @@
 本目录不保存研究资料。研究资料放在 `docs/research/`。
 本目录不保存架构决策。架构决策放在 `docs/adr/`。
 
+路线图的立项、拆解、排期、进度汇总、阶段收口和变更流程见
+[../workflow/roadmap-first.md](../workflow/roadmap-first.md)。
+路线图文档、阶段表和 issue 定义文件的格式与模板见 [AUTHORING.md](AUTHORING.md)。
+
 ## 主题索引
 
-| 主题 | 状态 | 平台范围 | 说明 |
-| --- | --- | --- | --- |
-| [挂帘式工作台](curtain-workbench.md) | 待评审 | macOS | 把 Hub 改造成可编辑的挂帘工作台。10 个 epic，48 个 sub-issue。 |
+| 主题 | 状态 | 平台范围 | 阶段 | 说明 |
+| --- | --- | --- | --- | --- |
+| [挂帘式工作台](curtain-workbench.md) | 待评审 | macOS | P0–P5 | 把 Hub 改造成可编辑的挂帘工作台。10 个 epic。 |
 
 ## 目录结构
 
 ```text
 docs/roadmap/
   README.md                 本索引
+  AUTHORING.md              格式与模板
   curtain-workbench.md      挂帘式工作台总路线图
   issues/                   issue 定义，一个文件一个 issue
     E00-research-and-decisions.md
@@ -32,31 +37,24 @@ docs/roadmap/
     .created.json           脚本写入的编号映射，由脚本生成
 ```
 
-## issue 文件格式
+## 分支与提交
 
-每个文件用 YAML front-matter 描述元数据，正文就是 issue 正文。
+每个 issue 从集成分支切一条短分支。
+集成分支是 `feature/swiftui-macos`。
 
-```yaml
----
-id: E01-S02
-title: "触控板四指下滑触发"
-labels: [enhancement, phase-1-curtain-core, area/trigger]
-parent: E01
-milestone: "P1 · 挂帘内核"
-blocked-by: [E00-S01, E01-S01]
----
+```sh
+git switch -c feature/E03-S02-workbench-store feature/swiftui-macos
 ```
 
-字段说明：
+每次提交在正文最后引用 issue：
 
-| 字段 | 必填 | 说明 |
-| --- | --- | --- |
-| `id` | 是 | issue 的本地编号。`E00` 是 epic，`E00-S01` 是 sub-issue。 |
-| `title` | 是 | issue 标题。 |
-| `labels` | 是 | 标签列表。脚本会自动创建缺失的标签。 |
-| `parent` | 是 | 父 issue 的本地编号。epic 写 `null`。 |
-| `milestone` | 否 | 里程碑名。脚本会自动创建缺失的里程碑。 |
-| `blocked-by` | 否 | 阻塞本 issue 的本地编号列表。 |
+```text
+Add the workbench store
+
+Refs: E03-S02
+```
+
+完整规则见 [issue-first.md](../workflow/issue-first.md)。
 
 ## 创建 issue
 
@@ -87,8 +85,8 @@ bash scripts/create-roadmap-issues.sh
 
 脚本可以重复运行。`issues/.created.json` 里已有的编号会跳过。
 
-## 更新规则
+## 进度
 
-执行阶段后更新总路线图的阶段表。
-关闭或新增 issue 后更新本索引。
-issue 内容变化后同步对应的 `.md` 文件。
+本索引不记录进度。
+进度从 GitHub 上 sub-issue 的实际状态推导。
+查询命令见 [../workflow/roadmap-first.md](../workflow/roadmap-first.md) 第 4 节。

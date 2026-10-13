@@ -35,7 +35,7 @@ struct ShelfMotionPlan: Equatable, Sendable {
 /// 弹簧参数与微风的保持时长直接写在 `app/src/com/wyz/covio/app/ui/ShelfWindow.kt` 里，
 /// 这里一并收拢，好让两个宿主的动画参数只有一处可查。
 /// 设计合同目前没有 motion token，所以这里是这些数值在 Swift 侧的唯一落点。
-/// P5 会把它们补进合同，那时本文件改成读合同。
+/// M5 会把它们补进合同，那时本文件改成读合同。
 ///
 /// 捕获 0.65 秒与复制 1.2 秒已经在 `HubMotion` 里，这里不重复定义。
 enum ShelfMotionSpec {
