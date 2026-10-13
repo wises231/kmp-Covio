@@ -18,7 +18,7 @@ import kotlin.test.assertNull
  * 与 `java.time` 逐值相等。macosArm64 上跑的是同一份被测代码，
  * 所以这里通过就等于两个平台都通过。
  *
- * 见 `docs/adr/ADR-001-macos-ui-swiftui.md` 实测 18。
+ * 见 `doc/adr/adr-0001-macos-ui-swiftui.md` 实测 18。
  */
 class PmsetWakeLogParserParityTest {
     private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z", Locale.US)

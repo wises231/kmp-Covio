@@ -1,8 +1,11 @@
 # ADR-001：macOS UI 层迁移到 SwiftUI，KMP 作为共享底座
 
-- 状态：已接受
-- 日期：2026-10-12
-- 阶段：M0 到 M6 已结案。进度见 [迁移计划的阶段进度表](../covio-macos-swiftui-migration-plan.md)
+- Status：accepted
+- Kind：architecture
+- Date：2026-10-12
+- Supersedes：none
+- Implements：none
+- 阶段：M0 到 M6 已结案。进度见[迁移计划的阶段进度表](../../docs/covio-macos-swiftui-migration-plan.md)
 - 补充：2026-10-12 按 `docs/covio-product-master.md` 第 7.1 节对齐共享层边界。结论见实测 26 到 28
 - 补充：2026-10-12 补记实测 29 与 30：测试宿主不启动运行时；图标是工程资源
 - 补充：2026-10-12 补记实测 31 到 34：Hub 外壳按 macOS 27 版式重做，部署目标提到 26.0；搜索锚点漏挂两处。玻璃的显示效果待真机确认

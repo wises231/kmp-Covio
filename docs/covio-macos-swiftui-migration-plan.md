@@ -157,7 +157,7 @@ Swift 类可以实现并回传实例。
 | `scripts/package-macos-swift.sh` | `xcodebuild archive` + `codesign` + `diskutil image create` |
 | `scripts/test-macos-swift.sh` | `xcodebuild test` |
 | `.github/workflows/ci.yml` | Kotlin 测试 + Swift 测试 |
-| `docs/adr/ADR-001-macos-ui-swiftui.md` | 架构决策记录 |
+| `doc/adr/adr-0001-macos-ui-swiftui.md` | 架构决策记录 |
 
 **已按实际情况修正：** 上表是计划原文，保留作历史记录。以下四行与实际不符，以实际为准。
 
@@ -389,7 +389,7 @@ Hub 若需要合同外的新组件，只能映射到已有的 `component/tab-bar
 
 - `docs/covio-product-master.md` §7.1 第 655 行：macOS 宿主改为「SwiftUI 加 KMP 共享层」。
 - `docs/covio-product-design.md`：新增「SwiftUI 映射」一节；「修改流程」由 10 步扩为 12 步，加入合同校验器与常量生成器。
-- `docs/adr/ADR-001-macos-ui-swiftui.md`：「阶段」一行由「M0 结案，M1 结案」改为指向本文档的进度表。
+- `doc/adr/adr-0001-macos-ui-swiftui.md`：「阶段」一行由「M0 结案，M1 结案」改为指向本文档的进度表。
 - `README.md`：更新 Requirements、构建命令、目录说明。
 - 设计合同的修改顺序是：先改 contract → 更新 schema → 校验 → 再改 Figma。本次视觉不变，Figma 步骤评估为 no-op，但要在提交信息里显式记录。
 
@@ -511,7 +511,7 @@ git diff --check
 
 ## 10. 未确认项
 
-M0 阶段提出的五项，结论已记入 `docs/adr/ADR-001-macos-ui-swiftui.md`。
+M0 阶段提出的五项，结论已记入 `doc/adr/adr-0001-macos-ui-swiftui.md`。
 
 | 未确认项 | 结论 |
 | --- | --- |
@@ -548,14 +548,14 @@ M0 阶段提出的五项，结论已记入 `docs/adr/ADR-001-macos-ui-swiftui.md
 
 | 阶段 | 状态 | 完成日期 |
 | --- | --- | --- |
-| M0 Spike 与脚手架 | 已完成。结论见 `docs/adr/ADR-001-macos-ui-swiftui.md` | 2026-10-12 |
+| M0 Spike 与脚手架 | 已完成。结论见 `doc/adr/adr-0001-macos-ui-swiftui.md` | 2026-10-12 |
 | M1 Notch Shell 骨架 | 已完成 | 2026-10-12 |
 | M2 能力平迁 | 已完成。helper 割接脚本待人工执行 | 2026-10-12 |
 | M3 截图模块与切换 | 已完成。版本切到 `0.5.0` | 2026-10-12 |
 | M4 剪贴板模块 | 已完成。交付偏差见下节 | 2026-10-12 |
 | M5 合同与文档同步 | 已完成。交付偏差见下节 | 2026-10-12 |
 | M6 退役 Compose macOS 宿主 | 已完成。交付偏差见下节 | 2026-10-12 |
-| M7 按产品主文档 §7.1 对齐共享层边界 | 已完成。结论见 `docs/adr/ADR-001-macos-ui-swiftui.md` 实测 26 到 28 | 2026-10-12 |
+| M7 按产品主文档 §7.1 对齐共享层边界 | 已完成。结论见 `doc/adr/adr-0001-macos-ui-swiftui.md` 实测 26 到 28 | 2026-10-12 |
 | M8 Hub 外壳按 macOS 27 版式重做 | 已完成。结论见同文件实测 31 到 33。真机清单未跑 | 2026-10-12 |
 
 ## 12.1 M8：Hub 外壳按 macOS 27 版式重做

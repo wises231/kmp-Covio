@@ -12,7 +12,7 @@
 >
 > Release notes must say the build passed real-Mac acceptance.
 > That checklist has not run yet, so this text is not rewritten.
-> The pending items are in `docs/adr/ADR-001-macos-ui-swiftui.md`, section 未决事项.
+> The pending items are in `doc/adr/adr-0001-macos-ui-swiftui.md`, section 未决事项.
 
 ## What 0.5.0 will change
 
