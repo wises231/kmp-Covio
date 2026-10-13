@@ -93,7 +93,7 @@ final class HubMetricsTests: XCTestCase {
     ///
     /// 提示条可能出现也可能不出现，所以按它出现算。
     /// 这一页的高度常数以前少算过一段，结果底部按钮行被裁。
-    /// 见 `docs/adr/ADR-001-macos-ui-swiftui.md` 实测 33。
+    /// 见 `doc/adr/adr-0001-macos-ui-swiftui.md` 实测 33。
     /// 文件页的同一条断言在 `WorkspaceTests`。
     func testTheClipboardPageHeightIsTheSumOfItsParts() {
         let expected = ClipboardTabView.listHeight

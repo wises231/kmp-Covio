@@ -19,7 +19,7 @@ Covio 是 macOS 菜单栏应用。界面是 SwiftUI 宿主，放在 `macosApp/`�
 ```
 
 1. 调研报告放 `docs/research/<主题>/`。格式见 `docs/research/AUTHORING.md`。
-2. 决策放 `docs/adr/ADR-NNN-<slug>.md`。
+2. 决策放 `doc/adr/adr-NNNN-<slug>.md`。模板见 `doc/adr/adr-template.md`。
 3. Issue 建在 GitHub 上。仓库里不放 issue 定义文件，不设本地编号。
 
 ## 3. 大功能与小功能
@@ -30,7 +30,24 @@ Covio 是 macOS 菜单栏应用。界面是 SwiftUI 宿主，放在 `macosApp/`�
 
 一个子 issue 的粒度是一个会话能做完，对应一条分支和一个 PR。
 
-## 4. 文档
+## 4. 工作流
+
+流程定义在 `doc/process/workflow.md`。本文件管执行。每次会话按下面的规则做。
+
+1. 开场先归位。判断本次任务在 S1 到 S7 中的哪一步，按该步的条目与完成标准推进。
+2. 想法不确定做法时走 S1 与 S2。提交人写问题、受影响的人和一个场景，不写解法。
+3. 做法有未知项时开 Research issue。一个 spike 只回答一个问题。时间盒不超 3 个工作日。
+4. 调研结论写在 issue 正文，不写评论。正文含结论、依据和后续动作。结论未写回正文前不关 issue。
+5. 长期决策进 S4。写新 ADR 走 PR，合并前 Status 改成 `accepted`。
+6. 大功能走 S5 建 Feature。每个 sub-issue 写一行验收标准，工期 1 到 3 天。
+7. 引用另一个对象时走 S6。值未定时写 `pending`，5 个工作日内回填。
+8. 对象用标签区分。建 issue 时带对应的标签：调研 `research`，大功能 `feature`，小功能与 sub-issue `task`。
+9. 个人账号没有 issue types 与 issue fields。不要用 `--type`，也不要找 issue fields。
+   字段用 Project 8 的字段，名字见 `doc/process/project-fields.md`。
+   Start date 与 Target date 只在 Project 里维护，不写进 issue 正文。
+10. 需要你在 Web 界面操作的步骤，写明操作位置，不要跳过。
+
+## 5. 文档
 
 改动涉及行为时，同步改文档。
 
@@ -38,13 +55,16 @@ Covio 是 macOS 菜单栏应用。界面是 SwiftUI 宿主，放在 `macosApp/`�
 | --- | --- |
 | 产品行为 | `docs/covio-product-master.md` |
 | 设计合同 | `docs/covio-design-contract.json` |
-| 架构决策 | `docs/adr/` |
+| 架构决策 | `doc/adr/` |
 | 目标架构 | `docs/design/` |
-| 研究结论 | `docs/research/` |
+| 研究结论 | `docs/research/` 与 `research/` |
+| 工作流规则 | `doc/process/workflow.md` |
+| Project 字段 | `doc/process/project-fields.md` |
+| 进度 | [Project 8](https://github.com/users/wyz541/projects/8) |
 
 文档用中文。命令、路径、API 名称和版本号保留原文。不写本机绝对路径。
 
-## 5. commit
+## 6. commit
 
 ```text
 Add the workbench store
@@ -59,7 +79,7 @@ Co-Authored-By: Claude Code <noreply@anthropic.com>
 
 不要用 `git commit` 不带 `-m`。
 
-## 6. 禁止
+## 7. 禁止
 
 1. 禁止直接向 `main` 推送。改 `main` 走 PR。
 2. 禁止 `git add -A` 或 `git add .`。多个会话共用一个工作目录，会扫进别人的文件。

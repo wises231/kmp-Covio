@@ -3,7 +3,7 @@ import AppKit
 /// 一块屏幕的触发几何。
 ///
 /// 全部从 `NSScreen` 读出，不写死数值。M0 实测本机内建视网膜屏是 1728 × 1117，
-/// 顶部安全区 32 点，刘海占 x 从 771.5 到 956.5。见 `docs/adr/ADR-001-macos-ui-swiftui.md` 实测 8。
+/// 顶部安全区 32 点，刘海占 x 从 771.5 到 956.5。见 `doc/adr/adr-0001-macos-ui-swiftui.md` 实测 8。
 struct ScreenGeometry: Equatable, Sendable {
     /// 屏幕的完整坐标系。
     let frame: CGRect

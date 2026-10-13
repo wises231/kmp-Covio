@@ -7,7 +7,7 @@ import XCTest
 /// 这些断言把 M1 的 NSPanel 配置表逐条钉住。其中 `level` 那一条最关键：
 /// `isFloatingPanel = true` 会把 `level` 静默重置为 `.floating`（3），
 /// 现有 Compose 版的 `FLOATING_WINDOW_LEVEL = 3` 就是踩了这个坑。
-/// 见 `docs/adr/ADR-001-macos-ui-swiftui.md` 实测 9。
+/// 见 `doc/adr/adr-0001-macos-ui-swiftui.md` 实测 9。
 @MainActor
 final class ShellPanelTests: XCTestCase {
     private let testRect = CGRect(x: 100, y: 700, width: 960, height: 352)

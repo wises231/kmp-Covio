@@ -1,0 +1,89 @@
+name: Research
+description: 时间盒内的调研。回答一个问题。
+title: "research: "
+labels: ["research"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        一个 spike 只回答一个问题，时间盒默认 2 个工作日，上限 3 个工作日。
+        格式见 [研发工作流](../../doc/process/workflow.md) 的 S2 与 S3。
+
+  - type: textarea
+    id: question
+    attributes:
+      label: 待答问题
+      description: 只写一个问题。用问句写。
+      placeholder: |
+        例如：kmpDomain 能否在不引第三方库的前提下解析 pmset 的唤醒日志？
+    validations:
+      required: true
+
+  - type: textarea
+    id: background
+    attributes:
+      label: 背景
+      description: 为什么现在要问这个问题。有原 Discussion 时贴链接。
+    validations:
+      required: true
+
+  - type: dropdown
+    id: timebox
+    attributes:
+      label: 时间盒
+      description: 到期召集一次 15 分钟评审，只决定结题或延长。延长只允许一次。
+      options:
+        - 2 个工作日（默认）
+        - 3 个工作日（上限）
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: 预期产出
+      description: 到期交出什么。例如一份文档、一段基准数据、一个可行的方案。
+    validations:
+      required: true
+
+  - type: input
+    id: assignee
+    attributes:
+      label: 负责人
+      description: GitHub 用户名。
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+
+        ## 结论（到期后填，未结题时留空）
+
+        结题时编辑正文，补下面三样，再加一行 `decision: pending`。
+        结论写在正文，不写评论。
+
+  - type: textarea
+    id: conclusion
+    attributes:
+      label: 结论
+      description: 结题时填。未结题时留空。
+    validations:
+      required: false
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 依据
+      description: 结题时填。含数据或链接。例如基准结果、文档链接、失败日志。
+    validations:
+      required: false
+
+  - type: textarea
+    id: next
+    attributes:
+      label: 后续动作
+      description: 结题时填。结论是否决时写明理由。
+    validations:
+      required: false
