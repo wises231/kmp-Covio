@@ -304,7 +304,7 @@ repo/
 │  │  └─ adr-NNNN-<slug>.md
 │  └─ process/
 │     └─ workflow.md          ← 本文件
-├─ prototype/
+├─ designPreview/
 │  └─ <功能名>/               ← 界面预览，不进发布物
 └─ research/
    └─ workflow-research.md
