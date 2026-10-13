@@ -1,8 +1,8 @@
 # 研发工作流
 
-**把想法变成可追踪的 issue。七步，只用 GitHub 原生能力。**
+**把想法变成可追踪的 issue。八步，只用 GitHub 原生能力。**
 
-版本 0.4 · 2026-10-13
+版本 0.5 · 2026-10-13
 
 ---
 
@@ -19,18 +19,19 @@
 **前置（一次性）。**
 
 1. 启用 Discussions，保留默认的 `Ideas` 与 `Q&A` 分类。
-2. 建标签 `idea`、`research`、`feature`、`task`。
-3. 建 1 个 Project，挂上本仓库。字段与视图见 S7。
+2. 建标签 `idea`、`research`、`feature`、`task`、`prototype`。
+3. 建 1 个 Project，挂上本仓库。字段与视图见 S8。
 
 **本仓库的完成状态：**
 
 | 项 | 状态 | 办法 |
 |---|---|---|
 | 标签 `idea`、`research`、`feature`、`task` | 已完成 | `gh label create` |
+| 标签 `prototype` | **待建** | `gh label create prototype` |
 | Discussions | 已完成 | 仓库 Settings 页 |
 | Project | 已完成 | [Project 8](https://github.com/users/wyz541/projects/8) |
 | Project 字段名 | 已核对 | 见 [Project 字段](project-fields.md) |
-| 自动加入 | **待人工打开** | 见 S7 第 5 步 |
+| 自动加入 | **待人工打开** | 见 S8 第 5 步 |
 
 > issue forms 仍是 public preview，结构可能变动。
 
@@ -47,6 +48,7 @@
 issue 的创建人默认担任负责人。改派时换 assignee。
 Project 的权限单独授予，与仓库权限无关。
 ADR 的 PR 与本文件的 PR，都需要一名非作者的成员批准。维护人空缺时，由团队成员轮流担任。
+界面预览的评审也由非作者担任。单人仓库由负责人自查，结论照样记录。
 
 ---
 
@@ -55,21 +57,23 @@ ADR 的 PR 与本文件的 PR，都需要一名非作者的成员批准。维护
 ```mermaid
 flowchart LR
   A["S1 Discussion 想法"] -->|做法不清楚| B["S2 Research issue"]
-  A -->|做法清楚| F["S5 Feature issue"]
+  A -->|做法清楚| F["S6 Feature issue"]
   B --> C["S3 结论写回 issue"]
   C -->|否决| D["关闭, 回帖"]
   C -->|长期决策| E["S4 ADR"]
   C -->|可直接做| F
   E --> F
-  F --> G["S5 sub-issues"]
+  F -->|界面变化| P["S5 界面预览"]
+  P --> G["S6 sub-issues"]
+  F -->|界面不变| G
   G --> H["PR"]
 ```
 
-主线两条：想法走 Discussion，交付走 Feature 与 sub-issue。调研与决策是旁挂：做法不清楚时开 Research，需要长期留存时写 ADR。S6 与 S7 贯穿全部步骤。
+主线两条：想法走 Discussion，交付走 Feature 与 sub-issue。调研与决策是旁挂：做法不清楚时开 Research，需要长期留存时写 ADR。S7 与 S8 贯穿全部步骤。
 
 ---
 
-## 七个步骤
+## 八个步骤
 
 ### S1 想法进 Discussions
 
@@ -111,7 +115,7 @@ flowchart LR
 1. 编辑正文，填「结论」段。写三样：结论、依据、后续动作。
 2. 依据含数据或链接。例如基准测试结果、文档链接、失败日志。
 3. 结论是否决时，写明理由。
-4. 加一行决策指向。格式见 S6。编号未知时写 `pending`。
+4. 加一行决策指向。格式见 S7。编号未知时写 `pending`。
 5. 关闭 issue。原因填 `completed`（调研已结题）或 `not planned`（否决）。
 6. 有原 Discussion 时，在原帖留一条评论：一句话结论加 issue 链接。
 
@@ -145,9 +149,48 @@ flowchart LR
 
 > **警告：** 不要删除或改写旧 ADR 的正文。删除会丢失决策历史。
 
-### S5 大功能建 Feature，小功能建 sub-issue
+### S5 界面变化先出预览
 
-**何时用：** 结论明确，可以动工。做法清楚的想法从 S1 直接到这里。
+**何时用：** 功能改变用户可见的界面。
+**谁做：** 负责人。
+
+1. 在 issue 正文写「表现预期」。逐条列出界面要满足的表现。
+2. 用 web 的 Compose 写预览。
+3. 预览覆盖主路径。主路径上不留死路。
+4. 把预览地址与截图写进 issue 正文。评审人要能自行打开。
+5. 请评审人对照表现预期逐条判断。
+6. 把评审结论写进 issue 正文，不写评论。
+7. 评审通过后，才可开始实施。
+
+**完成标准：** 表现预期逐条有结论，且结论写在正文里。
+
+**分级：**
+
+| 档 | 用在 | 覆盖 | 工期 |
+|---|---|---|---|
+| 单屏预览 | 已评审界面的小改动 | 一屏 | 半天内 |
+| 交互原型 | 新界面，或交互变化 | 主路径 | 2 个工作日 |
+
+**例外：** 下列改动不写预览。清单是穷举的，清单外的界面变化一律要预览。
+
+1. 纯逻辑、数据、性能或构建改动，外观不变。
+2. 文案与标点修正。
+3. 内部重构，外观不变。
+4. 依赖升级，外观不变。
+5. 已评审界面的同构复制，交互不变。
+
+**规则：**
+
+- 预览不是交付物。发布物不含预览。
+- 大功能的预览是第一个 sub-issue。实施 sub-issue 阻塞于预览项。
+- 小功能的预览写在同一 issue 里。
+- 打回时不关预览项。列出差异，改完再评。
+
+> **警告：** 评审未通过前不要动实施代码。界面代码返工的成本高于写预览的成本。
+
+### S6 大功能建 Feature，小功能建 sub-issue
+
+**何时用：** 结论明确，可以动工。做法清楚的想法从 S1 直接到这里。界面变化先走 S5。
 **谁做：** 负责人。
 
 1. 用 `.github/ISSUE_TEMPLATE/feature.yml` 建 issue。表单自动加标签 `feature`。标题写成 `<动词> <对象>`。命令行建的话，加 `--label feature`。
@@ -170,7 +213,7 @@ flowchart LR
 1. Feature 与未完成的 sub-issue 关闭为 `not planned`。Feature 正文写取消原因。
 2. 关联的 ADR 加一行 `Cancelled by: #123`。决策本身作废时，Status 另改成 `deprecated`。
 
-### S6 用文本约定回链
+### S7 用文本约定回链
 
 **何时用：** 引用另一个对象时。
 **谁做：** 负责人。写在正文或表单字段里，只写一次。
@@ -179,6 +222,7 @@ flowchart LR
 |---|---|---|
 | Feature issue | `decision: ADR-0042` 或 `decision: none` | 决策记录 |
 | Feature issue | `research: #98` | 调研结论 |
+| Feature issue | `prototype: #123` 或 `prototype: none` | 界面预览 |
 | ADR | `Implements: #123` 或 `Implements: pending` | 执行的 Feature |
 | ADR | `Supersedes: ADR-0003` 或 `Supersedes: none` | 被推翻的旧决策 |
 | Research issue | `decision: pending`、`decision: ADR-0042` 或 `decision: none` | 决策状态 |
@@ -197,7 +241,7 @@ GitHub 的 issue 搜索不保证支持标点。命令里只写关键词 `decisio
 
 **为什么用文本：** GitHub、Linear、Jira 都没有原生的决策对象。回链只能靠约定。
 
-### S7 用 Projects 看进度
+### S8 用 Projects 看进度
 
 **何时用：** 建好 Feature 之后配置一次。之后每周看一次。
 **谁做：** 维护人。
@@ -229,6 +273,7 @@ GitHub 的 issue 搜索不保证支持标点。命令里只写关键词 `decisio
 | 调研 | Issue | `research` | `research:` |
 | 大功能 | Issue | `feature` | 无 |
 | 小功能 | Issue | `task` | 无 |
+| 界面预览 | Issue | `prototype` | 无 |
 | 决策 | 仓库文件 | `doc/adr/` | 无 |
 
 GitHub 默认只有 task、bug、feature 三种 issue type，且只在组织账号可用。本流程不依赖 type。区分对象看标签。
@@ -240,6 +285,8 @@ GitHub 默认只有 task、bug、feature 三种 issue type，且只在组织账�
 字段的名字与取值见 [Project 字段](project-fields.md)。
 
 `Parent issue`、`Sub-issues progress` 与 iteration 是 Project 自带的字段，不需要另建。
+
+「表现预期」不是 Project 字段。这一栏写在 issue 正文里，由 `feature.yml` 收集。
 
 ### 目录
 
@@ -257,6 +304,8 @@ repo/
 │  │  └─ adr-NNNN-<slug>.md
 │  └─ process/
 │     └─ workflow.md          ← 本文件
+├─ prototype/
+│  └─ <功能名>/               ← 界面预览，不进发布物
 └─ research/
    └─ workflow-research.md
 
@@ -273,9 +322,10 @@ repo/
 1. 搜 `decision pending`，找出超期的，通知负责人回填。
 2. 过一遍带 `Blocked` 标记的 issue，有阻塞就找人解开。
 3. 跑 `gh issue list --label research --state open`，找出创建超过 3 个工作日的。提醒负责人结题，不代为关闭。
-4. 检查 Feature 的 Sub-issues progress。进度停滞时问一次原因。
-5. 检查已合并的 ADR 是否仍带 `proposed`。带的话说明作者漏改，通知负责人。
-6. 检查 roadmap 视图的 Target date。日期过期就改或删。
+4. 跑 `gh issue list --label prototype --state open`，找出等评审超过 3 个工作日的。找评审人。
+5. 检查 Feature 的 Sub-issues progress。进度停滞时问一次原因。
+6. 检查已合并的 ADR 是否仍带 `proposed`。带的话说明作者漏改，通知负责人。
+7. 检查 roadmap 视图的 Target date。日期过期就改或删。
 
 ---
 
@@ -287,6 +337,7 @@ repo/
 |---|---|---|
 | 团队规模 2 到 15 人 | 适用范围 | 经验值，来源较弱 |
 | spike 时间盒 2 到 3 天 | S2 | 业界常见区间是 1 到 3 天 |
+| 预览时间盒 半天与 2 个工作日 | S5 | 经验值，来源较弱 |
 
 其余数值由团队约定。改数值时只改步骤，本表不用动。
 

@@ -34,18 +34,19 @@ Covio 是 macOS 菜单栏应用。界面是 SwiftUI 宿主，放在 `macosApp/`�
 
 流程定义在 `doc/process/workflow.md`。本文件管执行。每次会话按下面的规则做。
 
-1. 开场先归位。判断本次任务在 S1 到 S7 中的哪一步，按该步的条目与完成标准推进。
+1. 开场先归位。判断本次任务在 S1 到 S8 中的哪一步，按该步的条目与完成标准推进。
 2. 想法不确定做法时走 S1 与 S2。提交人写问题、受影响的人和一个场景，不写解法。
 3. 做法有未知项时开 Research issue。一个 spike 只回答一个问题。时间盒不超 3 个工作日。
 4. 调研结论写在 issue 正文，不写评论。正文含结论、依据和后续动作。结论未写回正文前不关 issue。
 5. 长期决策进 S4。写新 ADR 走 PR，合并前 Status 改成 `accepted`。
-6. 大功能走 S5 建 Feature。每个 sub-issue 写一行验收标准，工期 1 到 3 天。
-7. 引用另一个对象时走 S6。值未定时写 `pending`，5 个工作日内回填。
-8. 对象用标签区分。建 issue 时带对应的标签：调研 `research`，大功能 `feature`，小功能与 sub-issue `task`。
-9. 个人账号没有 issue types 与 issue fields。不要用 `--type`，也不要找 issue fields。
+6. 大功能走 S6 建 Feature。每个 sub-issue 写一行验收标准，工期 1 到 3 天。
+7. 界面变化走 S5。实施前先出 web 的 Compose 预览。评审通过才动实施代码。
+8. 引用另一个对象时走 S7。值未定时写 `pending`，5 个工作日内回填。
+9. 对象用标签区分。建 issue 时带对应的标签：调研 `research`，大功能 `feature`，小功能与 sub-issue `task`，界面预览 `prototype`。
+10. 个人账号没有 issue types 与 issue fields。不要用 `--type`，也不要找 issue fields。
    字段用 Project 8 的字段，名字见 `doc/process/project-fields.md`。
    Start date 与 Target date 只在 Project 里维护，不写进 issue 正文。
-10. 需要你在 Web 界面操作的步骤，写明操作位置，不要跳过。
+11. 需要你在 Web 界面操作的步骤，写明操作位置，不要跳过。
 
 ## 5. 文档
 

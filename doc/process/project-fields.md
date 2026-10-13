@@ -32,5 +32,5 @@ GitHub 自带的字段还有 `Title`、`Assignees`、`Labels`、`Linked pull req
 
 ## 相关
 
-- [研发工作流](workflow.md)的 S7
+- [研发工作流](workflow.md)的 S8
 - [Agent 契约](../../AGENTS.md)
