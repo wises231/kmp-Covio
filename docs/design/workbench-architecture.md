@@ -42,6 +42,8 @@
 
 R6 和 R7 只影响触发层的形状，不增加新层。R7 没有承担层：系统不向第三方应用开放主屏手势入口，iOS 侧只能改用交互小组件。结论见 [iOS 免打开入口](../research/mobile-ambient-entry/README.md)。
 
+R1 到 R7 的实质内容见[产品设计总稿第 3.1 节](../covio-product-master.md)。本文保留编号，供 ADR 和实现类 issue 引用。
+
 ## 3. 分层与依赖方向
 
 四层。上层依赖下层，下层不认识上层。
