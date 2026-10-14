@@ -128,6 +128,10 @@ internal fun defaultWidgets(): List<Widget> = listOf(
 /** 工作区数量上限。见 ADR-0002 决策 5。 */
 internal const val MAX_PANES = 12
 
+/** 十二个工作区。用来量页签的排版，与 ADR-0002 的证据表核对。 */
+internal fun filledPanes(): List<Pane> =
+    defaultPanes() + (7..MAX_PANES).map { Pane(id = "board$it", kind = PaneKind.BOARD, title = "工作区 $it") }
+
 /**
  * 一个工作区自己的设置项。S7 与 F5。
  *

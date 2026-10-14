@@ -43,6 +43,8 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.wyz.covio.preview.DeepLink
+import com.wyz.covio.preview.LocalPreviewFontStatus
 import kotlinx.coroutines.delay
 
 /**
@@ -53,20 +55,23 @@ import kotlinx.coroutines.delay
  *
  * 打样自带假数据，不接 `kmpDomain`。`kmpDomain` 只有 `jvm` 与 `macosArm64`，接不上 wasmJs。
  * 见 #103 的后续动作第 2 条。
+ *
+ * 地址栏加锚点可以直接落到某一屏。截图与评审用，见 [StartScreen]。
  */
 @Composable
 internal fun WorkbenchPreview() {
-    var open by remember { mutableStateOf(false) }
-    var homeSelected by remember { mutableStateOf(true) }
-    var selectedId by remember { mutableStateOf("now") }
-    var panes by remember { mutableStateOf(defaultPanes()) }
+    val start = remember { StartScreen.fromHash() }
+    var open by remember { mutableStateOf(start.open) }
+    var homeSelected by remember { mutableStateOf(start.home) }
+    var selectedId by remember { mutableStateOf(start.pane) }
+    var panes by remember { mutableStateOf(if (start.filledTabs) filledPanes() else defaultPanes()) }
     var widgets by remember { mutableStateOf(defaultWidgets()) }
-    var query by remember { mutableStateOf("") }
-    var editing by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf(start.query) }
+    var editing by remember { mutableStateOf(start.editing) }
+    var error by remember { mutableStateOf(start.error) }
     var reducedMotion by remember { mutableStateOf(false) }
     var autoCollapse by remember { mutableStateOf(false) }
-    var settingsOpen by remember { mutableStateOf(false) }
+    var settingsOpen by remember { mutableStateOf(start.settings) }
     var paneSettings by remember { mutableStateOf(emptyMap<String, List<PaneSetting>>()) }
 
     val progress = rememberCurtainProgress(open, reducedMotion)
@@ -276,11 +281,7 @@ internal fun WorkbenchPreview() {
             onReducedMotion = { reducedMotion = it },
             onAutoCollapse = { autoCollapse = it },
             onError = { error = true; open = true },
-            onFillPanes = {
-                panes = defaultPanes() + (7..12).map {
-                    Pane(id = "board$it", kind = PaneKind.BOARD, title = "工作区 $it")
-                }
-            },
+            onFillPanes = { panes = filledPanes() },
             onReset = {
                 panes = defaultPanes()
                 widgets = defaultWidgets()
@@ -302,6 +303,61 @@ private fun pageAction(settingsOpen: Boolean, editing: Boolean, homeSelected: Bo
     editing -> "完成"
     homeSelected -> "编辑"
     else -> "设置"
+}
+
+/**
+ * 打样的起始画面。
+ *
+ * 地址栏加锚点可以直接落到某一屏。截图与评审用，省得点。
+ * 锚点写在 issue 号后面，形如 `#107-edit`。见 [DeepLink]。
+ *
+ * | 锚点 | 画面 |
+ * | --- | --- |
+ * | 空 | S1 菜单栏，挂帘收起 |
+ * | `home` | S4 挂帘展开 · 首页 |
+ * | `pane` | S5 工作区内容页 |
+ * | `search` | S3 搜索中 |
+ * | `edit` | S6 编辑模式 |
+ * | `settings` | S7 工作区设置页 |
+ * | `error` | S8 错误与恢复 |
+ * | `tabs` | S3 十二个页签的排版 |
+ */
+private data class StartScreen(
+    val open: Boolean,
+    val home: Boolean,
+    val pane: String,
+    val query: String,
+    val editing: Boolean,
+    val settings: Boolean,
+    val error: Boolean,
+    val filledTabs: Boolean,
+) {
+    companion object {
+        fun fromHash(): StartScreen = when (val anchor = DeepLink.anchor) {
+            "home" -> base(open = true)
+            "pane" -> base(open = true, home = false, pane = "clipboard")
+            "search" -> base(open = true, query = "文")
+            "edit" -> base(open = true, editing = true)
+            "settings" -> base(open = true, home = false, pane = "now", settings = true)
+            "error" -> base(open = true, error = true)
+            "tabs" -> base(open = true, filledTabs = true)
+            else -> {
+                check(anchor.isEmpty() || anchor == "closed") { "未知的锚点：$anchor" }
+                base(open = false)
+            }
+        }
+
+        private fun base(
+            open: Boolean,
+            home: Boolean = true,
+            pane: String = "now",
+            query: String = "",
+            editing: Boolean = false,
+            settings: Boolean = false,
+            error: Boolean = false,
+            filledTabs: Boolean = false,
+        ) = StartScreen(open, home, pane, query, editing, settings, error, filledTabs)
+    }
 }
 
 /** 当前画面对应的 S 编号。评审时对号用。 */
@@ -406,6 +462,7 @@ private fun Harness(
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("打样操作台", color = Color(0xFFF5F5F7), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
             Text(screen, color = Color(0xFF8E8E93), fontSize = 11.sp)
+            Text(LocalPreviewFontStatus.current, color = Color(0xFF8E8E93), fontSize = 11.sp)
         }
         Text(
             "悬停菜单栏胶囊或点它打开。点面板外面收起。按 Escape 收起；搜索框有内容时第一次只清空。",

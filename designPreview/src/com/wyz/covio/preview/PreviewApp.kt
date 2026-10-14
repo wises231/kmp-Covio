@@ -31,10 +31,12 @@ import androidx.compose.ui.unit.sp
  * 打样宿主。首页列出全部打样，点一条进去看。
  *
  * 这一层只管外壳与路由。每一份打样的内容在 [previews] 里。
+ *
+ * 地址栏加锚点可以直接进某一份打样，见 [DeepLink]。
  */
 @Composable
 fun PreviewApp() {
-    var openIssue by remember { mutableStateOf<Int?>(null) }
+    var openIssue by remember { mutableStateOf(DeepLink.issue) }
     val open = previews.firstOrNull { it.issue == openIssue }
 
     Box(Modifier.fillMaxSize().background(Harness.canvas)) {

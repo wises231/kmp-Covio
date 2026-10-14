@@ -23,7 +23,10 @@ fun main() {
     ComposeViewport {
         // 外壳自己定色，不靠主题。套一层是为了让 Material3 的默认值有出处。
         MaterialTheme {
-            PreviewApp()
+            // 中文字体要自己带。见 PreviewFont.kt。
+            PreviewFont {
+                PreviewApp()
+            }
         }
     }
 }
