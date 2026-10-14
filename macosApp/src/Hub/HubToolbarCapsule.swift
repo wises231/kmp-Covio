@@ -7,7 +7,7 @@ import SwiftUI
 ///
 /// 设置页不给标题：内容列放不下标题加六个分节，选中的分节本身就能当标题。
 ///
-/// 高度取自合同 `component/toolbar`。玻璃底材由 `glassSurface` 提供。
+/// 高度取自 `HubMetrics`。玻璃底材由 `glassSurface` 提供。
 struct HubToolbarCapsule<Actions: View>: View {
     var title: String?
     var summary: String?
@@ -28,7 +28,7 @@ struct HubToolbarCapsule<Actions: View>: View {
     }
 }
 
-/// 胶囊里的页标题。合同 `component/page-title`。
+/// 胶囊里的页标题。
 ///
 /// 标题与说明并排一行。胶囊只有 40 点高，竖排会顶掉动作的位置。
 /// 说明是补充信息，宽度不够时先被截断。
@@ -59,7 +59,7 @@ struct HubCapsuleTitle: View {
 
 /// 设置页胶囊里的六个分节切换。
 ///
-/// 选中态由系统分段控件画。分节名取自合同 `copy/nav/*`。
+/// 选中态由系统分段控件画。分节名取自 `SettingsSection`。
 struct SettingsSectionSegments: View {
     @Binding var section: SettingsSection
     let language: AppLanguage
@@ -72,6 +72,6 @@ struct SettingsSectionSegments: View {
         }
         .labelsHidden()
         .pickerStyle(.segmented)
-        .accessibilityLabel(ContractCopy.copyHubTabSettings.text(for: language))
+        .accessibilityLabel(Copy.copyHubTabSettings.text(for: language))
     }
 }

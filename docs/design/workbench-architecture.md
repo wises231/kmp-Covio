@@ -9,7 +9,7 @@
 | 日期 | `2026-10-13` |
 | 适用范围 | macOS 宿主。Windows 与 iOS 只保留抽象接口。 |
 | 当前基线 | `0.5.0`，分支 `feature/swiftui-macos` |
-| 上游文档 | [产品设计总稿](../covio-product-master.md)、[设计合同](../covio-design-contract.json)、[ADR-0001](../../doc/adr/adr-0001-macos-ui-swiftui.md) |
+| 上游文档 | [产品设计总稿](../covio-product-master.md)、[ADR-0001](../../doc/adr/adr-0001-macos-ui-swiftui.md) |
 | 下游文档 | ADR-002 工作台配置的存储位置与版本策略、ADR-003 触发层的抽象边界、ADR-004 到 ADR-009（分层契约，分工见第 10 节） |
 
 本文描述**目标形态**，不描述现状。现状以代码为准。
@@ -178,7 +178,7 @@ Widget 层的模型跟随工作区层，渲染在 Swift 侧。
    - `HubTab` 枚举，`macosApp/src/Hub/HubTab.swift:10`。
    - `HubTabContent` 的分发，`macosApp/src/Hub/HubView.swift:194`。
    - 导航栏的枚举遍历，`macosApp/src/Hub/HubNavRail.swift:65`。
-5. 改动态页签前先改写页签顺序断言。断言在 `macosApp/test/DesignContractTests.swift:63`。
+5. 页签顺序现在只由 `HubTab.allCases` 定义。改顺序就改 `macosApp/src/Hub/HubTab.swift:10`。没有别处断言这个顺序。
 
 **Kotlin 侧的命名习惯**：接口集中在 `kmpDomain/src/com/wyz/covio/core/Ports.kt`。本层若需要新端口，加进这个文件，不要另建文件。
 

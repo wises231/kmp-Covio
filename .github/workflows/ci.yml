@@ -30,16 +30,10 @@ jobs:
         run: /bin/sh ./kotlin test
 
   checks:
-    name: Contract and scripts
+    name: Scripts
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
-      # 合同常量是生成文件。改了合同忘了重跑生成器时这一步失败。
-      - name: Design contract constants are current
-        run: python3 -I scripts/generate-contract-constants.py --check
-      # schema 表达不了的跨段规则。放在这里是为了不装 Xcode 也能快速失败。
-      - name: Design contract cross-section rules
-        run: python3 -I scripts/validate-contract.py
       # 割接脚本的断言需要管理员授权才能跑在真机上。
       # selftest 在临时目录里跑同一批断言，不需要授权。
       - name: Helper cutover assertions

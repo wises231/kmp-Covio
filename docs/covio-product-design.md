@@ -2,10 +2,10 @@
 
 ## 状态
 
-- 本文档解释 Covio 设计合同。
-- `docs/covio-design-contract.json` 是机器可读设计权威。
+- 本文档记录 Figma 侧的视觉基准与设计原则。
+- 界面取值的权威是 `macosApp/src/Design/` 下的 Swift 代码。
 - `docs/covio-product-master.md` 管产品行为。
-- `Covio — Product Design · macOS 27` 是合同的视觉投影。
+- `Covio — Product Design · macOS 27` 是视觉基准。
 - Figma 文件 key 是 `Bktv2SGgjcHuUZ7KJXEkPx`。
 - 源库是 `macOS 27 (Community)`。源库 key 是 `Sh6AKZJPJXTf3GxM0mvBjj`。
 - 源库 URL 是 https://www.figma.com/design/Sh6AKZJPJXTf3GxM0mvBjj/macOS-27--Community- 。
@@ -22,7 +22,7 @@
 | 交付页面 | 8 |
 | 交付 Section | 8 |
 | 顶层画板 | 35 |
-| 合同角色 | 22 |
+| 组件角色 | 22 |
 | 源组件集 | 130 |
 | 组件节点 | 186 |
 | 变量 | 147 |
@@ -35,15 +35,12 @@
 | 层级 | 文件 | 职责 |
 | --- | --- | --- |
 | 产品行为 | `docs/covio-product-master.md` | 产品行为、范围和优先级 |
-| 设计合同 | `docs/covio-design-contract.json` | 机器可读设计权威 |
-| 合同解释 | `docs/covio-product-design.md` | 解释设计合同 |
-| 视觉投影 | `Covio — Product Design · macOS 27` | 合同的可视化表现 |
-| 实现 | Compose | 合同的运行时实现 |
-| 迁移计划 | `docs/covio-macos-swiftui-migration-plan.md` | macOS 界面层换用 SwiftUI 的范围、阶段和判据 |
+| 界面取值与文案 | `macosApp/src/Design/` | 颜色、间距、取值与全部文案 |
+| 界面打样 | `designPreview/` | 目标画面，评审用 |
+| 视觉基准 | `Covio — Product Design · macOS 27` | Figma 侧的画面与组件 |
+| 迁移记录 | `docs/covio-macos-swiftui-migration-plan.md` | macOS 界面层换用 SwiftUI 的历史记录 |
 
-- 冲突顺序是安全与无障碍、产品行为、设计合同、视觉投影。
-- 契约键使用稳定路径格式，例如 `component/button`、`state/page/empty` 和 `platform/button`。
-- JSON Schema 使用 Draft 2020-12。根对象和子对象禁止未知字段。
+- 冲突顺序是安全与无障碍、产品行为、界面打样、Swift 实现、Figma 视觉基准。
 
 ## 设计原则
 
@@ -60,7 +57,7 @@
 - Figma UI 文案只使用英文。Markdown 文档使用中文。
 - Figma 文字使用 `SF Pro`。交付页面不使用 `Inter`。
 - Figma 画布不限制节点扩展。Section 右侧和底部保留 `120` 扩展区。
-- 设计合同保存令牌。组件和画板读取来源变量。
+- 组件和画板读取来源变量。
 
 ## 来源优先边界
 
@@ -295,43 +292,36 @@
 
 ## Compose 映射
 
-- Compose 是设计合同的运行时实现。
+- Compose 是打样的运行时。
 - 来源组件提供 Figma 视觉基准。
-- Compose 保留现有公共 API、配置模型、数据类型和运行时行为。
+- 打样保留现有公共 API、配置模型、数据类型和运行时行为。
 - 状态、键盘、VoiceOver 和减弱动态效果由运行时验证。
-- 设计修改先改共享令牌，再改组件。
-- Figma 和 Compose 的价值差异记录在合同 `metadata.knownDifferences`。
+- 设计修改先改共享取值，再改组件。
 
 ## SwiftUI 映射
 
 macOS 0.5.0 起，macOS 界面用原生 SwiftUI 与 AppKit。
-Compose 保留给未来的 Windows 与 Android 宿主。
+Compose 保留给打样与未来的 Windows 与 Android 宿主。
 
-- 每个组件带 `swiftMapping`，与 `composeMapping` 同构。两者是同一个设计意图的两个落点。
-- `platformMapping` 的 `swiftRuntimeTarget` 与对应组件的 `swiftMapping.target` 一致。
-- 状态机到 Swift 类型的映射在 `states.swiftRuntimeMapping`。
-- `platformMapping.status` 的三个取值：`native-source-mapped` 表示只有原生源码落点，`swift-source-mapped` 表示只有 Swift 落点，`dual-source-mapped` 表示两边都有。
-- 动效时长用 `token/motion/*`。单位是毫秒，曲线描述来自 `covio-product-master.md` 第 6.4 节。
-- 界面用的文案由 `scripts/generate-contract-constants.py` 从合同 `copy` 段生成到 Swift 常量。手抄会漂移。
+- 颜色与间距在 `macosApp/src/Design/MacTheme.swift`。
+- 半径、间距与动效时长在 `macosApp/src/Design/Tokens.swift`。
+- 文案在 `macosApp/src/Design/Copy.swift`，中英各一份。
+- 状态机在 `macosApp/src/NotchShell/HubStateMachine.swift`。
+- 动效时长取自 `docs/covio-product-master.md` 第 6.4 节。
 
-**警告：** JSON Schema 的 `required` 是全局的，写不出「只在 macOS 下 `swiftMapping` 必填」。
-这条要求由 `scripts/validate-contract.py` 检查，不由 schema 检查。
-改合同后必须跑这个脚本，否则漏写 `swiftMapping` 不会被拦下。
+**规则：** 改界面取值就改上面三个文件。没有上游文件需要同步。
 
 ## 修改流程
 
-1. 修改 `docs/covio-design-contract.json`。
-2. 更新 `docs/covio-design-contract.schema.json`。
-3. 校验 JSON 和 Draft 2020-12 Schema。
-4. 运行 `python3 -I scripts/validate-contract.py`，查 schema 表达不了的跨段规则。
-5. 运行 `python3 scripts/generate-contract-constants.py`，重新生成 Swift 常量。
-6. 更新 Figma 页面、画板、组件或变量。
-7. 使用 Talk to Figma 插件读取实时节点。
-8. 运行 `node .git/covio-figma/proto_status.mjs`。
-9. 运行 `node .git/covio-figma/verify_text.mjs`。
-10. 更新本文档和交接文档。
-11. 运行 `git diff --check`。
-12. 记录来源缺口和自绘原因。
+1. 改界面时先出打样，见 `docs/design/design-preview.md`。
+2. 评审通过后改 `macosApp/src/Design/` 下的取值或文案。
+3. 需要时同步更新 Figma 页面、画板、组件或变量。
+4. 使用 Talk to Figma 插件读取实时节点。
+5. 运行 `node .git/covio-figma/proto_status.mjs`。
+6. 运行 `node .git/covio-figma/verify_text.mjs`。
+7. 更新本文档。
+8. 运行 `git diff --check`。
+9. 记录来源缺口和自绘原因。
 
 **警告：** 写入 Figma 前核对文件 key `Bktv2SGgjcHuUZ7KJXEkPx`。错误的 key 会改动错误文件。
 

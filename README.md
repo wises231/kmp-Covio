@@ -9,18 +9,16 @@ It does not use the Tendedero name, icon, or documentation images.
 ## Product design
 
 - [Product design master](docs/covio-product-master.md) defines product behavior and priorities.
-- [Design contract](docs/covio-design-contract.json) is the machine-readable design authority.
-- [Design contract schema](docs/covio-design-contract.schema.json) validates the contract structure.
-- [Design contract guide](docs/covio-product-design.md) explains the contract and Figma projection.
+- [Product design guide](docs/covio-product-design.md) explains the design system and the Figma projection.
 - The Covio Figma file is the visual projection used for implementation verification.
 - Static design status: 8 pages, 8 sections, 35 boards, 130 source component sets, 186 component nodes, and 42 prototype reactions. Static visual audit passed.
 
-Each component carries a `composeMapping` and a `swiftMapping`.
-The macOS host reads the Swift mapping. The Compose host reads the other one.
+The design authority is the Swift code in `macosApp/src/Design/`.
+`MacTheme.swift` holds the colors and the spacing. `Tokens.swift` holds the values.
+`Copy.swift` holds every user-visible string, in English and Simplified Chinese.
 
-**Note:** The JSON schema cannot express "`swiftMapping` is required on macOS".
-The check is in `scripts/validate-contract.py`.
-The script also checks the rules that cross two sections of the contract.
+The Compose preview in `designPreview/` is the target picture.
+When the preview and the Swift host disagree, change the Swift host.
 
 ## Research
 
@@ -223,7 +221,7 @@ Run every test:
 bash scripts/test-all.sh
 ```
 
-The script runs the Kotlin tests, checks the design-contract constants, checks the contract rules that the schema cannot express, checks with the helper cutover script, and runs the macOS XCTest suite.
+The script runs the Kotlin tests, the helper cutover assertions, and the macOS XCTest suite.
 
 Build one side only:
 
@@ -234,15 +232,9 @@ bash scripts/build-macos-swift.sh     # build the SwiftUI host
 bash scripts/test-macos-swift.sh      # run the SwiftUI host XCTest suite
 ```
 
-After you change the design contract, run these two:
-
-```sh
-python3 scripts/validate-contract.py            # the cross-section rules
-python3 scripts/generate-contract-constants.py  # rewrite the Swift constants
-```
-
-The SwiftUI host reads its text and its tokens from `ContractCopy.swift` and `ContractTokens.swift`.
-Both files are generated. Do not edit them by hand.
+The SwiftUI host reads its text from `macosApp/src/Design/Copy.swift` and its values from
+`macosApp/src/Design/Tokens.swift`. Both files are edited by hand.
+`CopySingleSourceTests` fails if any other file builds a `LocalizedCopy`.
 
 The macOS host is SwiftUI. The shared layer is Kotlin Multiplatform, module `kmpDomain`.
 The host links `kmpDomain.framework`. Open `macosApp/Covio.xcodeproj` to work on the host.

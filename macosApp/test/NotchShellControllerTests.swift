@@ -96,7 +96,7 @@ final class NotchShellControllerTests: XCTestCase {
         defer { controller.stop() }
 
         controller.show()
-        // 合同路径 HIDDEN → HOVER。
+        // 主路径 HIDDEN → HOVER。
         XCTAssertEqual(controller.state, .hover)
         XCTAssertTrue(controller.isHubPanelOnScreen, "HOVER 时面板就应该在屏幕上")
 

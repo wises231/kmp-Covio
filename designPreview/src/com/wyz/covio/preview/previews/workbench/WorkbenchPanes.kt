@@ -56,7 +56,7 @@ internal fun PaneContent(pane: Pane) {
     }
 }
 
-/** 页标题。标题加一句说明，并排一行。合同条目 `component/page-title`。 */
+/** 页标题。标题加一句说明，并排一行。 */
 @Composable
 private fun PaneHeading(pane: Pane) {
     Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -65,7 +65,7 @@ private fun PaneHeading(pane: Pane) {
     }
 }
 
-/** 工作区的一句话说明。取自合同 `copy/hub/tab/<键>/summary`。 */
+/** 工作区的一句话说明。取自 `Copy`。 */
 internal val PaneKind.summary: String
     get() = when (this) {
         PaneKind.NOW -> "电源、电池、合盖、设备连接和待处理项。"

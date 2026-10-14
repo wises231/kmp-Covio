@@ -3,94 +3,94 @@ import SwiftUI
 
 /// 设计令牌到 SwiftUI 的映射。
 ///
-/// 取值全部来自 `ContractTokens.swift`，那份由脚本从设计合同生成。
+/// 取值全部来自 `Tokens.swift`。
 /// 这一层只做两件事：十六进制转颜色，浅色深色合成一个动态颜色。
 /// 不在这里写任何字面量色值。
 enum MacTheme {
     // MARK: - 颜色
 
     /// 页面底色。
-    static let canvas = color(ContractColors.tokenColorCanvas)
+    static let canvas = color(TokenColors.tokenColorCanvas)
     /// 卡片与窗口表面。
-    static let surface = color(ContractColors.tokenColorSurface)
+    static let surface = color(TokenColors.tokenColorSurface)
     /// 抬起的表面。
-    static let elevated = color(ContractColors.tokenColorElevated)
+    static let elevated = color(TokenColors.tokenColorElevated)
     /// 分隔线与控件描边。
-    static let divider = color(ContractColors.tokenColorDivider)
+    static let divider = color(TokenColors.tokenColorDivider)
     /// 主文字。
-    static let textPrimary = color(ContractColors.tokenColorTextPrimary)
+    static let textPrimary = color(TokenColors.tokenColorTextPrimary)
     /// 次要文字。
-    static let textSecondary = color(ContractColors.tokenColorTextSecondary)
+    static let textSecondary = color(TokenColors.tokenColorTextSecondary)
     /// 禁用文字。
-    static let disabledText = color(ContractColors.tokenColorDisabledText)
+    static let disabledText = color(TokenColors.tokenColorDisabledText)
     /// 系统强调色。
-    static let accent = color(ContractColors.tokenColorAccentSystem)
+    static let accent = color(TokenColors.tokenColorAccentSystem)
     /// 品牌色。选中态用它。
-    static let brand = color(ContractColors.tokenColorBrand)
+    static let brand = color(TokenColors.tokenColorBrand)
     /// 动作填充。
-    static let actionFill = color(ContractColors.tokenColorActionFill)
+    static let actionFill = color(TokenColors.tokenColorActionFill)
     /// 键盘焦点环。
-    static let focusRing = color(ContractColors.tokenColorFocusRing)
+    static let focusRing = color(TokenColors.tokenColorFocusRing)
     /// 错误文字。
-    static let errorText = color(ContractColors.tokenColorErrorText)
+    static let errorText = color(TokenColors.tokenColorErrorText)
     /// 错误底色。
-    static let errorBackground = color(ContractColors.tokenColorErrorBg)
+    static let errorBackground = color(TokenColors.tokenColorErrorBg)
     /// 警告文字。
-    static let warningText = color(ContractColors.tokenColorWarningText)
+    static let warningText = color(TokenColors.tokenColorWarningText)
     /// 警告底色。
-    static let warningBackground = color(ContractColors.tokenColorWarningBg)
+    static let warningBackground = color(TokenColors.tokenColorWarningBg)
     /// 成功文字。
-    static let successText = color(ContractColors.tokenColorSuccessText)
+    static let successText = color(TokenColors.tokenColorSuccessText)
     /// 成功底色。
-    static let successBackground = color(ContractColors.tokenColorSuccessBg)
+    static let successBackground = color(TokenColors.tokenColorSuccessBg)
     /// 信息底色。
-    static let infoBackground = color(ContractColors.tokenColorInfoBg)
+    static let infoBackground = color(TokenColors.tokenColorInfoBg)
     /// 卡片与窗口阴影。
-    static let shadow = color(ContractColors.tokenColorShadow)
+    static let shadow = color(TokenColors.tokenColorShadow)
 
     // MARK: - 尺寸
 
-    /// 卡片圆角。合同 `token/radius/card`。
-    static let cardRadius = ContractDimensions.tokenRadiusCard
-    /// 控件圆角。合同 `token/radius/control`。
-    static let controlRadius = ContractDimensions.tokenRadiusControl
-    /// 输入框圆角。合同 `token/radius/small`。
-    static let smallRadius = ContractDimensions.tokenRadiusSmall
-    /// 按钮圆角。合同 `token/radius/medium`。
-    static let mediumRadius = ContractDimensions.tokenRadiusMedium
-    /// 紧凑表面圆角。合同 `token/radius/compact`。
-    static let compactRadius = ContractDimensions.tokenRadiusCompact
+    /// 卡片圆角。
+    static let cardRadius = TokenDimensions.tokenRadiusCard
+    /// 控件圆角。
+    static let controlRadius = TokenDimensions.tokenRadiusControl
+    /// 输入框圆角。
+    static let smallRadius = TokenDimensions.tokenRadiusSmall
+    /// 按钮圆角。
+    static let mediumRadius = TokenDimensions.tokenRadiusMedium
+    /// 紧凑表面圆角。
+    static let compactRadius = TokenDimensions.tokenRadiusCompact
 
-    /// 间距 4。合同 `token/space/1`。
-    static let space1 = ContractDimensions.tokenSpace1
-    /// 间距 8。合同 `token/space/2`。
-    static let space2 = ContractDimensions.tokenSpace2
-    /// 设置行间距 12。合同 `token/space/3`。
-    static let space3 = ContractDimensions.tokenSpace3
-    /// 卡片内边距 16。合同 `token/space/4`。
-    static let space4 = ContractDimensions.tokenSpace4
-    /// 卡片组间距 20。合同 `token/space/5`。
-    static let space5 = ContractDimensions.tokenSpace5
-    /// 卡片间距 24。合同 `token/space/6`。
-    static let space6 = ContractDimensions.tokenSpace6
-    /// 页面分节间距 32。合同 `token/space/8`。
-    static let space8 = ContractDimensions.tokenSpace8
-    /// 页面上下留白 40。合同 `token/space/10`。
-    static let space10 = ContractDimensions.tokenSpace10
+    /// 间距 4。
+    static let space1 = TokenDimensions.tokenSpace1
+    /// 间距 8。
+    static let space2 = TokenDimensions.tokenSpace2
+    /// 设置行间距 12。
+    static let space3 = TokenDimensions.tokenSpace3
+    /// 卡片内边距 16。
+    static let space4 = TokenDimensions.tokenSpace4
+    /// 卡片组间距 20。
+    static let space5 = TokenDimensions.tokenSpace5
+    /// 卡片间距 24。
+    static let space6 = TokenDimensions.tokenSpace6
+    /// 页面分节间距 32。
+    static let space8 = TokenDimensions.tokenSpace8
+    /// 页面上下留白 40。
+    static let space10 = TokenDimensions.tokenSpace10
 
     // MARK: - 转换
 
-    /// 把一枚合同颜色令牌转成随外观变化的 SwiftUI 颜色。
-    static func color(_ token: ContractColor) -> Color {
+    /// 把一枚颜色令牌转成随外观变化的 SwiftUI 颜色。
+    static func color(_ token: TokenColor) -> Color {
         Color(nsColor: NSColor(name: nil) { appearance in
             let isDark = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
             return nsColor(hex: isDark ? token.darkHex : token.lightHex)
         })
     }
 
-    /// 解析合同里的十六进制色值。支持 `#RRGGBB` 与 `#RRGGBBAA`。
+    /// 解析十六进制色值。支持 `#RRGGBB` 与 `#RRGGBBAA`。
     ///
-    /// 合同里的 8 位色值把透明度放在最后两位，与 CSS 一致。
+    /// 8 位色值把透明度放在最后两位，与 CSS 一致。
     /// 认不出的色值返回洋红色，好让错误一眼可见。
     static func nsColor(hex: String) -> NSColor {
         var text = hex

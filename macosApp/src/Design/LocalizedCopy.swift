@@ -1,23 +1,20 @@
 import Foundation
 
-/// 一条双语文案。语言顺序与 `docs/covio-design-contract.json` 的 `copy` 段一致。
+/// 一条双语文案。
 ///
-/// `key` 是合同里的键路径。`ContractCopy` 生成的条目都带键；
-/// 这个文件是唯一允许手写文案类型的地方，但文案本身一律从 `ContractCopy` 取。
+/// 文案本身一律写在 `Copy` 里，别处不得构造这个类型。
 struct LocalizedCopy: Sendable, Equatable {
-    let key: String?
     let en: String
     let zhHans: String
 
-    init(key: String? = nil, en: String, zhHans: String) {
-        self.key = key
+    init(en: String, zhHans: String) {
         self.en = en
         self.zhHans = zhHans
     }
 
     /// 按当前系统语言取文案。
     ///
-    /// 合同只给 `en` 与 `zh-Hans` 两种。其它语言回落到英文。
+    /// 只有 `en` 与 `zh-Hans` 两种。其它语言回落到英文。
     var text: String { text(for: CopyLocale.language) }
 
     /// 按指定语言取文案。设置里改了语言后，界面走这一条。

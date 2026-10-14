@@ -510,7 +510,7 @@ final class ShelfRuntimeTests: XCTestCase {
         // 启动本身不能被接管挡住：这一刻任务还在飞。
         XCTAssertEqual(reported, [], "start() 不该等接管跑完")
         await runtime.takeoverTask?.value
-        XCTAssertEqual(reported, [ContractCopy.copyTopShelfErrorTakeover.text(for: .english)])
+        XCTAssertEqual(reported, [Copy.copyTopShelfErrorTakeover.text(for: .english)])
         XCTAssertFalse(runtime.takeoverActive)
     }
 
@@ -562,7 +562,7 @@ final class ShelfRuntimeTests: XCTestCase {
     func testOpeningAMissingFileReportsAnError() {
         let runtime = makeRuntime()
         runtime.openItem(ShelfItem(path: directory.appendingPathComponent("gone.png").path, addedAtEpochSeconds: 0))
-        XCTAssertEqual(reported, [ContractCopy.copyTopShelfErrorOpen.text(for: .english)])
+        XCTAssertEqual(reported, [Copy.copyTopShelfErrorOpen.text(for: .english)])
     }
 }
 

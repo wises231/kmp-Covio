@@ -13,9 +13,9 @@ struct LidPage: View {
     var body: some View {
         VStack(alignment: .leading, spacing: MacTheme.space6) {
             MacCard {
-                MacSettingRow(title: ContractCopy.copyLidInstantSleep.text(for: runtime.language)) {
+                MacSettingRow(title: Copy.copyLidInstantSleep.text(for: runtime.language)) {
                     MacSwitch(
-                        label: ContractCopy.copyLidInstantSleep.text(for: runtime.language),
+                        label: Copy.copyLidInstantSleep.text(for: runtime.language),
                         isOn: Binding(
                             get: { runtime.config.lidSleepImmediateOnClose },
                             set: { runtime.setImmediateLidSleep($0) }
@@ -23,9 +23,9 @@ struct LidPage: View {
                     )
                 }
                 .settingsRowAnchor(SettingsRowID.lidInstant)
-                MacSettingRow(title: ContractCopy.copyLidPreventSleep.text(for: runtime.language)) {
+                MacSettingRow(title: Copy.copyLidPreventSleep.text(for: runtime.language)) {
                     MacSwitch(
-                        label: ContractCopy.copyLidPreventSleep.text(for: runtime.language),
+                        label: Copy.copyLidPreventSleep.text(for: runtime.language),
                         isOn: Binding(
                             get: { !runtime.appState.lidSleepAvailable },
                             set: { _ in runtime.toggleLidSleep() }
@@ -34,9 +34,9 @@ struct LidPage: View {
                     )
                 }
                 .settingsRowAnchor(SettingsRowID.lidPrevent)
-                MacSettingRow(title: ContractCopy.copyLidPowerRules.text(for: runtime.language)) {
+                MacSettingRow(title: Copy.copyLidPowerRules.text(for: runtime.language)) {
                     MacSwitch(
-                        label: ContractCopy.copyLidPowerRules.text(for: runtime.language),
+                        label: Copy.copyLidPowerRules.text(for: runtime.language),
                         isOn: Binding(
                             get: { runtime.config.disableLidSleepInCharging },
                             set: { runtime.setDisableLidWhileCharging($0) }
@@ -45,9 +45,9 @@ struct LidPage: View {
                     )
                 }
                 .settingsRowAnchor(SettingsRowID.lidPower)
-                MacSettingRow(title: ContractCopy.copyLidBatteryRules.text(for: runtime.language)) {
+                MacSettingRow(title: Copy.copyLidBatteryRules.text(for: runtime.language)) {
                     MacSwitch(
-                        label: ContractCopy.copyLidBatteryRules.text(for: runtime.language),
+                        label: Copy.copyLidBatteryRules.text(for: runtime.language),
                         isOn: Binding(
                             get: { runtime.config.disableLidSleepOnBattery },
                             set: { runtime.setDisableLidOnBattery($0) }
@@ -60,12 +60,12 @@ struct LidPage: View {
 
             if !controlsEnabled {
                 MacAlert(
-                    message: ContractCopy.copyDialogHelperUnavailableBody.text(for: runtime.language),
+                    message: Copy.copyDialogHelperUnavailableBody.text(for: runtime.language),
                     kind: .warning
                 )
             }
 
-            MacAlert(message: ContractCopy.copyLidWarning.text(for: runtime.language), kind: .warning)
+            MacAlert(message: Copy.copyLidWarning.text(for: runtime.language), kind: .warning)
         }
     }
 }

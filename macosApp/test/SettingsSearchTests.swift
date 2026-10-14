@@ -33,10 +33,9 @@ final class SettingsCatalogTests: XCTestCase {
         XCTAssertEqual(seen, SettingsSection.allCases)
     }
 
-    /// 每条都有合同键的标题，中英都不为空。
+    /// 每条都有标题，中英都不为空。
     func testEveryEntryHasCopy() {
         for entry in SettingsCatalog.entries {
-            XCTAssertNotNil(entry.title.key, "\(entry.rowID) 的标题没有合同键")
             XCTAssertFalse(entry.title.en.isEmpty, "\(entry.rowID) 缺英文标题")
             XCTAssertFalse(entry.title.zhHans.isEmpty, "\(entry.rowID) 缺中文标题")
             XCTAssertFalse(entry.keywords.isEmpty, "\(entry.rowID) 没有关键词")

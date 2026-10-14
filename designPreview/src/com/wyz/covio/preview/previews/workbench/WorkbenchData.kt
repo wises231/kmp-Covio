@@ -23,7 +23,7 @@ internal enum class PaneKind {
     /** 内置工作区不能删除，只能隐藏。见 ADR-0002 决策 6。 */
     val isBuiltin: Boolean get() = this != BOARD
 
-    /** 显示名的文案键。内置的取自设计合同 `copy/hub/tab/<键>`。 */
+    /** 显示名的文案键。内置的取自 `Copy`。 */
     val titleCopyKey: String? get() = if (isBuiltin) "copy/hub/tab/${name.lowercase()}" else null
 }
 
@@ -46,7 +46,7 @@ internal data class Pane(
     val isBuiltin: Boolean get() = kind.isBuiltin
 }
 
-/** 内置工作区的名字。取自合同 `copy/hub/tab/<键>`。 */
+/** 内置工作区的名字。取自 `Copy`。 */
 internal val PaneKind.defaultTitle: String
     get() = when (this) {
         PaneKind.NOW -> "现在"
@@ -61,7 +61,7 @@ internal val PaneKind.defaultTitle: String
 /**
  * 内置工作区的图标。
  *
- * 合同用 SF Symbol 名。浏览器里没有 SF Symbol，所以这里存一个近似字符。
+ * macOS 侧用 SF Symbol 名。浏览器里没有 SF Symbol，所以这里存一个近似字符。
  * 打样只判断「图标换没换」，不判断字形对不对。
  */
 internal val PaneKind.defaultIcon: String

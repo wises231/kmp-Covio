@@ -25,7 +25,7 @@ import kotlin.test.assertTrue
  * 语料里的 `line` 是线上真实的字节。用例失败时先看 `line`：
  * 它要么来自 0.4.2 的客户端，要么是对着新实现的输出抄的。
  *
- * 语料的路径按工作目录找，与 `DesignContractTest` 同一手法。
+ * 语料的路径按工作目录找，几个候选目录都试。
  * 都找不到就直接失败：静默跳过等于没测。
  */
 class HelperWireVectorTest {

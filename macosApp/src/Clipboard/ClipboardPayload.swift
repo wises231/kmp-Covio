@@ -71,7 +71,7 @@ enum ClipboardPayloadReader {
         guard let data = pngData(pasteboard) else { return nil }
         guard let path = writer.write(data, into: imageDirectory) else {
             // 存不下图片时至少保住一段说明，不然用户按了复制却什么都没有。
-            return ClipboardPayload(kind: ClipKind.text, text: ContractCopy.copyClipboardErrorImage.text)
+            return ClipboardPayload(kind: ClipKind.text, text: Copy.copyClipboardErrorImage.text)
         }
         return ClipboardPayload(
             kind: ClipKind.image,

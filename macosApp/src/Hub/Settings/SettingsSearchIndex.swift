@@ -21,7 +21,7 @@ enum SettingsSearchIndex {
     /// 结果最多几条。再多用户也不会往下看，面板也放不下。
     static let maxResults = 8
 
-    /// 高亮持续多久。合同没有这枚令牌，取值按一眼能看到的时长定。
+    /// 高亮持续多久。取值按一眼能看到的时长定。
     static let highlightDuration: TimeInterval = 1.2
 
     /// 查一次。

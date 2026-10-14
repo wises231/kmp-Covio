@@ -51,8 +51,8 @@ fun PreviewApp() {
 /**
  * 宿主的色值。
  *
- * 宿主是工具，不是 Covio 的界面，所以这里用中性灰，不读设计合同。
- * 打样的内容才用合同里的取值。
+ * 宿主是工具，不是 Covio 的界面，所以这里用中性灰。
+ * 打样的内容才用 `Tokens` 里的取值。
  */
 internal object Harness {
     val canvas = Color(0xFFECECEF)

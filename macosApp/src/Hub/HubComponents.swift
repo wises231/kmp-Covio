@@ -2,25 +2,24 @@ import SwiftUI
 
 /// 设置界面的基础控件。
 ///
-/// 每个控件对应设计合同里的一个组件。尺寸注释里的键就是合同的键路径，
-/// `DesignContractTests` 会逐值比对 `HubMetrics`，改这里要同步改合同。
+/// 尺寸注释里写的是取值来源。取值本身在 `HubMetrics` 与 `MacTheme`。
 ///
 /// 全部用系统控件搭。SwiftUI 在 macOS 上已经把开关、分段控件、
 /// 输入框画成原生外观，自己画会与系统不一致。
 enum MacControlSize {
-    /// 合同 `component/switch` 的 `nativeSize`。
+    /// 开关宽 38 点。
     static let switchWidth: CGFloat = 38
-    /// 合同 `component/setting-row` 的 `nativeSize`。
+    /// 设置行高 52 点。
     static let settingRowHeight: CGFloat = 52
-    /// 合同 `component/number-field` 的 `nativeSize`。
+    /// 数值输入框宽 120 点。
     static let numberFieldWidth: CGFloat = 120
-    /// 合同 `component/segmented` 的 `nativeSize`。
+    /// 分段控件宽 260 点。
     static let segmentedWidth: CGFloat = 260
 }
 
-/// 分组的设置表面。合同 `component/card`。
+/// 分组的设置表面。
 ///
-/// 合同要求不要嵌套卡片。这里不做检查，靠使用方遵守。
+/// 不要嵌套卡片。这里不做检查，靠使用方遵守。
 struct MacCard<Content: View>: View {
     @ViewBuilder var content: Content
 
@@ -38,9 +37,9 @@ struct MacCard<Content: View>: View {
     }
 }
 
-/// 标签、说明与控件的一行。合同 `component/setting-row`。
+/// 标签、说明与控件的一行。
 ///
-/// 整行可点，命中区不小于合同要求的 44 点。
+/// 整行可点，命中区不小于 44 点。
 struct MacSettingRow<Control: View>: View {
     let title: String
     var description: String?
@@ -71,7 +70,7 @@ struct MacSettingRow<Control: View>: View {
     }
 }
 
-/// 二元开关。合同 `component/switch`。
+/// 二元开关。
 ///
 /// 无障碍名称由 `label` 提供，VoiceOver 会读当前值。
 struct MacSwitch: View {
@@ -90,7 +89,7 @@ struct MacSwitch: View {
     }
 }
 
-/// 数值输入。合同 `component/number-field`。
+/// 数值输入。
 ///
 /// 输入不是数字时把边框染成错误色，并且不回调。
 /// 调用方据此决定要不要写配置。
@@ -115,7 +114,7 @@ struct MacNumberField: View {
     }
 }
 
-/// 单选分段控件。合同 `component/segmented`。
+/// 单选分段控件。
 struct MacSegmented: View {
     let options: [String]
     let selectedIndex: Int
@@ -133,7 +132,7 @@ struct MacSegmented: View {
     }
 }
 
-/// 按钮的视觉层级。合同 `component/button` 的变体。
+/// 按钮的视觉层级。
 enum MacButtonKind {
     /// 主操作。品牌填充。
     case primary
@@ -143,7 +142,7 @@ enum MacButtonKind {
     case plain
 }
 
-/// 按钮。合同 `component/button`。
+/// 按钮。
 ///
 /// 用 `.plain` 样式自己画外观：系统样式在这个尺寸下留白太多。
 /// 按下时降透明度，键盘焦点环交给系统。
@@ -181,7 +180,7 @@ struct MacButton: View {
     }
 
     private var foreground: Color {
-        kind == .primary ? MacTheme.color(ContractColors.tokenColorTextOnAccent) : MacTheme.textPrimary
+        kind == .primary ? MacTheme.color(TokenColors.tokenColorTextOnAccent) : MacTheme.textPrimary
     }
 
     private var background: Color {
@@ -193,7 +192,7 @@ struct MacButton: View {
     }
 }
 
-/// 行内提示。合同 `component/alert`。
+/// 行内提示。
 enum MacAlertKind {
     case info
     case warning
@@ -218,7 +217,7 @@ enum MacAlertKind {
         }
     }
 
-    /// 无障碍名称。合同要求颜色不能是唯一的线索，所以每种提示都带一个词。
+    /// 无障碍名称。颜色不能是唯一的线索，所以每种提示都带一个词。
     var label: String {
         switch self {
         case .info: "Info"

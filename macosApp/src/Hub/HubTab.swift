@@ -3,10 +3,8 @@ import Foundation
 /// Hub 的六个页签。
 ///
 /// 顺序与名称来自 `docs/covio-product-master.md` 第 4.2 节的表格。
-/// `DesignContractTests` 会解析那张表并逐项比对，防止顺序被改乱。
 ///
-/// 设计合同 `components["component/tab-bar"]` 的 `nativeSize` 是 960 × 52，
-/// 与 `HubMetrics.tabBarWidth` / `tabBarHeight` 一致。
+/// 导航栏是 960 × 52，与 `HubMetrics.tabBarWidth` / `tabBarHeight` 一致。
 enum HubTab: String, CaseIterable, Identifiable, Sendable {
     case now = "Now"
     case clipboard = "Clipboard"
@@ -20,30 +18,30 @@ enum HubTab: String, CaseIterable, Identifiable, Sendable {
     /// 页签标题。
     var title: LocalizedCopy {
         switch self {
-        case .now: ContractCopy.copyHubTabNow
-        case .clipboard: ContractCopy.copyHubTabClipboard
-        case .files: ContractCopy.copyHubTabFiles
-        case .screenshots: ContractCopy.copyHubTabScreenshots
-        case .devices: ContractCopy.copyHubTabDevices
-        case .settings: ContractCopy.copyHubTabSettings
+        case .now: Copy.copyHubTabNow
+        case .clipboard: Copy.copyHubTabClipboard
+        case .files: Copy.copyHubTabFiles
+        case .screenshots: Copy.copyHubTabScreenshots
+        case .devices: Copy.copyHubTabDevices
+        case .settings: Copy.copyHubTabSettings
         }
     }
 
     /// 模块说明。逐条对应 §4.2 的"内容"列。
     var summary: LocalizedCopy {
         switch self {
-        case .now: ContractCopy.copyHubTabNowSummary
-        case .clipboard: ContractCopy.copyHubTabClipboardSummary
-        case .files: ContractCopy.copyHubTabFilesSummary
-        case .screenshots: ContractCopy.copyHubTabScreenshotsSummary
-        case .devices: ContractCopy.copyHubTabDevicesSummary
-        case .settings: ContractCopy.copyHubTabSettingsSummary
+        case .now: Copy.copyHubTabNowSummary
+        case .clipboard: Copy.copyHubTabClipboardSummary
+        case .files: Copy.copyHubTabFilesSummary
+        case .screenshots: Copy.copyHubTabScreenshotsSummary
+        case .devices: Copy.copyHubTabDevicesSummary
+        case .settings: Copy.copyHubTabSettingsSummary
         }
     }
 
     /// 页签图标。§6.3 要求图标和文字同时显示。
     ///
-    /// 合同没有给页签图标的名字，这里用通用 SF Symbol。
+    /// 页签图标用通用 SF Symbol。
     var symbolName: String {
         switch self {
         case .now: "power"

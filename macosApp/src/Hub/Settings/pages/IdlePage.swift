@@ -9,9 +9,9 @@ struct IdlePage: View {
     var body: some View {
         VStack(alignment: .leading, spacing: MacTheme.space6) {
             MacCard {
-                MacSettingRow(title: ContractCopy.copyIdlePreventIdle.text(for: runtime.language)) {
+                MacSettingRow(title: Copy.copyIdlePreventIdle.text(for: runtime.language)) {
                     MacSwitch(
-                        label: ContractCopy.copyIdlePreventIdle.text(for: runtime.language),
+                        label: Copy.copyIdlePreventIdle.text(for: runtime.language),
                         isOn: Binding(
                             get: { !runtime.appState.idleSleepAvailable },
                             set: { _ in runtime.toggleIdleSleep() }
@@ -19,9 +19,9 @@ struct IdlePage: View {
                     )
                 }
                 .settingsRowAnchor(SettingsRowID.idlePrevent)
-                MacSettingRow(title: ContractCopy.copyIdleWhileCharging.text(for: runtime.language)) {
+                MacSettingRow(title: Copy.copyIdleWhileCharging.text(for: runtime.language)) {
                     MacSwitch(
-                        label: ContractCopy.copyIdleWhileCharging.text(for: runtime.language),
+                        label: Copy.copyIdleWhileCharging.text(for: runtime.language),
                         isOn: Binding(
                             get: { runtime.config.disableIdleSleepInCharging },
                             set: { runtime.setDisableIdleWhileCharging($0) }
@@ -32,12 +32,12 @@ struct IdlePage: View {
             }
 
             MacCard {
-                MacSectionTitle(text: ContractCopy.copyIdleCancelAfter.text(for: runtime.language))
+                MacSectionTitle(text: Copy.copyIdleCancelAfter.text(for: runtime.language))
                 .settingsRowAnchor(SettingsRowID.idleCancel)
                 CancellationOptions(language: runtime.language) { runtime.scheduleCancelIdle(seconds: $0) }
                 if let remaining = runtime.appState.idleCancelRemainingSeconds {
                     MacStatusLine(
-                        text: "\(ContractCopy.copyIdleRemaining.text(for: runtime.language)): "
+                        text: "\(Copy.copyIdleRemaining.text(for: runtime.language)): "
                             + SettingsFormat.duration(seconds: remaining.int64Value, language: runtime.language)
                     )
                 }

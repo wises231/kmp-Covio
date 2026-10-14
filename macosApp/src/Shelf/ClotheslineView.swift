@@ -89,7 +89,7 @@ struct ClotheslineView: View {
     }
 
     private var emptyToast: some View {
-        Text(ContractCopy.copyTopShelfNone.text(for: language))
+        Text(Copy.copyTopShelfNone.text(for: language))
             .font(.system(size: 12))
             .foregroundStyle(.white)
             .padding(.horizontal, 14)

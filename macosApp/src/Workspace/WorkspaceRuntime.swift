@@ -87,7 +87,7 @@ final class WorkspaceRuntime {
 
         for url in urls {
             guard environment.isRegularFile(url) else {
-                failure = ContractCopy.copyHubFilesErrorImport
+                failure = Copy.copyHubFilesErrorImport
                 continue
             }
             let result = client.putFile(
@@ -105,23 +105,23 @@ final class WorkspaceRuntime {
                 if result.persisted {
                     accepted += 1
                 } else {
-                    failure = ContractCopy.copyHubFilesErrorSave
+                    failure = Copy.copyHubFilesErrorSave
                 }
             } else if result.admission == WorkspaceAdmission.duplicate {
-                info = ContractCopy.copyHubFilesNoticeDuplicate
+                info = Copy.copyHubFilesNoticeDuplicate
             } else if result.admission == WorkspaceAdmission.quotaExceeded {
-                failure = ContractCopy.copyHubFilesErrorQuota
+                failure = Copy.copyHubFilesErrorQuota
             } else if result.admission == WorkspaceAdmission.tooLarge {
-                failure = ContractCopy.copyHubFilesErrorTooLarge
+                failure = Copy.copyHubFilesErrorTooLarge
             } else {
-                failure = ContractCopy.copyHubFilesErrorImport
+                failure = Copy.copyHubFilesErrorImport
             }
         }
 
         adopt(working)
         errorMessage = failure
         infoMessage = failure == nil
-            ? (info ?? (accepted > 0 ? ContractCopy.copyHubFilesNoticeSaved : nil))
+            ? (info ?? (accepted > 0 ? Copy.copyHubFilesNoticeSaved : nil))
             : nil
         return accepted
     }
@@ -170,19 +170,19 @@ final class WorkspaceRuntime {
         switch result.admission {
         case WorkspaceAdmission.accepted:
             // 内容收下了但索引没落盘：报错，不报成功。
-            errorMessage = result.persisted ? nil : ContractCopy.copyHubFilesErrorSave
-            infoMessage = result.persisted ? ContractCopy.copyHubFilesNoticeSaved : nil
+            errorMessage = result.persisted ? nil : Copy.copyHubFilesErrorSave
+            infoMessage = result.persisted ? Copy.copyHubFilesNoticeSaved : nil
         case WorkspaceAdmission.duplicate:
             errorMessage = nil
-            infoMessage = ContractCopy.copyHubFilesNoticeDuplicate
+            infoMessage = Copy.copyHubFilesNoticeDuplicate
         case WorkspaceAdmission.tooLarge:
-            errorMessage = ContractCopy.copyHubFilesErrorTooLarge
+            errorMessage = Copy.copyHubFilesErrorTooLarge
             infoMessage = nil
         case WorkspaceAdmission.quotaExceeded:
-            errorMessage = ContractCopy.copyHubFilesErrorQuota
+            errorMessage = Copy.copyHubFilesErrorQuota
             infoMessage = nil
         default:
-            errorMessage = ContractCopy.copyHubFilesErrorImport
+            errorMessage = Copy.copyHubFilesErrorImport
             infoMessage = nil
         }
     }
@@ -203,7 +203,7 @@ final class WorkspaceRuntime {
         let reloaded = client.load()
         adopt(reloaded)
         if plan.changed {
-            infoMessage = ContractCopy.copyHubFilesNoticeSwept
+            infoMessage = Copy.copyHubFilesNoticeSwept
         }
         return plan.removed.count
     }
@@ -227,7 +227,7 @@ final class WorkspaceRuntime {
 
     func open(_ entryId: String) {
         guard let url = contentURL(entryId) else {
-            errorMessage = ContractCopy.copyHubFilesErrorMissing
+            errorMessage = Copy.copyHubFilesErrorMissing
             return
         }
         environment.open(url)
@@ -235,7 +235,7 @@ final class WorkspaceRuntime {
 
     func reveal(_ entryId: String) {
         guard let url = contentURL(entryId) else {
-            errorMessage = ContractCopy.copyHubFilesErrorMissing
+            errorMessage = Copy.copyHubFilesErrorMissing
             return
         }
         environment.reveal(url)

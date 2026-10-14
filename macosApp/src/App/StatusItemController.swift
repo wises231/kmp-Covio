@@ -2,8 +2,8 @@ import AppKit
 
 /// 菜单栏状态项。§4.3 把菜单栏图标列为 macOS 的次级入口。
 ///
-/// 图标与无障碍名称来自设计合同 `states.menuBarAndNotchHub.statusItemStates`
-/// 的 DEFAULT 项：SF Symbol `menubar.rectangle`，文案键 `copy/status-item/default`。
+/// 图标与无障碍名称按状态给。默认项用 SF Symbol `menubar.rectangle`，
+/// 文案取 `Copy.copyStatusItemDefault`。
 @MainActor
 final class StatusItemController: NSObject, NSMenuDelegate {
     private let shell: NotchShellController
@@ -25,14 +25,14 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         guard let button = statusItem.button else { return }
         let image = NSImage(
             systemSymbolName: Self.defaultSymbolName,
-            accessibilityDescription: ContractCopy.copyStatusItemDefault.text
+            accessibilityDescription: Copy.copyStatusItemDefault.text
         )
         image?.isTemplate = true
         button.image = image
         button.imagePosition = .imageOnly
-        button.toolTip = ContractCopy.copyStatusItemDefault.text
-        // 合同 `component/tray-icon` 的 accessibilityRules 要求交互目标不小于 24 点。
-        button.setAccessibilityLabel(ContractCopy.copyStatusItemDefault.text)
+        button.toolTip = Copy.copyStatusItemDefault.text
+        // 交互目标不小于 24 点。
+        button.setAccessibilityLabel(Copy.copyStatusItemDefault.text)
     }
 
     private func configureMenu() {
@@ -40,7 +40,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         menu.autoenablesItems = false
 
         let showItem = NSMenuItem(
-            title: ContractCopy.copyTopShelfShow.text,
+            title: Copy.copyTopShelfShow.text,
             action: #selector(showShelf),
             keyEquivalent: ""
         )
@@ -50,7 +50,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         menu.addItem(.separator())
 
         let settingsItem = NSMenuItem(
-            title: ContractCopy.copyTrayActionSettings.text,
+            title: Copy.copyTrayActionSettings.text,
             action: #selector(openSettings),
             keyEquivalent: ","
         )
@@ -60,7 +60,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         menu.addItem(.separator())
 
         let quitItem = NSMenuItem(
-            title: ContractCopy.copyTrayActionQuit.text,
+            title: Copy.copyTrayActionQuit.text,
             action: #selector(quit),
             keyEquivalent: "q"
         )
@@ -75,7 +75,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         NSStatusBar.system.removeStatusItem(statusItem)
     }
 
-    /// 合同的 `component/tray-icon` 变体里 DEFAULT 对应的 SF Symbol。
+    /// DEFAULT 状态对应的 SF Symbol。
     private static let defaultSymbolName = "menubar.rectangle"
 
     // MARK: - 菜单动作

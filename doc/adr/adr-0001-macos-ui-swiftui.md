@@ -11,6 +11,7 @@
 - 补充：2026-10-12 补记实测 31 到 34：Hub 外壳按 macOS 27 版式重做，部署目标提到 26.0；搜索锚点漏挂两处。玻璃的显示效果待真机确认
 - 补充：2026-10-12 补记实测 35 到 37：CI 推送后两次失败。冷缓存下 konanc 找不到；测试写死屏幕坐标，只在有刘海的本机上通过。第三次三个作业全绿，378 条测试
 - 补充：2026-10-13 补记实测 38 与 39：Escape 的两段行为搬进可测的类型；测试的固定等待换成轮询
+- 补充：2026-10-14 设计合同层已删。实测 23 作废，实测 31 与 37 里的合同校验作业作废。见 [ADR-0003](adr-0003-drop-the-design-contract.md)
 
 ## 背景
 
@@ -726,6 +727,6 @@ M8（Hub 外壳重做）结案时仍未确认的项目。
 
 - 计划文件：`/Users/wyz/.claude/plans/covio-covio-cheeky-meadow.md`
 - 产品行为权威：`docs/covio-product-master.md`
-- 设计合同：`docs/covio-design-contract.json`
+- 设计合同：`docs/covio-design-contract.json`，已于 2026-10-14 删除，见 [ADR-0003](adr-0003-drop-the-design-contract.md)
 - 构建脚本：`scripts/build-kmp-framework.sh`、`scripts/build-macos-swift.sh`、`scripts/test-macos-swift.sh`
 - Xcode 工程：`macosApp/Covio.xcodeproj`

@@ -80,19 +80,19 @@ struct ScreenshotsCapsuleActions: View {
 
     var body: some View {
         HStack(spacing: MacTheme.space2) {
-            MacButton(title: ContractCopy.copyTopShelfActionOpenFolder.text(for: language)) {
+            MacButton(title: Copy.copyTopShelfActionOpenFolder.text(for: language)) {
                 shelf.openScreenshotDirectory()
             }
             MacButton(
-                title: ContractCopy.copyTopShelfActionClearAll.text(for: language),
+                title: Copy.copyTopShelfActionClearAll.text(for: language),
                 isEnabled: !shelf.items.isEmpty
             ) {
                 shelf.clearItems()
             }
             MacButton(
                 title: shelf.isVisible
-                    ? ContractCopy.copyTopShelfActionHideToolbar.text(for: language)
-                    : ContractCopy.copyTopShelfActionShowToolbar.text(for: language)
+                    ? Copy.copyTopShelfActionHideToolbar.text(for: language)
+                    : Copy.copyTopShelfActionShowToolbar.text(for: language)
             ) {
                 shelf.toggle()
             }

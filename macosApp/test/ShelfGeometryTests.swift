@@ -2,54 +2,20 @@ import XCTest
 import kmpDomain
 @testable import Covio
 
-/// 晾衣线几何：合同对照、与孔位不变量。
+/// 晾衣线几何：与孔位不变量。
 ///
 /// 几何只有一份实现，在 `kmpDomain` 的 `ShelfLayout`。SwiftUI 侧通过 framework 调它。
-/// 算得对不对由 `ShelfLogicTest.kt` 在 JVM 上验证。这里验证三件只有 Swift 侧才看得见的事：
+/// 算得对不对由 `ShelfLogicTest.kt` 在 JVM 上验证。这里验证两件只有 Swift 侧才看得见的事：
 ///
 /// 1. framework 导出的接口在 Swift 里调得通，返回的数值与 JVM 侧一致。
-/// 2. 合同给的 `nativeSize` 与这份几何对不对得上。
-/// 3. 卡片放不放得进面板和屏幕。
-final class ShelfGeometryContractTests: XCTestCase {
-    private static let repoRoot = URL(fileURLWithPath: #filePath)
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-
+/// 2. 卡片放不放得进面板和屏幕。
+final class ShelfGeometryTests: XCTestCase {
     private let layout = ShelfLayout.shared
 
     /// 从最小到 6K 的屏幕宽度。步长 8 能踩到所有 164 的整数倍边界。
     private static let widths = Array(stride(from: 600, through: 6016, by: 8))
 
-    private func components() throws -> [String: [String: Any]] {
-        let url = Self.repoRoot.appendingPathComponent("docs/covio-design-contract.json")
-        let data = try Data(contentsOf: url)
-        let root = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
-        return try XCTUnwrap(root["components"] as? [String: [String: Any]])
-    }
-
-    private func nativeSize(_ key: String) throws -> (width: Double, height: Double) {
-        let component = try XCTUnwrap(try components()[key], "合同里没有 \(key)")
-        let size = try XCTUnwrap(component["nativeSize"] as? [String: Any])
-        return (
-            try XCTUnwrap(size["width"] as? Double),
-            try XCTUnwrap(size["height"] as? Double)
-        )
-    }
-
-    private func contractVariants(_ key: String) throws -> Set<String> {
-        let component = try XCTUnwrap(try components()[key], "合同里没有 \(key)")
-        return Set(try XCTUnwrap(component["variants"] as? [String]))
-    }
-
-    // MARK: - 合同一致
-
-    /// 晾衣夹与合同完全一致。两个方向都断言，改任何一边都会失败。
-    func testClothespinMatchesTheContract() throws {
-        let size = try nativeSize("component/clothespin")
-        XCTAssertEqual(Double(layout.CLOTHESPIN_WIDTH), size.width, accuracy: 0.001)
-        XCTAssertEqual(Double(layout.CLOTHESPIN_HEIGHT), size.height, accuracy: 0.001)
-    }
+    // MARK: - 夹子与绳子
 
     /// 夹子跨在绳子上。
     ///
@@ -78,54 +44,6 @@ final class ShelfGeometryContractTests: XCTestCase {
                 XCTAssertEqual(bounds.height, layout.CLOTHESPIN_HEIGHT, accuracy: 0.001)
             }
         }
-    }
-
-    // MARK: - 合同冲突
-
-    /// **已知差异一：** 合同说截图卡片是 150 × 200，运行期用的是 144 × 112。
-    ///
-    /// 这条用例不改行为，只把冲突钉住。合同值或运行期值任何一边变了它都会失败，
-    /// 那时必须重新做一次明确的决定，不能让两边继续不一致。
-    ///
-    /// 为什么运行期不用 200 高：
-    /// - 面板高 210 点，来自 README 的 "The toolbar height is 210 points"。
-    /// - 绳子最低点在 20 + 最大下垂 58 = 78 点，卡片顶边再下移 4 点。
-    /// - 200 高的卡片底边会落到 282 点，超出面板 72 点。
-    ///
-    /// 结论：合同的 `nativeSize` 记的是 Figma 里组件的画框尺寸，不是运行期尺寸。
-    /// M5 与 Figma 文件核对后，把这条写进 `metadata.knownDifferences`。
-    func testScreenshotCardContractSizeDiffersFromRuntime() throws {
-        let size = try nativeSize("component/screenshot-card")
-        XCTAssertEqual(size.width, 150, accuracy: 0.001, "合同值变了，重新评估这条已知差异")
-        XCTAssertEqual(size.height, 200, accuracy: 0.001, "合同值变了，重新评估这条已知差异")
-
-        XCTAssertEqual(Double(layout.CARD_WIDTH), 144, accuracy: 0.001)
-        XCTAssertEqual(Double(layout.CARD_HEIGHT), 112, accuracy: 0.001)
-    }
-
-    /// **已知差异二：** 卡片状态比合同少两个。
-    ///
-    /// 合同 `component/screenshot-card` 的 `variants` 有 `SELECTED` 与 `DISABLED`。
-    /// 晾衣线上的卡片既不能选中也不能禁用，所以运行期没有这两个状态。
-    /// 合同 `component/clothespin` 的 `DISABLED` 同理。
-    ///
-    /// 反过来，`FLYING` 与 `FALLING` 是运行期的过渡态，合同没有。
-    /// 两边各自多出的部分必须正好是这两组，多一个都要在这里说明原因。
-    func testCardStatesMatchTheContractExceptForTheDocumentedGaps() throws {
-        var contractStates = try contractVariants("component/screenshot-card")
-        contractStates.formUnion(try contractVariants("component/clothespin"))
-        let runtimeStates = Set(ShelfVisualState.allCases.map(\.rawValue))
-
-        XCTAssertEqual(
-            contractStates.subtracting(runtimeStates),
-            ["SELECTED", "DISABLED"],
-            "合同里有运行期没有的状态，只有这两个是有意的"
-        )
-        XCTAssertEqual(
-            runtimeStates.subtracting(contractStates),
-            ["FLYING", "FALLING"],
-            "运行期多出的状态只能是飞行与下落两个过渡态"
-        )
     }
 
     // MARK: - 竖直方向装得下
@@ -403,7 +321,7 @@ final class ShelfGeometryContractTests: XCTestCase {
 
     // MARK: - 倾斜
 
-    /// 倾斜角在合同声明的区间内，并且按固定花样循环。
+    /// 倾斜角在上下限内，并且按固定花样循环。
     ///
     /// 花样固定是刻意的：卡片不能每次重画都换一个角度，那样会自己抖。
     func testTiltIsBoundedAndDeterministic() {

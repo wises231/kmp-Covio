@@ -2,12 +2,9 @@ import CoreGraphics
 
 /// Hub 的几何参数。
 ///
-/// 来源有三处：
+/// 来源有两处：
 /// - `docs/covio-product-master.md` 第 6.3 节给 Hub 的宽高限制。
-/// - `docs/covio-design-contract.json` 给组件的 `nativeSize`。
 /// - `MacTheme` 的间距令牌，用来把高度按各段相加。
-///
-/// 冲突时以合同为准。`DesignContractTests` 会逐值比对。
 ///
 /// 卡片的组成是「左栏导航栏 + 右栏（胶囊 + 页内容）」。
 /// 高度按各段相加，不写死一个数：少算一段会把底部裁掉。
@@ -24,18 +21,18 @@ enum HubMetrics {
     /// Hub 边框 1 点。来源是 §6.3。
     static let borderWidth: CGFloat = 1
 
-    /// 卡片宽度 960 点。来源是 §6.3，与合同 `component/window-bar` 同宽。
+    /// 卡片宽度 960 点。来源是 §6.3。
     static let cardWidth: CGFloat = 960
 
     // MARK: - 卡片内边距与栏间距
 
-    /// 卡片四边内边距。合同 `token/space/4`。
+    /// 卡片四边内边距。取值是 `MacTheme.space4`。
     static let cardPadding: CGFloat = MacTheme.space4
 
     /// 左栏与右栏之间的间距。
     static let columnGap: CGFloat = MacTheme.space4
 
-    /// 右栏里胶囊与页内容之间的间距。合同 `token/space/3`。
+    /// 右栏里胶囊与页内容之间的间距。取值是 `MacTheme.space3`。
     static let pageGap: CGFloat = MacTheme.space3
 
     /// 右栏宽度。等于卡片宽度减去两边内边距、左栏与栏间距。
@@ -45,11 +42,11 @@ enum HubMetrics {
 
     // MARK: - 左栏：导航栏
 
-    /// 导航栏宽度。来源是合同 `components["component/tab-bar"].nativeSize`。
+    /// 导航栏宽度 200 点。
     static let navRailWidth: CGFloat = 200
 
-    /// 导航栏高度。合同给的是 370，这里按各段相加算出同一个数。
-    /// `HubMetricsTests` 会核对两边相等。
+    /// 导航栏高度 370 点，按各段相加算出。
+    /// `HubMetricsTests` 会核对这个数。
     static var navRailHeight: CGFloat { navRailComposition }
 
     /// 导航栏上下内边距。
@@ -82,15 +79,15 @@ enum HubMetrics {
 
     // MARK: - 右栏：胶囊与页内容
 
-    /// 顶部胶囊高度。来源是合同 `components["component/toolbar"].nativeSize.height`。
+    /// 顶部胶囊高度 40 点。
     static let toolbarCapsuleHeight: CGFloat = 40
 
-    /// 胶囊里标题区的宽度。来源是合同 `components["component/page-title"].nativeSize.width`。
+    /// 胶囊里标题区的宽度 420 点。
     ///
-    /// 合同的 `nativeSize.height` 也是 40，与胶囊等高：标题填满胶囊的高度。
+    /// 标题区高 40 点，与胶囊等高：标题填满胶囊的高度。
     static let capsuleTitleWidth: CGFloat = 420
 
-    /// 搜索结果一行的行高。要满足合同 `accessibilityRules` 的 24 点下限。
+    /// 搜索结果一行的行高。要满足 24 点的命中区下限。
     static let searchRowHeight: CGFloat = MacControlSize.settingRowHeight - MacTheme.space4
 
     /// 占位页的内容高度。占位页只有标题与提示，不需要更多。
@@ -150,10 +147,10 @@ enum HubMetrics {
 
     // MARK: - 屏幕
 
-    /// 菜单栏图标的命中区。来源是合同 `components["component/tray-icon"].nativeSize`。
+    /// 菜单栏图标的命中区 44 点。
     static let trayIconHitTarget: CGFloat = 44
 
-    /// 合同 `accessibilityRules`：交互目标不小于 24 点，主控件尽量 44 点。
+    /// 交互目标不小于 24 点，主控件尽量 44 点。
     static let minHitTarget: CGFloat = 24
     static let preferredHitTarget: CGFloat = 44
 

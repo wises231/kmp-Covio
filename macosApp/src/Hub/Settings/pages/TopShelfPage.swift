@@ -13,9 +13,9 @@ struct TopShelfPage: View {
     var body: some View {
         VStack(alignment: .leading, spacing: MacTheme.space6) {
             MacCard {
-                MacSettingRow(title: ContractCopy.copyTopShelfEnabled.text(for: runtime.language)) {
+                MacSettingRow(title: Copy.copyTopShelfEnabled.text(for: runtime.language)) {
                     MacSwitch(
-                        label: ContractCopy.copyTopShelfEnabled.text(for: runtime.language),
+                        label: Copy.copyTopShelfEnabled.text(for: runtime.language),
                         isOn: Binding(
                             get: { runtime.config.shelfEnabled },
                             set: { runtime.setShelfEnabled($0) }
@@ -23,9 +23,9 @@ struct TopShelfPage: View {
                     )
                 }
                 .settingsRowAnchor(SettingsRowID.topShelfEnabled)
-                MacSettingRow(title: ContractCopy.copyTopShelfTakeOver.text(for: runtime.language)) {
+                MacSettingRow(title: Copy.copyTopShelfTakeOver.text(for: runtime.language)) {
                     MacSwitch(
-                        label: ContractCopy.copyTopShelfTakeOver.text(for: runtime.language),
+                        label: Copy.copyTopShelfTakeOver.text(for: runtime.language),
                         isOn: Binding(
                             get: { runtime.config.screenshotInboxEnabled },
                             set: { runtime.setScreenshotInbox($0) }
@@ -33,9 +33,9 @@ struct TopShelfPage: View {
                     )
                 }
                 .settingsRowAnchor(SettingsRowID.topShelfTakeOver)
-                MacSettingRow(title: ContractCopy.copyTopShelfSounds.text(for: runtime.language)) {
+                MacSettingRow(title: Copy.copyTopShelfSounds.text(for: runtime.language)) {
                     MacSwitch(
-                        label: ContractCopy.copyTopShelfSounds.text(for: runtime.language),
+                        label: Copy.copyTopShelfSounds.text(for: runtime.language),
                         isOn: Binding(
                             get: { runtime.config.shelfSoundsEnabled },
                             set: { runtime.setShelfSounds($0) }
@@ -47,7 +47,7 @@ struct TopShelfPage: View {
 
             ClipboardCard(runtime: runtime)
 
-            MacAlert(message: ContractCopy.copyTopShelfPendingNotice.text(for: runtime.language), kind: .info)
+            MacAlert(message: Copy.copyTopShelfPendingNotice.text(for: runtime.language), kind: .info)
         }
     }
 }

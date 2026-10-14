@@ -290,7 +290,7 @@ final class AppRuntimeTests: XCTestCase {
         await waitUntil { !created.busy }
 
         XCTAssertEqual(created.helperStatus, .installed)
-        XCTAssertEqual(created.statusMessage, ContractCopy.copyOverviewHelperInstalled.text(for: created.language))
+        XCTAssertEqual(created.statusMessage, Copy.copyOverviewHelperInstalled.text(for: created.language))
         XCTAssertFalse(created.welcomeVisible, "装好之后欢迎页要让位")
     }
 

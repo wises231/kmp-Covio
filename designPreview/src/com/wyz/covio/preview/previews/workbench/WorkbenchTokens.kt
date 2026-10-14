@@ -3,11 +3,10 @@ package com.wyz.covio.preview.previews.workbench
 import androidx.compose.ui.graphics.Color
 
 /**
- * 打样用的取值。逐条手抄自 `docs/covio-design-contract.json`。
+ * 打样用的取值。这里是这些取值的唯一落点。
  *
- * 合同取值进 Kotlin 侧的通道还没建。见 #103 的后续动作第 3 条，记为 `Q-H`。
- * 通道建好后本文件整体换成生成代码。在那之前，每条都写清抄的是哪一枚令牌。
- * 合同里还没有的条目（工作台新形态），注释写清抄的是需求文档第 6 节。
+ * 打样画的是目标画面，所以取值以打样为准，macOS 侧跟着打样走。
+ * 每条都写清抄的是哪一枚令牌，或者来自需求文档第 6 节。
  */
 internal object Tokens {
 
@@ -64,9 +63,9 @@ internal object Tokens {
     /**
      * 组件卡片的底色。
      *
-     * 抄的是 `token/art` 那一族。合同给这一族的用途写的是「插画、品牌装饰与缩略图占位」。
+     * 抄的是插图装饰色那一族，用途是插画、品牌装饰与缩略图占位。
      * ADR-0002 决策 2 要求卡片各自带底色，所以打样先用这一族当卡片底色。
-     * 合同给工作台加卡片底色条目之后（#77），换成那一批。
+     * 工作台的卡片底色定下来之后（#77），换成那一批。
      */
     val cardTints = listOf(
         Color(0xFFFFF2BD), // token/art/fff2bd
@@ -78,7 +77,7 @@ internal object Tokens {
     )
 
     // ---- 版式 ----
-    // 需求文档第 6 节。合同里还没有工作台的条目，所以这一段是字面值。
+    // 需求文档第 6 节。这一段是字面值。
 
     /** 面板圆角 22 点。 */
     val panelRadius = 22

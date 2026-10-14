@@ -50,7 +50,7 @@ struct SettingsCatalogEntry: Sendable, Equatable {
     let rowID: String
     /// 所属分节。跳转时切到这一节。
     let section: SettingsSection
-    /// 行标题。合同 `copy/*`。
+    /// 行标题。文案来自 `Copy`。
     let title: LocalizedCopy
     /// 行的补充说明。没有说明的行是 nil。
     let summary: LocalizedCopy?
@@ -72,15 +72,15 @@ enum SettingsCatalog {
         SettingsCatalogEntry(
             rowID: SettingsRowID.overviewMaster,
             section: .overview,
-            title: ContractCopy.copyOverviewRulesMaster,
-            summary: ContractCopy.copyPageOverviewSummary,
+            title: Copy.copyOverviewRulesMaster,
+            summary: Copy.copyPageOverviewSummary,
             keywords: ["master", "rules", "enable", "总开关", "主控", "规则", "启用"]
         ),
         SettingsCatalogEntry(
             rowID: SettingsRowID.overviewHelper,
             section: .overview,
-            title: ContractCopy.copyOverviewHelperInstall,
-            summary: ContractCopy.copyDialogHelperInstallBody,
+            title: Copy.copyOverviewHelperInstall,
+            summary: Copy.copyDialogHelperInstallBody,
             keywords: ["helper", "install", "uninstall", "privileged", "助手", "安装", "卸载", "特权"]
         ),
     ]
@@ -89,21 +89,21 @@ enum SettingsCatalog {
         SettingsCatalogEntry(
             rowID: SettingsRowID.batteryEnabled,
             section: .battery,
-            title: ContractCopy.copyBatteryEnabled,
-            summary: ContractCopy.copyPageBatterySummary,
+            title: Copy.copyBatteryEnabled,
+            summary: Copy.copyPageBatterySummary,
             keywords: ["battery", "low", "power", "电池", "低电量"]
         ),
         SettingsCatalogEntry(
             rowID: SettingsRowID.batteryCapacity,
             section: .battery,
-            title: ContractCopy.copyBatteryCapacityThreshold,
+            title: Copy.copyBatteryCapacityThreshold,
             summary: nil,
             keywords: ["battery", "capacity", "percent", "threshold", "电池", "容量", "百分比", "阈值"]
         ),
         SettingsCatalogEntry(
             rowID: SettingsRowID.batteryTime,
             section: .battery,
-            title: ContractCopy.copyBatteryTimeThreshold,
+            title: Copy.copyBatteryTimeThreshold,
             summary: nil,
             keywords: ["battery", "time", "remaining", "minutes", "电池", "剩余", "时间", "分钟"]
         ),
@@ -113,28 +113,28 @@ enum SettingsCatalog {
         SettingsCatalogEntry(
             rowID: SettingsRowID.lidInstant,
             section: .lid,
-            title: ContractCopy.copyLidInstantSleep,
-            summary: ContractCopy.copyPageLidSummary,
+            title: Copy.copyLidInstantSleep,
+            summary: Copy.copyPageLidSummary,
             keywords: ["lid", "close", "immediate", "sleep", "合盖", "立即", "睡眠"]
         ),
         SettingsCatalogEntry(
             rowID: SettingsRowID.lidPrevent,
             section: .lid,
-            title: ContractCopy.copyLidPreventSleep,
+            title: Copy.copyLidPreventSleep,
             summary: nil,
             keywords: ["lid", "prevent", "awake", "合盖", "阻止", "不睡"]
         ),
         SettingsCatalogEntry(
             rowID: SettingsRowID.lidPower,
             section: .lid,
-            title: ContractCopy.copyLidPowerRules,
+            title: Copy.copyLidPowerRules,
             summary: nil,
             keywords: ["lid", "charging", "power", "adapter", "合盖", "充电", "电源"]
         ),
         SettingsCatalogEntry(
             rowID: SettingsRowID.lidBattery,
             section: .lid,
-            title: ContractCopy.copyLidBatteryRules,
+            title: Copy.copyLidBatteryRules,
             summary: nil,
             keywords: ["lid", "battery", "rule", "合盖", "电池", "规则"]
         ),
@@ -144,21 +144,21 @@ enum SettingsCatalog {
         SettingsCatalogEntry(
             rowID: SettingsRowID.idlePrevent,
             section: .idle,
-            title: ContractCopy.copyIdlePreventIdle,
-            summary: ContractCopy.copyPageIdleSummary,
+            title: Copy.copyIdlePreventIdle,
+            summary: Copy.copyPageIdleSummary,
             keywords: ["idle", "display", "prevent", "sleep", "闲置", "阻止", "息屏"]
         ),
         SettingsCatalogEntry(
             rowID: SettingsRowID.idleCharging,
             section: .idle,
-            title: ContractCopy.copyIdleWhileCharging,
+            title: Copy.copyIdleWhileCharging,
             summary: nil,
             keywords: ["idle", "charging", "power", "闲置", "充电"]
         ),
         SettingsCatalogEntry(
             rowID: SettingsRowID.idleCancel,
             section: .idle,
-            title: ContractCopy.copyIdleCancelAfter,
+            title: Copy.copyIdleCancelAfter,
             summary: nil,
             keywords: ["idle", "cancel", "timer", "auto", "闲置", "取消", "定时", "自动"]
         ),
@@ -168,35 +168,35 @@ enum SettingsCatalog {
         SettingsCatalogEntry(
             rowID: SettingsRowID.topShelfEnabled,
             section: .topShelf,
-            title: ContractCopy.copyTopShelfEnabled,
-            summary: ContractCopy.copyPageTopShelfSettingsSummary,
+            title: Copy.copyTopShelfEnabled,
+            summary: Copy.copyPageTopShelfSettingsSummary,
             keywords: ["shelf", "screenshot", "panel", "挂帘", "截图", "面板"]
         ),
         SettingsCatalogEntry(
             rowID: SettingsRowID.topShelfTakeOver,
             section: .topShelf,
-            title: ContractCopy.copyTopShelfTakeOver,
+            title: Copy.copyTopShelfTakeOver,
             summary: nil,
             keywords: ["shelf", "screenshot", "inbox", "take over", "挂帘", "截图", "接管"]
         ),
         SettingsCatalogEntry(
             rowID: SettingsRowID.topShelfSounds,
             section: .topShelf,
-            title: ContractCopy.copyTopShelfSounds,
+            title: Copy.copyTopShelfSounds,
             summary: nil,
             keywords: ["shelf", "sound", "audio", "挂帘", "音效", "声音"]
         ),
         SettingsCatalogEntry(
             rowID: SettingsRowID.topShelfClipboard,
             section: .topShelf,
-            title: ContractCopy.copyClipboardSettingsEnabled,
-            summary: ContractCopy.copyClipboardSettingsAccessibilityFallback,
+            title: Copy.copyClipboardSettingsEnabled,
+            summary: Copy.copyClipboardSettingsAccessibilityFallback,
             keywords: ["clipboard", "history", "paste", "剪贴板", "剪切板", "历史", "粘贴"]
         ),
         SettingsCatalogEntry(
             rowID: SettingsRowID.topShelfHotKeys,
             section: .topShelf,
-            title: ContractCopy.copyClipboardSettingsHotKeys,
+            title: Copy.copyClipboardSettingsHotKeys,
             summary: nil,
             keywords: ["clipboard", "hotkey", "shortcut", "剪贴板", "剪切板", "快捷键"]
         ),
@@ -206,57 +206,57 @@ enum SettingsCatalog {
         SettingsCatalogEntry(
             rowID: SettingsRowID.generalDarkWake,
             section: .general,
-            title: ContractCopy.copyGeneralDarkwake,
-            summary: ContractCopy.copyPageGeneralSummary,
+            title: Copy.copyGeneralDarkwake,
+            summary: Copy.copyPageGeneralSummary,
             keywords: ["darkwake", "wake", "log", "深色唤醒", "唤醒", "日志"]
         ),
         SettingsCatalogEntry(
             rowID: SettingsRowID.generalSleepMode,
             section: .general,
-            title: ContractCopy.copyGeneralSleepMode,
+            title: Copy.copyGeneralSleepMode,
             summary: nil,
             keywords: ["hibernate", "hibernatemode", "sleep", "休眠", "睡眠", "模式"]
         ),
         SettingsCatalogEntry(
             rowID: SettingsRowID.generalLanguage,
             section: .general,
-            title: ContractCopy.copyGeneralLanguage,
+            title: Copy.copyGeneralLanguage,
             summary: nil,
             keywords: ["language", "locale", "english", "chinese", "语言", "英文", "中文"]
         ),
         SettingsCatalogEntry(
             rowID: SettingsRowID.generalLogin,
             section: .general,
-            title: ContractCopy.copyGeneralLaunchAtLogin,
+            title: Copy.copyGeneralLaunchAtLogin,
             summary: nil,
             keywords: ["login", "startup", "boot", "登录", "开机", "自启"]
         ),
         SettingsCatalogEntry(
             rowID: SettingsRowID.generalNotifications,
             section: .general,
-            title: ContractCopy.copyGeneralNotifications,
+            title: Copy.copyGeneralNotifications,
             summary: nil,
             keywords: ["notification", "alert", "通知", "提醒"]
         ),
         SettingsCatalogEntry(
             rowID: SettingsRowID.generalUpdates,
             section: .general,
-            title: ContractCopy.copyGeneralCheckUpdates,
+            title: Copy.copyGeneralCheckUpdates,
             summary: nil,
             keywords: ["update", "version", "release", "更新", "版本", "升级"]
         ),
         SettingsCatalogEntry(
             rowID: SettingsRowID.generalLogs,
             section: .general,
-            title: ContractCopy.copyHubLogView,
+            title: Copy.copyHubLogView,
             summary: nil,
             keywords: ["log", "export", "diagnose", "日志", "导出", "诊断"]
         ),
         SettingsCatalogEntry(
             rowID: SettingsRowID.generalReset,
             section: .general,
-            title: ContractCopy.copyGeneralClearConfig,
-            summary: ContractCopy.copyDialogResetBody,
+            title: Copy.copyGeneralClearConfig,
+            summary: Copy.copyDialogResetBody,
             keywords: ["reset", "clear", "default", "重置", "清除", "默认"]
         ),
     ]

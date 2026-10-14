@@ -230,7 +230,7 @@ struct HubPlaceholderView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: MacTheme.space3) {
             MacCard {
-                Text(ContractCopy.copyHubPlaceholderNotice.text(for: language))
+                Text(Copy.copyHubPlaceholderNotice.text(for: language))
                     .font(.system(size: 11))
                     .foregroundStyle(MacTheme.textSecondary)
             }
