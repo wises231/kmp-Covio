@@ -33,7 +33,7 @@ val LocalPreviewFontStatus = compositionLocalOf { "字体未加载" }
  *
  * Compose 的 wasm 端自带一个只有拉丁字符的字库，也读不到系统字体。
  * `skiko.wasm` 里既没有 `queryLocalFonts`，也没有 `document.fonts`。
- * 所以中文必须随模块发一份。见 `docs/design/design-preview.md` 第 6 节。
+ * 所以中文必须随模块发一份。见 `docs/design/design-preview.md` 第 7 节。
  *
  * 字体是 Noto Sans SC 的子集，按 SIL Open Font License 1.1 使用。
  * 许可证在同目录的 `OFL.txt`。裁字集的脚本是 `scripts/subset-preview-font.py`。
