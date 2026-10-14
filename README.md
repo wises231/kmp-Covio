@@ -10,7 +10,6 @@ It does not use the Tendedero name, icon, or documentation images.
 
 - [Design contract](docs/covio-design-contract.json) is the machine-readable design authority.
 - [Design contract schema](docs/covio-design-contract.schema.json) validates the contract structure.
-- [Design contract guide](docs/covio-product-design.md) explains the contract and Figma projection.
 - The Covio Figma file is the visual projection used for implementation verification.
 - Static design status: 8 pages, 8 sections, 35 boards, 130 source component sets, 186 component nodes, and 42 prototype reactions. Static visual audit passed.
 

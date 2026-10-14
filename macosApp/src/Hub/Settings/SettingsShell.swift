@@ -6,7 +6,7 @@ import SwiftUI
 /// 左边一列分节导航与左边的悬浮导航栏叠在一起会显得挤。
 /// 这个视图只按传进来的分节显示内容，并让内容滚动。
 ///
-/// 每一节的内容按 `docs/covio-product-design.md` 的信息顺序排列：
+/// 每一节的内容按固定信息顺序排列：
 /// 最常用的开关在前，状态与危险动作在后。
 struct SettingsTabView: View {
     let runtime: AppRuntime

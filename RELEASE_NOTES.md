@@ -4,7 +4,7 @@
 > The app version is `0.5.0` in `kmpDomain/src/com/wyz/covio/core/Models.kt`.
 > `scripts/create-release.sh` reads that version.
 > Rewrite this file before the next release.
-> The order is recorded in `docs/covio-macos-swiftui-migration-plan.md` section 13.2.
+> Run the real-Mac acceptance checklist first, then rewrite this file from the results.
 >
 > The next release is 0.5.0. It requires macOS 26 or later.
 > The SwiftUI host uses Liquid Glass, and the Hub has a new layout.
