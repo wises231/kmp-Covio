@@ -1,276 +1,188 @@
-# 挂帘工作台架构骨架
+# 挂帘工作台需求规格
 
 ## 文档状态
 
 | 项目 | 内容 |
 | --- | --- |
-| 文档版本 | `1.0` |
+| 文档版本 | `3.0` |
 | 状态 | 待评审 |
 | 日期 | `2026-10-13` |
-| 适用范围 | macOS 宿主。Windows 与 iOS 只保留抽象接口。 |
-| 当前基线 | `0.5.0`，分支 `feature/swiftui-macos` |
-| 上游文档 | [产品设计总稿](../covio-product-master.md)、[设计合同](../covio-design-contract.json)、[ADR-0001](../../doc/adr/adr-0001-macos-ui-swiftui.md) |
-| 下游文档 | ADR-002 工作台配置的存储位置与版本策略、ADR-003 触发层的抽象边界、ADR-004 到 ADR-009（分层契约，分工见第 10 节） |
+| 适用范围 | macOS 宿主。Windows 与 iOS 只定义入口形态。 |
+| 设计依据 | [设计合同](../covio-design-contract.json) |
 
-本文描述**目标形态**，不描述现状。现状以代码为准。
+本文写工作台的功能、设计与预期。
 
-## 1. 目标与非目标
+## 1. 目标与范围
 
-目标是给出四层的职责、边界、依赖方向和关键类型名。读完本文能回答：有几层、每层负责什么、不认识什么、依赖谁、关键类型叫什么、现有代码怎么搬过去。
+**目标**：挂帘工作台是 Covio 的主工作区。用户从屏幕顶部唤出挂帘。用户在挂帘里切换工作区、搜索内容和操作组件。
 
-非目标：
+读完本文能回答四个问题：
 
-1. 不给函数签名。
-2. 不给数据字段清单。
-3. 不给状态迁移表。
-4. 不给错误码表。
-5. 不给时序图。
+1. 工作台有哪些需求，怎么验收。
+2. 有哪些功能，每项功能的预期结果是什么。
+3. 有哪些画面，每个画面显示什么、能做什么。
+4. 哪些内容不在范围内。
 
-以上五项在 ADR 和实现类 issue 里定。
+**本文不写**：函数签名、数据字段、状态迁移表和实现步骤。这些内容在 ADR 与实现类 issue 里定。
 
-## 2. 需求映射
+**范围外**：
 
-| 需求 | 承担层 | 关键类型 |
+1. Windows 与 iOS 的宿主实现。
+2. 工作台配置的跨设备同步。
+3. 移动端主屏手势。
+
+## 2. 术语
+
+| 术语 | 英文 | 说明 |
 | --- | --- | --- |
-| R1 触控板四指下滑打开 | 触发层 | `TrackpadGestureTrigger` |
-| R2 鼠标悬停刘海区域触发 | 触发层 | `NotchHoverTrigger` |
-| R3 展开后是层级最高的组合式工作区域 | 挂帘外壳 | `CurtainController`、`ShellPanel` |
-| R4 页签显示不同工作区，首页是 Widgets | 工作区层、Widget 层 | `PaneRegistry`、`WorkbenchConfig` |
-| R5 每个工作区支持编辑和设置 | 工作区层 | `WorkbenchLogic`、`PaneRegistry` |
-| R6 Windows 用固定区域触发 | 触发层 | `CurtainTrigger` 的新实现 |
-| R7 iOS 主页上滑带出 bottom sheet | 无 | 无 |
+| 挂帘工作台 | Workbench | 整个产品形态。 |
+| 工作区 | Pane | 挂帘里的一个页签。默认六个。 |
+| 组件 | Widget | 工作区首页网格上的一块。 |
+| 共享暂存区 | Workspace | 跨设备传输的暂存内容。与工作区是两个概念。 |
+| 晾衣线 | Top Shelf | 截图暂存区。不属于工作台。 |
 
-R6 和 R7 只影响触发层的形状，不增加新层。R7 没有承担层：系统不向第三方应用开放主屏手势入口，iOS 侧只能改用交互小组件。结论见 [iOS 免打开入口](../research/mobile-ambient-entry/README.md)。
+界面文案可以继续使用「页签」。本文的「页签」与「工作区」指同一件事。
 
-## 3. 分层与依赖方向
+## 3. 需求
 
-四层。上层依赖下层，下层不认识上层。
+### 3.1 需求条目
 
-```text
-触发层        不认识外壳，不认识工作区
-   |
-挂帘外壳      不认识具体触发源，不认识工作区的内容
-   |
-工作区层      不认识 Widget 怎么画
-   |
-Widget 层     不认识任何上层
-```
+编号 R1 到 R7 供 issue 引用。
 
-依赖规则三条：
+| 编号 | 需求 | 验收标准 |
+| --- | --- | --- |
+| R1 | 触控板四指下滑打开工作台 | 手势完成后挂帘开始展开。手势不可用时，刘海悬停、全局快捷键和菜单栏图标仍能打开。 |
+| R2 | 指针悬停刘海热区打开工作台 | 指针进入热区后挂帘展开。展开用时 220 至 280 毫秒。 |
+| R3 | 展开后是层级最高的组合式工作区域 | 挂帘盖住普通窗口与全屏窗口。挂帘出现在指针所在屏幕。 |
+| R4 | 页签显示不同工作区，首页是 Widgets | 页签数量和顺序来自配置。首页显示组件网格。 |
+| R5 | 每个工作区支持编辑和设置 | 用户能添加、删除、改名和排序工作区。每个工作区有自己的设置。 |
+| R6 | Windows 用固定区域触发 | 指针进入固定区域后挂帘展开。工作区与组件的行为与 macOS 一致。 |
+| R7 | iOS 用交互小组件 | 不做主屏手势。 |
 
-1. 依赖只能向下。
-2. 下层不引用上层。
-3. 同层之间不互相依赖。四个触发源彼此不认识。
+R7 不做主屏手势。系统不向第三方应用开放 iOS 主屏手势入口。
+替代入口见 [iOS 免打开入口](../research/mobile-ambient-entry/README.md)。
 
-自查用三条。出现任一条，说明分层被破坏：
+### 3.2 优先级
 
-| 现象 | 说明 |
+只列工作台范围内的条目。
+
+| 等级 | 内容 |
 | --- | --- |
-| 触发源里出现 `CurtainController` | 违反规则 1。触发源只发事件。 |
-| 外壳里出现 `TrackpadGestureTrigger` | 违反规则 2。外壳只认识 `CurtainTrigger` 协议。 |
-| 工作区层里出现 `NSView` 或 SwiftUI 类型 | 层选错了。工作区层是数据与纯逻辑。 |
+| Must | 挂帘工作台（动态工作区与 Widgets 首页） |
+| Should | 工作区编辑器、Widgets 网格布局、每工作区设置、快捷键 |
+| Could | 自定义工作区布局 |
 
-### 3.1 平台边界
+### 3.3 性能预期
 
-触发层和挂帘外壳在 Swift 侧，放在 `macosApp/src/`。
-工作区层的数据模型和纯逻辑在 Kotlin 侧，放在 `kmpDomain/src/com/wyz/covio/core/`。
-Widget 层的模型跟随工作区层，渲染在 Swift 侧。
-
-理由：工作区的增删改序、校验和默认布局是纯逻辑。放在 `kmpDomain` 可以在 `jvm` 上跑测试，不需要起窗口。
-
-### 3.2 命名
-
-概念名如下。
-
-| 概念 | 标识符 | 中文 |
+| 项目 | 目标 | 前提 |
 | --- | --- | --- |
-| 整个产品形态 | `Workbench` | 挂帘工作台 |
-| 一个页签 | `Pane` | 工作区 |
-| 页签的类型 | `PaneKind` | 工作区类型 |
-| 页签的一个实例 | `PaneInstance` | 工作区实例 |
-| 网格上的一块 | `Widget` | 组件 |
-| 跨设备共享暂存区 | `Workspace` | 共享暂存区，标识符不变 |
-| 工作台配置 | `WorkbenchConfig` | 工作台配置 |
+| 挂帘打开 P95 | 不超过 150 毫秒 | 模块索引已加载 |
+| 页签切换 P95 | 不超过 100 毫秒 | 页签内容已缓存 |
 
-**警告：** 现有 `Workspace*` 指跨设备共享暂存区，不指页签。新代码不要复用这个前缀。
+## 4. 功能
 
-## 4. 触发层
+| 编号 | 功能 | 说明 | 预期 |
+| --- | --- | --- | --- |
+| F1 | 打开与收起 | 四个入口：触控板手势、刘海热区、全局快捷键和菜单栏图标。 | 任一入口都让挂帘展开或收起。连续触发不叠加动效。 |
+| F2 | 页签导航 | 左侧导航栏列出工作区。 | 用户点选工作区后内容区切换，用时 160 毫秒。选中态跟随当前工作区。 |
+| F3 | 搜索 | 搜索栏过滤工作区与设置项。 | 输入即过滤。按 `Escape` 先清空搜索内容。 |
+| F4 | 工作区编辑 | 添加、删除、改名和拖动排序。 | 只在编辑模式生效。退出编辑模式后顺序保存。 |
+| F5 | 工作区设置 | 每个工作区有独立设置。 | 修改立即生效，立即保存。 |
+| F6 | 组件网格 | 首页网格上添加、拖动、缩放和删除组件。 | 拖动后组件吸附到网格列。删除后布局立即更新。 |
+| F7 | 配置持久化 | 保存工作区列表、顺序、设置和组件布局。 | 重启应用后布局不变。配置损坏时回退默认布局，工作台仍可用。 |
 
-**职责**：把多个来源归一成「打开」和「收起」两个事件。
+## 5. 画面
 
-**边界**：不认识外壳，不认识工作区，不知道挂帘长什么样、有多大、画在哪里。
+依据列写设计合同的板号或状态键。
 
-**依赖**：无。本层是最底层。
+| 编号 | 画面 | 内容 | 主要动作 | 依据 |
+| --- | --- | --- | --- | --- |
+| S1 | 菜单栏与托盘 | 状态图标。状态取合同 `menuBarAndNotchHub.statusItemStates`，共六种。 | 打开挂帘、打开托盘菜单 | 合同板 23、24 |
+| S2 | 挂帘收起 | 没有面板。热区和菜单栏图标可用。 | 触发打开 | 合同板 25、`state/notch-hub/hidden` |
+| S3 | 挂帘展开 · 页签 | 左侧导航栏（搜索、工作区列表、底部组）、顶部胶囊、内容区。 | 切换工作区、搜索、执行页动作 | 合同板 26、27；`component/tab-bar`、`component/page-title` |
+| S4 | 挂帘展开 · 首页 | 组件卡片按网格排列。 | 打开组件、进入编辑模式 | 合同暂无条目 |
+| S5 | 工作区内容页 | 各模块内容。默认六个工作区各一页。 | 模块动作 | 合同板 08 至 18、29 至 33 |
+| S6 | 编辑模式 | 组件可拖动、缩放和删除。导航栏可拖动排序。 | 添加、移动、删除、退出编辑 | 合同暂无条目 |
+| S7 | 工作区设置页 | 名称、图标、显示选项、删除。 | 改名、换图标、删除、重置 | 合同暂无条目 |
+| S8 | 错误与恢复 | 原因文案加恢复动作。 | 重试、打开设置、回退默认布局 | 合同板 28 |
 
-**关键类型**：
+默认六个工作区，按顺序：`Now`、`Clipboard`、`Files`、`Screenshots`、`Devices`、`Settings`。
+用户可以调整顺序。所有平台使用同一默认顺序。
 
-| 类型 | 职责 |
+标记「合同暂无条目」的画面，实现前先在合同里加条目。
+改完合同重跑 `scripts/generate-contract-constants.py`。
+
+合同板 19 至 22 不是工作台画面。板 19 是截图拖放目标，板 20 至 22 是晾衣线。
+
+## 6. 版式与动效
+
+**版式**：
+
+| 项目 | 规格 |
 | --- | --- |
-| `CurtainTrigger` | 一个触发源。描述名字、权限需求和事件流。 |
-| `TriggerRegistry` | 持有全部触发源，向订阅者发出唯一的打开与收起事件。实现去重。 |
-| `NotchHoverTrigger` | 指针进入刘海热区。 |
-| `TrackpadGestureTrigger` | 触控板四指下滑。 |
-| `HotKeyTrigger` | 全局快捷键。 |
-| `StatusItemTrigger` | 菜单栏图标。 |
+| 锚点 | 指针所在屏幕的顶部中央 |
+| 宽度 | 最小 720 点，最大为屏幕宽度减 80 点。卡片宽 960 点。 |
+| 高度 | 内容自适应，最大为屏幕高度减 120 点。 |
+| 背景 | 卡片用系统材质。导航栏与胶囊用 Liquid Glass。 |
+| 边框 | 1 点细边框 |
+| 投影 | 轻量阴影 |
+| 导航栏 | 宽 200 点 |
+| 胶囊 | 高 40 点。左边是页标题，右边是当前页动作。 |
 
-**现有代码的迁移**：
+**动效**：
 
-1. `TriggerRegistry` 照 `GlobalHotKeyCenter` 写。见 `macosApp/src/NotchShell/GlobalHotKey.swift:177`。它已经是「编号到回调」的注册表加分派，形状可以直接复用。
-2. `NotchHoverTrigger` 复用 `PointerTrackingHost` 与 `ScreenGeometry.hotZoneRect`。
-   - `PointerTrackingHost` 在 `macosApp/src/NotchShell/PointerTrackingHost.swift`。
-   - `hotZoneRect` 在 `macosApp/src/NotchShell/ScreenGeometry.swift:39`，已区分刘海屏与非刘海屏。
-3. `HotKeyTrigger` 包装现有 `GlobalHotKey`。
-4. `StatusItemTrigger` 包装现有 `StatusItemController`。
-5. 现有 `NotchShellController.toggle()` 改为只由注册表调用。
+| 动作 | 时长 | 结果 |
+| --- | --- | --- |
+| 挂帘展开 | 220 至 280 毫秒 | 弹性曲线 |
+| 挂帘收起 | 160 至 220 毫秒 | 缓出曲线 |
+| 页签切换 | 160 毫秒 | 横向滑动和淡入 |
+| 指针移出后自动收起 | 500 毫秒 | 无输入时执行 |
+| 错误出现 | 160 毫秒 | 淡入和轻微位移 |
+| 减弱动态效果 | 120 毫秒 | 只改变透明度 |
 
-**一条既有教训**：`PointerTrackingHost.swift:6` 记录了不使用 `NSEvent.addGlobalMonitorForEvents` 的理由。它在未获授权时也返回非空对象。新触发源不要改回这个做法。
+**减弱动态效果**：系统开关打开时，动效只用短暂渐隐。动效不使用位移和弹性。选中态与高亮瞬时切换。
 
-**降级**：`TrackpadGestureTrigger` 走私有框架，可能失效。失效时由 `HotKeyTrigger` 和 `NotchHoverTrigger` 承担。降级逻辑属于触发层内部，外壳不知情。
+## 7. 状态与收起
 
-## 5. 挂帘外壳
+**状态**取设计合同 `states.menuBarAndNotchHub.hubStates`，共六种：
 
-**职责**：可见性、位置、动效、键盘焦点。
-
-**边界**：不认识任何具体触发源。不认识工作区的内容，只认识当前选中的工作区编号。
-
-**依赖**：触发层。
-
-**关键类型**：
-
-| 类型 | 职责 |
+| 状态 | 用户所见 |
 | --- | --- |
-| `CurtainController` | 由 `NotchShellController` 改名。每屏一个热区面板，全局一个挂帘面板。 |
-| `HubStateMachine` | 保留。状态从 6 个增到 8 个。 |
-| `ShellPanel` | 保留。层级与 Space 设置不动。 |
+| `HIDDEN` | 挂帘收起，刘海保持原形。 |
+| `HOVER` | 指针进入热区，预览出现。 |
+| `OPEN` | 挂帘展开，显示当前内容。 |
+| `ACTIVE` | 挂帘显示实时指标和动作。 |
+| `EXIT` | 挂帘收起，回到刘海。 |
+| `ERROR` | 显示可恢复的错误，文案写出原因和恢复动作。 |
 
-**现有代码的迁移**：
+**收起方式**：
 
-1. `NotchShellController`（`macosApp/src/NotchShell/NotchShellController.swift:14`）改名为 `CurtainController`。职责不变。
-2. `HubStateMachine`（`macosApp/src/NotchShell/HubStateMachine.swift:8`）当前六态：`HIDDEN`、`HOVER`、`OPEN`、`ACTIVE`、`EXIT`、`ERROR`。新增 `PREVIEW` 和 `EDITING`，共八态。迁移表在 `:108`。
-3. `ShellPanel`（`macosApp/src/NotchShell/ShellPanels.swift:16`）不动。**顺序不能换**：先设 `isFloatingPanel`，再设 `level = .statusBar`。反序会把层级重置为 3。
-4. `HubTab` 字段从外壳移出。外壳改为持有当前工作区编号。
+1. 指针移出挂帘。500 毫秒后收起。
+2. 按 `Escape`。立即收起。搜索框有内容时，第一次 `Escape` 只清空搜索。
+3. 按 `Control+Option+T`。挂帘打开或收起。
+4. 点击挂帘外部。挂帘收起。
 
-## 6. 工作区层
+**不自动收起**：用户编辑输入或拖动文件时，挂帘保持展开。
 
-**职责**：保存工作区列表与顺序，实现增删改序与校验，把工作区类型映射到视图。
+**全屏 Space**：全屏 Space 中隐藏顶部热区。菜单栏图标始终可用。
 
-**边界**：不认识 Widget 怎么画。不认识面板与窗口。
+## 8. 降级与约束
 
-**依赖**：无。本层不依赖触发层与外壳。
+**降级**：
 
-**关键类型**：
+1. 触控板手势失效时，刘海悬停、全局快捷键和菜单栏图标承担打开。
+2. 配置损坏时，回退默认布局。
 
-| 类型 | 职责 | 位置 |
-| --- | --- | --- |
-| `PaneKind` | 工作区的类型。例如 `widgets`、`clipboard`。 | Kotlin |
-| `PaneInstance` | 工作区的一个实例。带自己的编号、标题、图标和设置。 | Kotlin |
-| `WorkbenchConfig` | 工作区列表、顺序、每工作区设置和 Widget 布局。 | Kotlin |
-| `WorkbenchLogic` | 纯函数。增删改序、校验、默认布局。 | Kotlin |
-| `WorkbenchStore` | 持久化。读写 `workbench.json`。 | Kotlin |
-| `PaneRegistry` | 把 `PaneKind` 映射到 SwiftUI 视图。 | Swift |
+**权限**：刘海悬停和全局快捷键不需要系统权限。触控板手势的权限要求未验证，见第 9 节。
 
-**现有代码的迁移**：
+**发行约束**：触控板手势走系统私有接口。这条路径让应用无法上架 Mac App Store。
 
-1. `WorkbenchStore` 照 `WorkspaceStore` 写。原子写入的样板在 `kmpDomain/src/com/wyz/covio/core/WorkspaceStore.kt:138`。
-2. `WorkbenchLogic` 照 `object WorkspaceLogic`（`WorkspaceStore.kt:611`）写：无 IO 的纯逻辑对象，配独立测试。
-3. `PaneRegistry` 照 `SettingsCatalog` 写。见 `macosApp/src/Hub/Settings/SettingsCatalog.swift:68`。它是「声明式条目表」的现成样板。
-4. 本层替换三处硬编码：
-   - `HubTab` 枚举，`macosApp/src/Hub/HubTab.swift:10`。
-   - `HubTabContent` 的分发，`macosApp/src/Hub/HubView.swift:194`。
-   - 导航栏的枚举遍历，`macosApp/src/Hub/HubNavRail.swift:65`。
-5. 改动态页签前先改写页签顺序断言。断言在 `macosApp/test/DesignContractTests.swift:63`。
+## 9. 未决项
 
-**Kotlin 侧的命名习惯**：接口集中在 `kmpDomain/src/com/wyz/covio/core/Ports.kt`。本层若需要新端口，加进这个文件，不要另建文件。
-
-## 7. Widget 层
-
-**职责**：描述组件实例，把组件位置吸附到网格列，声明可添加的组件类型。
-
-**边界**：不认识任何上层。不认识页签。
-
-**依赖**：无。
-
-**关键类型**：
-
-| 类型 | 职责 |
+| 项目 | 现状 |
 | --- | --- |
-| `Widget` | 一个组件实例。描述类型、尺寸档、位置和设置。 |
-| 网格引擎 | 把组件位置吸附到列。纯计算，无渲染。 |
-| `WidgetCatalog` | 声明可添加的组件类型。 |
-
-**现有代码的迁移**：无。本层是全新代码。`WidgetCatalog` 照 `SettingsCatalog` 的声明式条目表写。
-
-## 8. 数据模型与持久化
-
-**存放位置**：工作台配置放独立文件 `workbench.json`。具体路径、版本字段和损坏恢复行为由 ADR-002 定。
-
-不放进 `config.json` 的理由：`config.json` 已声明与 0.4.2 双向兼容，`schemaVersion` 当前是 `3`（`kmpDomain/src/com/wyz/covio/core/Models.kt:18`）。`macosApp/test/ConfigCompatibilityTests.swift` 有 15 条用例守住这份兼容性。工作台配置放进去会牵动这 15 条。
-
-**写入方式**：okio 加 kotlinx JSON，写入用 `.tmp` 加原子改名。全仓库统一，见 `ShelfStore`、`ClipboardStore`、`WorkspaceStore` 三份样例。
-
-**读失败的行为**：回退默认布局，并保留损坏文件副本。读失败不抛异常。理由：Kotlin 异常跨到 Swift 没有接收方会终止进程。这条在 `WorkspaceStore` 里有多处注释。
-
-**不使用数据库**：Amper 0.12.1 没有 SQLDelight 插件。
-
-**现有路径，供 ADR-002 参照**：
-
-| 数据 | 路径 | 命名依据 |
-| --- | --- | --- |
-| `config.json` | `~/Library/Application Support/com.wyz.covio/` | `APP_ID` |
-| 晾衣线 `shelf.json` | `~/Library/Application Support/Covio/Screenshots/` | `APP_NAME` |
-| 共享暂存区 | `~/Library/Application Support/Covio/Workspace/` | `APP_NAME` |
-
-三个路径用了两种命名依据。这是 0.4.2 的既有布局，不能改。
-
-## 9. 扩展点、边界与降级
-
-**新增一个平台**：只增加 `CurtainTrigger` 的实现，再加一个宿主的挂帘外壳。工作区层和 Widget 层不变。
-
-**新增一个工作区类型**：在 `PaneKind` 加一个值，在 `PaneRegistry` 注册一个视图。不改外壳。
-
-**新增一个组件类型**：在 `WidgetCatalog` 加一条。不改网格引擎。
-
-**降级路径三条**，按可用性排序：
-
-1. 触控板手势失效时，快捷键与刘海悬停承担。
-2. 输入监控权限被拒时，快捷键与菜单栏图标承担。
-3. `workbench.json` 损坏时，回退默认布局。
-
-降级对用户可见。降级发生时，外壳不显示错误面板，只在设置页记录。
-
-**扩展点不做的**：不为扩展点预留抽象接口。加平台时再抽。
-
-## 10. 未决项与 ADR 分工
-
-**交给 ADR-002**：
-
-1. `workbench.json` 的完整路径。
-2. 版本字段名与升级策略。
-3. 用户降级回旧版时工作台配置的处理。
-4. 损坏时的恢复细节。
-
-**交给 ADR-003**：
-
-1. `CurtainTrigger` 协议的边界画在哪里。
-2. 触发源与注册表之间的事件形状。
-3. 去重在哪一层做。
-
-**交给分层 ADR**（`ADR-004` 到 `ADR-009`）：
-
-| 本文节 | ADR | 要定的事 |
-| --- | --- | --- |
-| 第 4 节 | `ADR-004` | 四个触发源的接口签名。不重复裁 `ADR-003` 的范围。 |
-| 第 5 节 | `ADR-005` | `CurtainController` 的改名范围，`PREVIEW` 与 `EDITING` 的迁移表。 |
-| 第 6 节 | `ADR-006` | `PaneRegistry` 的样板，工作区数量上限，内置工作区能否删除。 |
-| 第 7 节 | `ADR-007` | 组件尺寸档取几档，网格列数与吸附规则，`WidgetCatalog` 放在哪一侧。 |
-| 第 8 节 | `ADR-008` | 这层的字段清单与损坏恢复细节。不重复裁 `ADR-002` 的范围。 |
-| 第 9 节 | `ADR-009` | 扩展点的做法，以及本文第 9 节与 `ADR-003` 的冲突。 |
-
-**本文内部待裁决**：`WidgetCatalog` 放在哪一侧。
-第 3.1 节说「Widget 层的模型跟随工作区层」，第 7 节又让 `WidgetCatalog` 照 `SettingsCatalog` 写，而 `SettingsCatalog` 在 Swift 侧。两处矛盾。归 `ADR-007`。
-
-**留给实现期**：
-
-1. 编辑模式是就地编辑还是独立页面。
-
-**本文不回答的**：`WorkbenchConfig` 的字段清单。字段在实现时定，定完回填本文第 6 节。
+| 编辑模式的形态 | 就地编辑或独立页面，未定。 |
+| Widgets 首页与六个默认工作区的关系 | 未定。 |
+| 工作区数量上限 | 未定。 |
+| 内置工作区能否删除 | 未定。 |
+| 触控板手势的权限要求 | 未验证。 |

@@ -325,7 +325,7 @@ internal fun normalizeDisplayName(value: String): String =
 /**
  * 工作区的保留策略。
  *
- * 参数与产品总稿第 7.4 节一致：总上限 5 GB，单条目 2 GB，保留期 30 天。
+ * 保留参数：总上限 5 GB，单条目 2 GB，保留期 30 天。
  * [lazyFetchThresholdBytes] 是「只复制索引」的门槛，超过它的大内容按需取回。
  *
  * [retentionDays] 为 0 表示不过期，与 [ClipPolicy.maxAgeDays] 同一套约定。

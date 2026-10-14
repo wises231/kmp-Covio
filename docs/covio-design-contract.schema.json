@@ -146,8 +146,6 @@
         "status",
         "updatedAt",
         "authority",
-        "productBehaviorAuthority",
-        "humanReadableGuide",
         "visualProjection",
         "reference",
         "counts",
@@ -170,14 +168,6 @@
           "type": "string"
         },
         "authority": {
-          "type": "string",
-          "minLength": 1
-        },
-        "productBehaviorAuthority": {
-          "type": "string",
-          "minLength": 1
-        },
-        "humanReadableGuide": {
           "type": "string",
           "minLength": 1
         },

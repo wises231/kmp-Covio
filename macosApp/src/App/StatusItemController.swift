@@ -1,6 +1,6 @@
 import AppKit
 
-/// 菜单栏状态项。§4.3 把菜单栏图标列为 macOS 的次级入口。
+/// 菜单栏状态项。菜单栏图标是 macOS 的次级入口。
 ///
 /// 图标与无障碍名称来自设计合同 `states.menuBarAndNotchHub.statusItemStates`
 /// 的 DEFAULT 项：SF Symbol `menubar.rectangle`，文案键 `copy/status-item/default`。

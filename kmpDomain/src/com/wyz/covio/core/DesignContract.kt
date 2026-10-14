@@ -127,7 +127,7 @@ data class DesignContract(
     val components: List<String>,
     val platformMappings: List<String>,
 ) {
-    /** 动效令牌。按 §6.4 的时长给动画用。 */
+    /** 动效令牌。按令牌里的时长给动画用。 */
     val motionTokens: List<DesignToken> get() = tokens.filter { it.isMotion }
 
     fun token(key: String): DesignToken? = tokens.firstOrNull { it.key == key }

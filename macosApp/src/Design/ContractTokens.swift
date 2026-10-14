@@ -240,7 +240,7 @@ enum ContractDimensions {
 /// 设计合同 `tokens` 段里的一枚动效令牌。
 ///
 /// 时长单位是秒，与 `TimeInterval` 一致。合同里写的是毫秒。
-/// `curve` 是曲线的中文描述，来自 `covio-product-master.md` 第 6.4 节。
+/// `curve` 是曲线的中文描述。
 /// `reducedSeconds` 只在合同写了 `reducedMotionMs` 时有值。
 struct ContractMotionToken: Sendable, Equatable {
     let key: String
@@ -253,25 +253,25 @@ struct ContractMotionToken: Sendable, Equatable {
 
 /// 设计合同 `tokens` 段里的动效时长。
 enum ContractMotion {
-    /// `token/motion/error-appear` — 错误出现。来源第 6.4 节：160 毫秒，淡入和轻微位移。
+    /// `token/motion/error-appear` — 错误出现。160 毫秒，淡入和轻微位移。
     static let tokenMotionErrorAppear = ContractMotionToken(key: "token/motion/error-appear", seconds: 0.16, minSeconds: 0.16, maxSeconds: 0.16, reducedSeconds: nil, curve: "淡入和轻微位移")
-    /// `token/motion/hub-collapse` — Hub 收起。来源第 6.4 节：160 至 220 毫秒，缓出曲线。
+    /// `token/motion/hub-collapse` — Hub 收起。160 至 220 毫秒，缓出曲线。
     static let tokenMotionHubCollapse = ContractMotionToken(key: "token/motion/hub-collapse", seconds: 0.19, minSeconds: 0.16, maxSeconds: 0.22, reducedSeconds: 0.12, curve: "缓出曲线")
-    /// `token/motion/hub-expand` — Hub 展开。来源 covio-product-master.md 第 6.4 节：220 至 280 毫秒，弹性曲线。
+    /// `token/motion/hub-expand` — Hub 展开。220 至 280 毫秒，弹性曲线。
     static let tokenMotionHubExpand = ContractMotionToken(key: "token/motion/hub-expand", seconds: 0.25, minSeconds: 0.22, maxSeconds: 0.28, reducedSeconds: 0.12, curve: "弹性曲线")
-    /// `token/motion/pointer-exit-collapse` — 指针移出 Hub 后收起的等待时间。来源 covio-product-master.md 第 4.4 节。
+    /// `token/motion/pointer-exit-collapse` — 指针移出 Hub 后收起的等待时间。
     static let tokenMotionPointerExitCollapse = ContractMotionToken(key: "token/motion/pointer-exit-collapse", seconds: 0.5, minSeconds: 0.5, maxSeconds: 0.5, reducedSeconds: nil, curve: "指针移出后等待，然后收起")
-    /// `token/motion/reduced-motion` — 减弱动态效果。来源第 6.4 节：120 毫秒，只改变透明度。
+    /// `token/motion/reduced-motion` — 减弱动态效果。120 毫秒，只改变透明度。
     static let tokenMotionReducedMotion = ContractMotionToken(key: "token/motion/reduced-motion", seconds: 0.12, minSeconds: 0.12, maxSeconds: 0.12, reducedSeconds: nil, curve: "只改变透明度")
-    /// `token/motion/screenshot-capture` — 截图捕获。来源第 6.4 节：650 毫秒，保留现有捕获动画。
+    /// `token/motion/screenshot-capture` — 截图捕获。650 毫秒，保留现有捕获动画。
     static let tokenMotionScreenshotCapture = ContractMotionToken(key: "token/motion/screenshot-capture", seconds: 0.65, minSeconds: 0.65, maxSeconds: 0.65, reducedSeconds: nil, curve: "保留现有捕获动画")
-    /// `token/motion/screenshot-copy` — 截图复制。来源第 6.4 节：1200 毫秒提示，保留现有摆动反馈。
+    /// `token/motion/screenshot-copy` — 截图复制。1200 毫秒提示，保留现有摆动反馈。
     static let tokenMotionScreenshotCopy = ContractMotionToken(key: "token/motion/screenshot-copy", seconds: 1.2, minSeconds: 1.2, maxSeconds: 1.2, reducedSeconds: nil, curve: "保留现有摆动反馈")
-    /// `token/motion/tab-switch` — 页签切换。来源第 6.4 节：160 毫秒，横向滑动加淡入。
+    /// `token/motion/tab-switch` — 页签切换。160 毫秒，横向滑动加淡入。
     static let tokenMotionTabSwitch = ContractMotionToken(key: "token/motion/tab-switch", seconds: 0.16, minSeconds: 0.16, maxSeconds: 0.16, reducedSeconds: nil, curve: "横向滑动加淡入")
-    /// `token/motion/transfer-complete` — 传输完成。来源第 6.4 节：240 毫秒，进度变为完成状态。
+    /// `token/motion/transfer-complete` — 传输完成。240 毫秒，进度变为完成状态。
     static let tokenMotionTransferComplete = ContractMotionToken(key: "token/motion/transfer-complete", seconds: 0.24, minSeconds: 0.24, maxSeconds: 0.24, reducedSeconds: nil, curve: "进度变为完成状态")
-    /// `token/motion/transfer-start` — 传输开始。来源第 6.4 节：180 毫秒，卡片抬起并显示进度。
+    /// `token/motion/transfer-start` — 传输开始。180 毫秒，卡片抬起并显示进度。
     static let tokenMotionTransferStart = ContractMotionToken(key: "token/motion/transfer-start", seconds: 0.18, minSeconds: 0.18, maxSeconds: 0.18, reducedSeconds: nil, curve: "卡片抬起并显示进度")
 
     /// 全部条目。供测试遍历。

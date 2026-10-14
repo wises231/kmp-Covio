@@ -1,7 +1,7 @@
 import Carbon.HIToolbox
 import Foundation
 
-/// 全局快捷键。§4.4 要求 `Control+Option+T` 打开或收起 Hub。
+/// 全局快捷键。`Control+Option+T` 打开或收起 Hub。
 /// M4 又加了 `Shift+Command+V` 与 `Shift+Command+C`。
 ///
 /// 用 Carbon 的 `RegisterEventHotKey`。它不需要辅助功能权限，
@@ -25,7 +25,7 @@ final class GlobalHotKey {
         let id: UInt32
     }
 
-    /// §4.4：`Control+Option+T` 打开或收起 Hub。
+    /// `Control+Option+T` 打开或收起 Hub。
     static let hubToggle = Spec(
         keyCode: UInt32(kVK_ANSI_T),
         modifiers: UInt32(controlKey | optionKey),
@@ -53,7 +53,7 @@ final class GlobalHotKey {
     private let action: @MainActor () -> Void
     private var registered = false
 
-    /// 默认注册 §4.4 的 `Control+Option+T`。
+    /// 默认注册 `Control+Option+T`。
     init(spec: Spec = GlobalHotKey.hubToggle, action: @escaping @MainActor () -> Void) {
         self.spec = spec
         self.action = action
