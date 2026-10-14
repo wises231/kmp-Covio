@@ -33,10 +33,9 @@ product:
   type: wasm-js/app
 
 dependencies:
-  - $compose.runtime
-  - $compose.foundation
-  - $compose.material3
-  - $compose.ui
+  - org.jetbrains.compose.runtime:runtime:1.12.1
+  - org.jetbrains.compose.foundation:foundation:1.12.1
+  - org.jetbrains.compose.ui:ui:1.12.1
 
 settings:
   compose:
@@ -47,7 +46,21 @@ settings:
 Amper 自动装 pnpm 与 Node，自动生成 `index.html`。不用手写 HTML。
 
 **注意：** 入口是 `androidx.compose.ui.window.ComposeViewport`。
-`CanvasBasedWindow` 在 Compose Multiplatform 1.11.1 里不存在，用它编译不过。
+`CanvasBasedWindow` 在 1.11.1 里不存在，用它编译不过。
+
+### 2.1 为什么不写 `$compose.*`
+
+Amper 0.12.1 的内置 catalog 把 Compose 钉在 `1.11.1`。
+`1.11.1` 在 web 目标下渲染不了中文：字形全部是方框。
+
+原因是 Compose for Web 用 Skia 画字，wasm 沙箱读不到系统字体。
+`1.12.0` 起才有按需下载 Noto 子集的字体回退。所以这里写显式坐标。
+
+`1.12.1` 没有 `material3` 的稳定版本，只有 `1.12.0-alpha03` 这样的预发布版。
+所以本模块不引 material3，只用 foundation 画。
+打样要还原的是 Covio 的设计，不是 Material 的默认样式，少这一层反而干净。
+
+**警告：** 不要把这三行换回 `$compose.*`。换回去中文就没了。
 
 ## 3. 起服务
 
@@ -86,6 +99,20 @@ Amper 自动装 pnpm 与 Node，自动生成 `index.html`。不用手写 HTML。
 1. 打样画完后截图。
 2. 图存进 `docs/design/previews/`。命名见该目录的 `README.md`。
 3. 图路径写进提出这份打样的 issue 正文。设计闸门的 R8 要求这一条。
+
+**注意：** 不要只看浏览器有没有报错。页面能打开不等于画对了。
+1.11.1 那次就是页面正常打开，字全是方框。
+截图之后要看一眼图，或者用第 3 节的命令跑起来自己看。
+
+截图可以走命令行。脚本用系统的 WKWebView 渲染，不用装浏览器。
+
+```bash
+swiftc -O scripts/preview-shot.swift -o build/preview-shot
+build/preview-shot http://127.0.0.1:8080 docs/design/previews/106-device-pane-1.png 1440 900 16
+```
+
+第 4、5 个参数是宽高，第 6 个是等页面画完的秒数。
+脚本同时打印页面里的 JS 错误。`PROBE` 行的 `errors` 是空数组才算干净。
 
 ## 6. 边界
 

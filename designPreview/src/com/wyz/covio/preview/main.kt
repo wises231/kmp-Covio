@@ -1,6 +1,5 @@
 package com.wyz.covio.preview
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
 
@@ -21,9 +20,6 @@ import androidx.compose.ui.window.ComposeViewport
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     ComposeViewport {
-        // 外壳自己定色，不靠主题。套一层是为了让 Material3 的默认值有出处。
-        MaterialTheme {
-            PreviewApp()
-        }
+        PreviewApp()
     }
 }
