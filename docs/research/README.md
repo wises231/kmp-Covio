@@ -19,6 +19,7 @@
 | 跨设备共享暂存工作区 | 初稿，可评审 | [README.md](shared-transfer-workspace/README.md) |
 | 触控板多指手势入口 | 初稿，可评审 | [README.md](trackpad-gesture-entry/README.md) |
 | iOS 免打开入口 | 初稿，可评审 | [README.md](mobile-ambient-entry/README.md) |
+| 研发工作流的调研依据 | 单文件，不建主题目录 | [workflow-research.md](workflow-research.md) |
 
 ## 归档规则
 

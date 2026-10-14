@@ -8,7 +8,7 @@ body:
         判断大功能：需要 2 个以上 PR；预计超过 5 个工作日；需要先改设计。满足任一条就用本表单。
         标题写成「动词 对象」，例如「Add the workbench store」。
         涉及 UI 变化时，先出 web 预览并通过评审，再拆实施 sub-issue。
-        拆法与回链格式见 [研发工作流](../../doc/process/workflow.md) 的 S5、S6 与设计闸门。
+        拆法与回链格式见 [研发工作流](../../docs/process/workflow.md) 的 S5、S6 与设计闸门。
 
   - type: textarea
     id: goal

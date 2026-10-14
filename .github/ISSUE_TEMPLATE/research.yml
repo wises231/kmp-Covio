@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         一个 spike 只回答一个问题，时间盒默认 2 个工作日，上限 3 个工作日。
-        格式见 [研发工作流](../../doc/process/workflow.md) 的 S2 与 S3。
+        格式见 [研发工作流](../../docs/process/workflow.md) 的 S2 与 S3。
 
   - type: textarea
     id: question

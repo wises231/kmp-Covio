@@ -19,7 +19,7 @@ Covio 是 macOS 菜单栏应用。界面是 SwiftUI 宿主，放在 `macosApp/`�
 ```
 
 1. 调研报告放 `docs/research/<主题>/`。格式见 `docs/research/AUTHORING.md`。
-2. 决策放 `doc/adr/adr-NNNN-<slug>.md`。模板见 `doc/adr/adr-template.md`。
+2. 决策放 `docs/adr/adr-NNNN-<slug>.md`。模板见 `docs/adr/adr-template.md`。
 3. Issue 建在 GitHub 上。仓库里不放 issue 定义文件，不设本地编号。
 
 ## 3. 大功能与小功能
@@ -32,7 +32,7 @@ Covio 是 macOS 菜单栏应用。界面是 SwiftUI 宿主，放在 `macosApp/`�
 
 ## 4. 工作流
 
-流程定义在 `doc/process/workflow.md`。本文件管执行。每次会话按下面的规则做。
+流程定义在 `docs/process/workflow.md`。本文件管执行。每次会话按下面的规则做。
 
 1. 开场先归位。判断本次任务在 S1 到 S7 中的哪一步，按该步的条目与完成标准推进。
 2. 想法不确定做法时走 S1 与 S2。提交人写问题、受影响的人和一个场景，不写解法。
@@ -40,11 +40,11 @@ Covio 是 macOS 菜单栏应用。界面是 SwiftUI 宿主，放在 `macosApp/`�
 4. 调研结论写在 issue 正文，不写评论。正文含结论、依据和后续动作。结论未写回正文前不关 issue。
 5. 长期决策进 S4。写新 ADR 走 PR，合并前 Status 改成 `accepted`。
 6. 大功能走 S5 建 Feature。每个 sub-issue 写一行验收标准，工期 1 到 3 天。
-7. 涉及 UI 变化时先出 web 预览。预览通过评审再动工。见 `doc/process/workflow.md` 的设计闸门。
+7. 涉及 UI 变化时先出 web 预览。预览通过评审再动工。见 `docs/process/workflow.md` 的设计闸门。
 8. 引用另一个对象时走 S6。值未定时写 `pending`，5 个工作日内回填。
 9. 对象用标签区分。建 issue 时带对应的标签：调研 `research`，大功能 `feature`，小功能与 sub-issue `task`。
 10. 个人账号没有 issue types 与 issue fields。不要用 `--type`，也不要找 issue fields。
-   字段用 Project 8 的字段，名字见 `doc/process/project-fields.md`。
+   字段用 Project 8 的字段，名字见 `docs/process/project-fields.md`。
    Start date 与 Target date 只在 Project 里维护，不写进 issue 正文。
 11. 需要你在 Web 界面操作的步骤，写明操作位置，不要跳过。
 
@@ -55,12 +55,12 @@ Covio 是 macOS 菜单栏应用。界面是 SwiftUI 宿主，放在 `macosApp/`�
 | 知识 | 位置 |
 | --- | --- |
 | 设计合同 | `docs/covio-design-contract.json` |
-| 架构决策 | `doc/adr/` |
+| 架构决策 | `docs/adr/` |
 | 目标架构 | `docs/design/` |
 | 界面打样 | `designPreview/`，读法见 `docs/design/design-preview.md` |
-| 研究结论 | `docs/research/` 与 `research/` |
-| 工作流规则 | `doc/process/workflow.md` |
-| Project 字段 | `doc/process/project-fields.md` |
+| 研究结论 | `docs/research/` |
+| 工作流规则 | `docs/process/workflow.md` |
+| Project 字段 | `docs/process/project-fields.md` |
 | 进度 | [Project 8](https://github.com/users/wyz541/projects/8) |
 
 文档用中文。命令、路径、API 名称和版本号保留原文。不写本机绝对路径。

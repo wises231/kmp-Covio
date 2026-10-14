@@ -5,7 +5,7 @@ import XCTest
 ///
 /// 用手写的屏幕数值，不依赖运行测试的机器。
 /// 数值取自 M0 在本机内建视网膜屏上的实测：1728 × 1117，顶部安全区 32 点，
-/// 刘海占 x 从 771.5 到 956.5。见 `doc/adr/adr-0001-macos-ui-swiftui.md` 实测 8。
+/// 刘海占 x 从 771.5 到 956.5。见 `docs/adr/adr-0001-macos-ui-swiftui.md` 实测 8。
 final class ScreenGeometryTests: XCTestCase {
     /// 本机实测的刘海屏。
     private let notched = ScreenGeometry(
