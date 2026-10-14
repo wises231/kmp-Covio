@@ -14,7 +14,7 @@ struct ShelfEnvironment {
     var isTakeoverEnabled: () -> Bool = { false }
     /// 配置里的提示音开关。
     var isSoundsEnabled: () -> Bool = { false }
-    /// 当前 Space 是不是全屏。全屏时 §4.4 要求工具栏让位。
+    /// 当前 Space 是不是全屏。全屏时工具栏让位。
     var isFullScreenSpaceActive: () -> Bool = { FullScreenSpaceDetector.isActive() }
     /// 系统是否要求减弱动态效果。
     var reduceMotion: () -> Bool = { NSWorkspace.shared.accessibilityDisplayShouldReduceMotion }

@@ -92,7 +92,7 @@ final class ScreenGeometryTests: XCTestCase {
         XCTAssertTrue(notched.isMenuBarVisible)
         XCTAssertTrue(notchless.isMenuBarVisible)
 
-        // 全屏 Space 里菜单栏自动隐藏，可见区等于完整区。§4.4 要求此时隐藏热区。
+        // 全屏 Space 里菜单栏自动隐藏，可见区等于完整区。此时要隐藏热区。
         let fullScreen = ScreenGeometry(
             frame: CGRect(x: 0, y: 0, width: 1920, height: 1080),
             visibleFrame: CGRect(x: 0, y: 0, width: 1920, height: 1080),
