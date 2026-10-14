@@ -140,7 +140,7 @@ def generate_tokens(contract: dict) -> str:
     lines.append("/// 设计合同 `tokens` 段里的一枚动效令牌。")
     lines.append("///")
     lines.append("/// 时长单位是秒，与 `TimeInterval` 一致。合同里写的是毫秒。")
-    lines.append("/// `curve` 是曲线的中文描述，来自 `covio-product-master.md` 第 6.4 节。")
+    lines.append("/// `curve` 是曲线的中文描述。")
     lines.append("/// `reducedSeconds` 只在合同写了 `reducedMotionMs` 时有值。")
     lines.append("struct ContractMotionToken: Sendable, Equatable {")
     lines.append("    let key: String")

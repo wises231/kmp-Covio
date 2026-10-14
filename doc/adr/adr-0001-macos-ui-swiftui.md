@@ -6,7 +6,7 @@
 - Supersedes：none
 - Implements：none
 - 阶段：M0 到 M6 已结案。进度见[迁移计划的阶段进度表](../../docs/covio-macos-swiftui-migration-plan.md)
-- 补充：2026-10-12 按 `docs/covio-product-master.md` 第 7.1 节对齐共享层边界。结论见实测 26 到 28
+- 补充：2026-10-12 对齐共享层边界。结论见实测 26 到 28
 - 补充：2026-10-12 补记实测 29 与 30：测试宿主不启动运行时；图标是工程资源
 - 补充：2026-10-12 补记实测 31 到 34：Hub 外壳按 macOS 27 版式重做，部署目标提到 26.0；搜索锚点漏挂两处。玻璃的显示效果待真机确认
 - 补充：2026-10-12 补记实测 35 到 37：CI 推送后两次失败。冷缓存下 konanc 找不到；测试写死屏幕坐标，只在有刘海的本机上通过。第三次三个作业全绿，378 条测试
@@ -30,7 +30,7 @@ Hub 挂帘需要非激活面板、鼠标穿透、全宽工具条。这些能力�
 4. `macosApp` 是独立的 Xcode 工程，不注册进 Amper 的 `project.yaml`。
 5. macOS framework 由 `scripts/build-kmp-framework.sh` 调用 `konanc` 产出，不依赖 Amper 的 Xcode 集成。
 6. Xcode 工程的源码用 `PBXFileSystemSynchronizedRootGroup` 引用目录。新增 Swift 文件不改 `project.pbxproj`。
-7. 平台集成相关的逻辑留在宿主。这一条按 `docs/covio-product-master.md` 第 7.1 节执行：界面、OS 调用、宿主生命周期不进共享层。判断依据见实测 26 到 28。
+7. 平台集成相关的逻辑留在宿主。界面、OS 调用、宿主生命周期不进共享层。判断依据见实测 26 到 28。
 
 ## 证据
 
@@ -444,7 +444,7 @@ SwiftUI 版要判 helper 的版本是否过期，Compose 版也要判。两版�
 1. **空 `payload` 被省略。** Kotlin 的 `Json` 用 `encodeDefaults = false`，字段为默认值时不出现在字节里。Swift 版以前发 `"payload":{}`。两侧解码器都容忍两种形状，0.4.2 的 helper 照常应答。
 2. **带引号的布尔值解得出来。** `{"version":"1","requestId":"r","ok":"true"}` 解出 `ok = true`。kotlinx-serialization 宽松收下这种写法。0.4.2 从没发过这种形状，所以收下它不会放行任何真实的坏包。
 
-两个 `HelperClient`（JVM 用 NIO，Swift 用 POSIX 套接字）与两个 `HelperServer`（JNA 与 POSIX）保留重复。套接字是 OS 调用，第 7.1 节把它归宿主。
+两个 `HelperClient`（JVM 用 NIO，Swift 用 POSIX 套接字）与两个 `HelperServer`（JNA 与 POSIX）保留重复。套接字是 OS 调用，归宿主。
 
 共享语料 `kmpDomain/test/fixtures/helper-wire-vectors.json` 是漂移的关断点。Kotlin 侧 `HelperWireVectorTest` 读它，Swift 侧 `HelperWireParityTests` 用 `#filePath` 读同一份文件，经 framework 断言同样的结果。这同时是导出冒烟测试。
 
@@ -725,7 +725,6 @@ M8（Hub 外壳重做）结案时仍未确认的项目。
 ## 参考
 
 - 计划文件：`/Users/wyz/.claude/plans/covio-covio-cheeky-meadow.md`
-- 产品行为权威：`docs/covio-product-master.md`
 - 设计合同：`docs/covio-design-contract.json`
 - 构建脚本：`scripts/build-kmp-framework.sh`、`scripts/build-macos-swift.sh`、`scripts/test-macos-swift.sh`
 - Xcode 工程：`macosApp/Covio.xcodeproj`

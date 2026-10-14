@@ -36,7 +36,7 @@ enum HubMotion {
     /// 减弱动态效果：120 毫秒，只改透明度。
     static let reducedMotion: TimeInterval = ContractMotion.tokenMotionReducedMotion.seconds
 
-    /// 指针移出 Hub 后收起的等待时间。来源是 `covio-product-master.md` 第 4.4 节。
+    /// 指针移出 Hub 后收起的等待时间。
     static let pointerExitCollapseDelay: TimeInterval = ContractMotion.tokenMotionPointerExitCollapse.seconds
 
     /// 呼吸灯一次亮灭的时长。合同没有这枚令牌，取值按肉眼可见的缓慢呼吸定。

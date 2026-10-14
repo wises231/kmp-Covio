@@ -17,7 +17,6 @@
 
 | 层级 | 文件 | 职责 |
 | --- | --- | --- |
-| 产品行为 | [covio-product-master.md](covio-product-master.md) | 产品行为、范围和优先级 |
 | 设计合同 | [covio-design-contract.json](covio-design-contract.json) | 机器可读设计权威 |
 | 合同解释 | [covio-product-design.md](covio-product-design.md) | 解释设计合同 |
 | 迁移计划 | 本文档 | macOS UI 迁移的范围、阶段和判据 |
@@ -61,9 +60,9 @@ KMP 保留为共享底座。
 另有四处现状落差：
 
 1. Hub 挂帘、剪贴板、临时文件、局域网互传全部零实现。代码里只有睡眠控制、截图工具栏、Tray 菜单、设置窗口。
-2. `docs/covio-product-master.md` 第 655 行写死「macOS 宿主 = Compose Desktop 加平台桥接」。该文档自称唯一决策来源。本次迁移必须先改这一条。已在 M5 改为「SwiftUI 加 KMP 共享层」。
+2. 产品需求写死「macOS 宿主 = Compose Desktop 加平台桥接」。本次迁移必须先改这一条。已在 M5 改为「SwiftUI 加 KMP 共享层」。
 3. 设计合同 `docs/covio-design-contract.json` 的 22 条 `components` 都带 `composeMapping`。`composeMapping` 在 schema 的 `$defs.component.required` 里。`platformMapping.status` 是单值枚举 `["native-source-mapped"]`。已在 M5 加 `swiftMapping`、加宽枚举、加 `swiftRuntimeTarget`。
-4. 设计合同没有 motion token。动效参数只在 `covio-product-master.md` §6.4 的表格里。已在 M5 补进 `token/motion/*`。
+4. 设计合同没有 motion token。已在 M5 补进 `token/motion/*`。
 
 ### 本次沉淀时的复核修正
 
@@ -226,7 +225,7 @@ SwiftUI 的 `@Observable` 要求 macOS 14。
 
 1. `NSStatusItem` 菜单栏图标，`LSUIElement = true`。
 2. 热区检测与 `NSPanel` 状态机。
-3. 6 个页签按 `covio-product-master.md` §4.2 顺序全部占位：Now、Clipboard、Files、Screenshots、Devices、Settings。
+3. 6 个页签按顺序全部占位：Now、Clipboard、Files、Screenshots、Devices、Settings。
 4. 非刘海屏降级热区。
 
 `NSPanel` 配置：
@@ -247,7 +246,7 @@ SwiftUI 的 `@Observable` 要求 macOS 14。
 - `notchOutputHub`（`COLLAPSED`/`READY`/`EXPANDED`/`DRAG TARGET`/`PROCESSING`/`ERROR`）管内容区。
 - 两个状态机正交。合同已给出各自独立的 `interactionPath`，说明设计者本来就当它们是两台机器。
 
-时序按 `covio-product-master.md` §6.4：
+时序如下：
 
 | 动作 | 时长与曲线 |
 | --- | --- |
@@ -315,7 +314,7 @@ SwiftUI 的 `@Observable` 要求 macOS 14。
 完成判据：
 
 - 与 `component/screenshot-card` 和 `component/clothespin` 的 `nativeSize` 逐值断言通过。
-- 捕获 650 ms 与复制 1200 ms 摆动符合 §6.4。
+- 捕获 650 ms 与复制 1200 ms 摆动符合设计合同。
 - 拖拽到 Finder、桌面、废纸篓行为符合 `README.md` 第 76 到 81 行。
 
 **这是切换点。** SwiftUI 版成为发布物，建议版本 `0.5.0`。Compose 版进维护分支。
@@ -365,7 +364,7 @@ SwiftUI 的 `@Observable` 要求 macOS 14。
 | `$defs.platformMapping.properties.status` | 枚举加宽为 `["native-source-mapped", "swift-source-mapped", "dual-source-mapped"]`。加宽不改语义，已有 25 条仍合法 |
 | `$defs.platformMapping.properties` | 增加 `swiftRuntimeTarget`，25 条逐个补齐 |
 | `$defs` | 增加 `motionToken` 与 `swiftStateMapping`。动效令牌没有 Figma 变量，塞进 `$defs.token` 会把两个必填的变量 ID 撑坏，所以单开一个定义，根 `tokens` 段用 `oneOf` 接住两类 |
-| `tokens` | 补 §6.4 的 9 条动效参数，另补 §4.4 的「指针移出后收起」1 条 |
+| `tokens` | 补 9 条动效参数，另补「指针移出后收起」1 条 |
 | `states` | 增加 `swiftRuntimeMapping`：`hubStates` 与 `notchOutputHub` 各自到 Swift 类型的映射 |
 | `metadata.knownDifferences` | 增一条：macOS 运行时由 Compose 换为 SwiftUI |
 | `metadata.kotlinInterfaces` | 4 个接口的 `status` 由 `future-not-implemented` 改为 `implemented`，并加 `path` |
@@ -387,7 +386,6 @@ Hub 若需要合同外的新组件，只能映射到已有的 `component/tab-bar
 
 文档改动：
 
-- `docs/covio-product-master.md` §7.1 第 655 行：macOS 宿主改为「SwiftUI 加 KMP 共享层」。
 - `docs/covio-product-design.md`：新增「SwiftUI 映射」一节；「修改流程」由 10 步扩为 12 步，加入合同校验器与常量生成器。
 - `doc/adr/adr-0001-macos-ui-swiftui.md`：「阶段」一行由「M0 结案，M1 结案」改为指向本文档的进度表。
 - `README.md`：更新 Requirements、构建命令、目录说明。
@@ -555,7 +553,7 @@ M0 阶段提出的五项，结论已记入 `doc/adr/adr-0001-macos-ui-swiftui.md
 | M4 剪贴板模块 | 已完成。交付偏差见下节 | 2026-10-12 |
 | M5 合同与文档同步 | 已完成。交付偏差见下节 | 2026-10-12 |
 | M6 退役 Compose macOS 宿主 | 已完成。交付偏差见下节 | 2026-10-12 |
-| M7 按产品主文档 §7.1 对齐共享层边界 | 已完成。结论见 `doc/adr/adr-0001-macos-ui-swiftui.md` 实测 26 到 28 | 2026-10-12 |
+| M7 对齐共享层边界 | 已完成。结论见 `doc/adr/adr-0001-macos-ui-swiftui.md` 实测 26 到 28 | 2026-10-12 |
 | M8 Hub 外壳按 macOS 27 版式重做 | 已完成。结论见同文件实测 31 到 33。真机清单未跑 | 2026-10-12 |
 
 ## 12.1 M8：Hub 外壳按 macOS 27 版式重做
@@ -583,7 +581,7 @@ M0 阶段提出的五项，结论已记入 `doc/adr/adr-0001-macos-ui-swiftui.md
 
 | 项 | 值 | 来源 |
 | --- | --- | --- |
-| 卡片宽 | 960 | 产品主文档 §6.3 |
+| 卡片宽 | 960 | M8 版式 |
 | 导航栏 | 200 × 370 | 合同 `component/tab-bar` |
 | 顶部胶囊 | 高 40 | 沿用合同 `component/toolbar` 的高度 |
 | 内容列宽 | 712 | 卡片宽减两倍内边距减导航栏宽减栏间距 |
@@ -665,7 +663,7 @@ M0 阶段提出的五项，结论已记入 `doc/adr/adr-0001-macos-ui-swiftui.md
 | D3 | 复制 dodoclip 源码进 `macosApp/src/Vendored/DodoClip/` | 未执行 | 同上。因此 `THIRD_PARTY_NOTICES.md` 不加 dodoclip 条目：没有复制任何文件，也没有据此实现 |
 | D4 | 剪贴板监听用 `NSPasteboard` 变更通知 | 按 `NSPasteboard.changeCount` 轮询，间隔 0.5 秒 | AppKit 在 `NSPasteboard` 上没有通知、代理或 KVO，只有这个计数器 |
 | D5 | `kmpDomain` 的 `metadata.kotlinInterfaces` 四个接口本次落地 | 已在 M5 落地 | M5 的合同改动。见 `kmpDomain/src/com/wyz/covio/core/DesignContract.kt` |
-| D6 | 补 §6.4 的 9 条动效参数 | 补了 10 条，多的 1 条来自 §4.4 | `HubMotion` 里已有「指针移出后收起 500 毫秒」。不补进合同，这条数值就没有权威来源，测试也覆盖不到 |
+| D6 | 补 9 条动效参数 | 补了 10 条，多的 1 条是「指针移出后收起」 | `HubMotion` 里已有「指针移出后收起 500 毫秒」。不补进合同，这条数值就没有权威来源，测试也覆盖不到 |
 | D7 | M3 交付「删除 `libCovioDrag.dylib` 与 JNA」 | 删了 `native/`，JNA 保留 | `HelperServer` 用 JNA 调 `getpeereid` 校验 Unix 域套接字的对端 UID。`libCovioDrag.dylib` 的那个用途已由 Swift 重写，JNA 的另一个用途还在 |
 | D8 | M6「移除 `scripts/package-macos.sh` 的发布职责」 | 删除该脚本，另建 `scripts/package-macos-swift.sh` | `app` 的 `product` 已降为 `jvm/lib`，没有 main class，`jpackage` 那条链路无法执行。留一个跑不通的脚本比删掉更糟 |
 | D9 | M6「保留 `app/test` 的 18 个测试文件」 | 保留 8 个，删除 10 个 | 10 个测试的被测对象都在 `platform/` 里。删除清单见 §7 的 M6 一节 |

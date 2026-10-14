@@ -5,7 +5,6 @@
     "status": "native-source-verified",
     "updatedAt": "2026-10-12",
     "authority": "docs/covio-design-contract.json",
-    "productBehaviorAuthority": "docs/covio-product-master.md",
     "humanReadableGuide": "docs/covio-product-design.md",
     "visualProjection": {
       "fileName": "Covio — Product Design · macOS 27",
@@ -1429,7 +1428,7 @@
       "minMs": 220,
       "maxMs": 280,
       "curve": "弹性曲线",
-      "purpose": "Hub 展开。来源 covio-product-master.md 第 6.4 节：220 至 280 毫秒，弹性曲线。",
+      "purpose": "Hub 展开。220 至 280 毫秒，弹性曲线。",
       "reducedMotionMs": 120
     },
     "token/motion/hub-collapse": {
@@ -1439,7 +1438,7 @@
       "minMs": 160,
       "maxMs": 220,
       "curve": "缓出曲线",
-      "purpose": "Hub 收起。来源第 6.4 节：160 至 220 毫秒，缓出曲线。",
+      "purpose": "Hub 收起。160 至 220 毫秒，缓出曲线。",
       "reducedMotionMs": 120
     },
     "token/motion/tab-switch": {
@@ -1449,7 +1448,7 @@
       "minMs": 160,
       "maxMs": 160,
       "curve": "横向滑动加淡入",
-      "purpose": "页签切换。来源第 6.4 节：160 毫秒，横向滑动加淡入。"
+      "purpose": "页签切换。160 毫秒，横向滑动加淡入。"
     },
     "token/motion/screenshot-capture": {
       "name": "motion/screenshot-capture",
@@ -1458,7 +1457,7 @@
       "minMs": 650,
       "maxMs": 650,
       "curve": "保留现有捕获动画",
-      "purpose": "截图捕获。来源第 6.4 节：650 毫秒，保留现有捕获动画。"
+      "purpose": "截图捕获。650 毫秒，保留现有捕获动画。"
     },
     "token/motion/screenshot-copy": {
       "name": "motion/screenshot-copy",
@@ -1467,7 +1466,7 @@
       "minMs": 1200,
       "maxMs": 1200,
       "curve": "保留现有摆动反馈",
-      "purpose": "截图复制。来源第 6.4 节：1200 毫秒提示，保留现有摆动反馈。"
+      "purpose": "截图复制。1200 毫秒提示，保留现有摆动反馈。"
     },
     "token/motion/transfer-start": {
       "name": "motion/transfer-start",
@@ -1476,7 +1475,7 @@
       "minMs": 180,
       "maxMs": 180,
       "curve": "卡片抬起并显示进度",
-      "purpose": "传输开始。来源第 6.4 节：180 毫秒，卡片抬起并显示进度。"
+      "purpose": "传输开始。180 毫秒，卡片抬起并显示进度。"
     },
     "token/motion/transfer-complete": {
       "name": "motion/transfer-complete",
@@ -1485,7 +1484,7 @@
       "minMs": 240,
       "maxMs": 240,
       "curve": "进度变为完成状态",
-      "purpose": "传输完成。来源第 6.4 节：240 毫秒，进度变为完成状态。"
+      "purpose": "传输完成。240 毫秒，进度变为完成状态。"
     },
     "token/motion/error-appear": {
       "name": "motion/error-appear",
@@ -1494,7 +1493,7 @@
       "minMs": 160,
       "maxMs": 160,
       "curve": "淡入和轻微位移",
-      "purpose": "错误出现。来源第 6.4 节：160 毫秒，淡入和轻微位移。"
+      "purpose": "错误出现。160 毫秒，淡入和轻微位移。"
     },
     "token/motion/reduced-motion": {
       "name": "motion/reduced-motion",
@@ -1503,7 +1502,7 @@
       "minMs": 120,
       "maxMs": 120,
       "curve": "只改变透明度",
-      "purpose": "减弱动态效果。来源第 6.4 节：120 毫秒，只改变透明度。"
+      "purpose": "减弱动态效果。120 毫秒，只改变透明度。"
     },
     "token/motion/pointer-exit-collapse": {
       "name": "motion/pointer-exit-collapse",
@@ -1512,7 +1511,7 @@
       "minMs": 500,
       "maxMs": 500,
       "curve": "指针移出后等待，然后收起",
-      "purpose": "指针移出 Hub 后收起的等待时间。来源 covio-product-master.md 第 4.4 节。"
+      "purpose": "指针移出 Hub 后收起的等待时间。"
     }
   },
   "components": {

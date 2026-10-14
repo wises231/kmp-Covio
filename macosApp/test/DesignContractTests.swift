@@ -1,12 +1,13 @@
 import XCTest
 @testable import Covio
 
-/// 把 Swift 侧的常量与两份权威文档对起来。
+/// 把 Swift 侧的常量与设计合同对起来。
 ///
-/// - `docs/covio-design-contract.json` 给组件的 `nativeSize` 与状态词汇。
-/// - `docs/covio-product-master.md` 给页签顺序与动效时长。
+/// - `docs/covio-design-contract.json` 给组件的 `nativeSize`、状态词汇、文案键与页签条目。
 ///
-/// 这些断言的作用是：文档改了而代码没跟上时，测试会失败。
+/// 动效时长与合同的比对在 `ContractConstantsTests`，这里不重复。
+///
+/// 这些断言的作用是：合同改了而代码没跟上时，测试会失败。
 final class DesignContractTests: XCTestCase {
     // MARK: - 文件定位
 
@@ -22,52 +23,28 @@ final class DesignContractTests: XCTestCase {
         return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
     }
 
-    private func productMaster() throws -> String {
-        let url = Self.repoRoot.appendingPathComponent("docs/covio-product-master.md")
-        return try String(contentsOf: url, encoding: .utf8)
-    }
-
-    /// 取出某个 `###` 小节的全部正文。
-    private func section(_ number: String, in markdown: String) -> String {
-        var collected: [String] = []
-        var inside = false
-        for line in markdown.components(separatedBy: .newlines) {
-            if line.hasPrefix("### ") {
-                if inside { break }
-                inside = line.contains(number)
-                continue
-            }
-            if inside { collected.append(line) }
-        }
-        return collected.joined(separator: "\n")
-    }
-
-    /// 解析 Markdown 表格。返回每行的单元格数组，跳过分隔行。
-    private func tableRows(in section: String) -> [[String]] {
-        section
-            .components(separatedBy: .newlines)
-            .filter { $0.hasPrefix("|") }
-            .map { line in
-                line.split(separator: "|", omittingEmptySubsequences: false)
-                    .map { $0.trimmingCharacters(in: .whitespaces) }
-            }
-    }
-
-    private func integers(in text: String) -> [Int] {
-        text.split(whereSeparator: { !$0.isNumber }).compactMap { Int($0) }
-    }
-
     // MARK: - 页签
 
-    /// §4.2 的表格顺序就是页签顺序。
-    func testTabOrderMatchesProductMaster() throws {
-        let rows = tableRows(in: section("4.2", in: try productMaster()))
-        let names = rows.compactMap { cells -> String? in
-            guard cells.count >= 3, Int(cells[1]) != nil else { return nil }
-            return cells[2].trimmingCharacters(in: CharacterSet(charactersIn: "`"))
+    /// 六个页签都要在合同的文案表里有条目，顺序也要对。
+    ///
+    /// 顺序没有机器可读的权威，用下面的字面量守住，防止被改乱。
+    func testTabsMatchContract() throws {
+        let copy = try XCTUnwrap(try contractJSON()["copy"] as? [String: Any])
+        XCTAssertEqual(HubTab.allCases.count, 6, "页签应该有 6 个")
+
+        for tab in HubTab.allCases {
+            let slug = tab.rawValue.lowercased()
+            XCTAssertNotNil(copy["copy/hub/tab/\(slug)"], "合同缺少文案键 copy/hub/tab/\(slug)")
+            XCTAssertNotNil(
+                copy["copy/hub/tab/\(slug)/summary"],
+                "合同缺少文案键 copy/hub/tab/\(slug)/summary"
+            )
         }
-        XCTAssertEqual(names.count, 6, "§4.2 应该有 6 个页签")
-        XCTAssertEqual(HubTab.allCases.map(\.rawValue), names)
+
+        XCTAssertEqual(
+            HubTab.allCases.map(\.rawValue),
+            ["Now", "Clipboard", "Files", "Screenshots", "Devices", "Settings"]
+        )
     }
 
     func testEveryTabHasTitleAndSummary() {
@@ -184,59 +161,5 @@ final class DesignContractTests: XCTestCase {
                     "copy/tray/action/settings", "copy/tray/action/quit"] {
             XCTAssertNotNil(copy[key], "合同缺少文案键 \(key)")
         }
-    }
-
-    // MARK: - 动效
-
-    /// §6.4 的动效表。
-    private func motionTable() throws -> [String: [Int]] {
-        let rows = tableRows(in: section("6.4", in: try productMaster()))
-        var table: [String: [Int]] = [:]
-        for cells in rows where cells.count >= 3 {
-            guard cells[2].contains("毫秒") else { continue }
-            table[cells[1]] = integers(in: cells[2])
-        }
-        return table
-    }
-
-    func testMotionDurationsMatchProductMaster() throws {
-        let table = try motionTable()
-        XCTAssertEqual(table.count, 9, "§6.4 应该有 9 行动效")
-
-        // 两条是区间。
-        let expand = try XCTUnwrap(table["Hub 展开"])
-        XCTAssertEqual(expand, [220, 280])
-        XCTAssertTrue(
-            expand[0]...expand[1] ~= Int(HubMotion.expand * 1000),
-            "展开时长 \(HubMotion.expand * 1000) 毫秒不在 §6.4 的区间内"
-        )
-
-        let collapse = try XCTUnwrap(table["Hub 收起"])
-        XCTAssertEqual(collapse, [160, 220])
-        XCTAssertTrue(
-            collapse[0]...collapse[1] ~= Int(HubMotion.collapse * 1000),
-            "收起时长 \(HubMotion.collapse * 1000) 毫秒不在 §6.4 的区间内"
-        )
-
-        // 其余七条是定值。
-        XCTAssertEqual(table["页签切换"], [Int(HubMotion.tabSwitch * 1000)])
-        XCTAssertEqual(table["截图捕获"], [Int(HubMotion.screenshotCapture * 1000)])
-        XCTAssertEqual(table["截图复制"], [Int(HubMotion.screenshotCopy * 1000)])
-        XCTAssertEqual(table["传输开始"], [Int(HubMotion.transferStart * 1000)])
-        XCTAssertEqual(table["传输完成"], [Int(HubMotion.transferComplete * 1000)])
-        XCTAssertEqual(table["错误出现"], [Int(HubMotion.errorAppear * 1000)])
-        XCTAssertEqual(table["减弱动态效果"], [Int(HubMotion.reducedMotion * 1000)])
-    }
-
-    /// §4.4：指针移出 Hub 后 500 毫秒收起。
-    func testPointerExitDelayMatchesProductMaster() throws {
-        let behaviour = section("4.4", in: try productMaster())
-        let line = try XCTUnwrap(
-            behaviour
-                .components(separatedBy: .newlines)
-                .first { $0.contains("移出") && $0.contains("毫秒") },
-            "§4.4 里找不到指针移出的描述"
-        )
-        XCTAssertEqual(integers(in: line), [Int(HubMotion.pointerExitCollapseDelay * 1000)])
     }
 }

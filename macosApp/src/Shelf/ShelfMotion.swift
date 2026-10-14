@@ -30,7 +30,7 @@ struct ShelfMotionPlan: Equatable, Sendable {
 
 /// 晾衣线的动效参数。
 ///
-/// 数值来源是 `docs/covio-product-master.md` 第 6.4 节，以及 Compose 版
+/// 数值来源是 Compose 版
 /// `app/src/com/wyz/covio/app/ui/MacTheme.kt` 的 `MacMotionSpec`。
 /// 弹簧参数与微风的保持时长直接写在 `app/src/com/wyz/covio/app/ui/ShelfWindow.kt` 里，
 /// 这里一并收拢，好让两个宿主的动画参数只有一处可查。
@@ -78,9 +78,9 @@ enum ShelfMotionSpec {
     static let rotationSpringStiffness: CGFloat = 330
     static let rotationSpringDamping: CGFloat = 0.62
 
-    /// 卡片从屏幕外飞入的时长。等于合同 §6.4 的「截图捕获 650 毫秒」。
+    /// 卡片从屏幕外飞入的时长。等于合同的「截图捕获 650 毫秒」。
     static var flyInSeconds: TimeInterval { HubMotion.screenshotCapture }
-    /// 复制提示的停留时长。等于合同 §6.4 的「截图复制 1200 毫秒提示」。
+    /// 复制提示的停留时长。等于合同的「截图复制 1200 毫秒提示」。
     static var copyToastSeconds: TimeInterval { HubMotion.screenshotCopy }
 }
 

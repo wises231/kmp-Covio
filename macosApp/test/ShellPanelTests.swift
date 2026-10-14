@@ -45,7 +45,7 @@ final class ShellPanelTests: XCTestCase {
         let panel = HubPanel(rect: testRect)
         defer { panel.orderOut(nil) }
 
-        // §4.4：用户编辑输入或拖动文件时 Hub 不自动收起。
+        // 用户编辑输入或拖动文件时 Hub 不自动收起。
         XCTAssertFalse(panel.hidesOnDeactivate)
         XCTAssertFalse(panel.isMovable)
         XCTAssertFalse(panel.hasShadow)
@@ -79,7 +79,7 @@ final class ShellPanelTests: XCTestCase {
         XCTAssertFalse(hotZone.ignoresMouseEvents)
     }
 
-    /// Escape 收起 Hub。§4.4。
+    /// Escape 收起 Hub。
     func testEscapeAsksTheControllerToCollapse() {
         let panel = HubPanel(rect: testRect)
         defer { panel.orderOut(nil) }
