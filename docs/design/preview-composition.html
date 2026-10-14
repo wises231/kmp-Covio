@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>预览由 issue 组合而成</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@400&family=Noto+Sans+TC:wght@400;500;600&family=Noto+Serif+TC:wght@400&display=swap" rel="stylesheet">
+<style>
+  /* Layout: one centred paper sheet - a small header over a wide diagram that
+     scrolls sideways on its own instead of shrinking its type. */
+  :root {
+    --color-paper:        #f5f5f5;
+    --color-surface:      #ffffff;
+    --color-ink:          #2d3142;
+    --color-muted:        #4f5d75;
+    --color-muted-soft:   #5a6580;
+    --color-accent:       #bf4520;
+    --color-line:         rgba(45, 49, 66, 0.12);
+    --color-chrome:       rgba(79, 93, 117, 0.06);
+    --color-track:        rgba(79, 93, 117, 0.10);
+    --color-snapshot:     rgba(79, 93, 117, 0.07);
+    --color-chip-stroke:  rgba(79, 93, 117, 0.40);
+    --color-accent-wash:  rgba(191, 69, 32, 0.08);
+
+    --font-sans:  'Geist', 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', system-ui, sans-serif;
+    --font-serif: 'Instrument Serif', 'Noto Serif SC', 'Songti SC', 'STSong', serif;
+    --font-mono:  'Geist Mono', ui-monospace, monospace;
+
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --color-paper:       #14161d;
+      --color-surface:     #1d212c;
+      --color-ink:         #eceef4;
+      --color-muted:       #9aa6bd;
+      --color-muted-soft:  #8894ab;
+      --color-accent:      #e2694a;
+      --color-line:        rgba(236, 238, 244, 0.14);
+      --color-chrome:      rgba(154, 166, 189, 0.08);
+      --color-track:       rgba(154, 166, 189, 0.14);
+      --color-snapshot:    rgba(154, 166, 189, 0.10);
+      --color-chip-stroke: rgba(154, 166, 189, 0.40);
+      --color-accent-wash: rgba(226, 105, 74, 0.14);
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --color-paper:       #14161d;
+    --color-surface:     #1d212c;
+    --color-ink:         #eceef4;
+    --color-muted:       #9aa6bd;
+    --color-muted-soft:  #8894ab;
+    --color-accent:      #e2694a;
+    --color-line:        rgba(236, 238, 244, 0.14);
+    --color-chrome:      rgba(154, 166, 189, 0.08);
+    --color-track:       rgba(154, 166, 189, 0.14);
+    --color-snapshot:    rgba(154, 166, 189, 0.10);
+    --color-chip-stroke: rgba(154, 166, 189, 0.40);
+    --color-accent-wash: rgba(226, 105, 74, 0.14);
+    color-scheme: dark;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    background: var(--color-paper);
+    color: var(--color-ink);
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    align-items: safe center;
+    justify-content: center;
+    padding-block: 3rem;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+
+  .frame { max-width: 1280px; width: 100%; }
+
+  /* The SVG holds its readable width, so the type ramp is never silently
+     scaled down. This wrapper lets a narrow screen scroll the diagram
+     instead of the whole page. */
+  .diagram-container { width: 100%; overflow-x: auto; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin-bottom: 0.5rem;
+  }
+
+  h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(1.5rem, 2.4vw + 0.75rem, 1.75rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    color: var(--color-ink);
+    text-wrap: balance;
+    margin-bottom: 0.75rem;
+  }
+
+  .lede {
+    font-size: 0.875rem;
+    line-height: 1.65;
+    color: var(--color-muted);
+    max-width: 62ch;
+    margin-bottom: 1.75rem;
+  }
+
+  svg { width: 100%; min-width: 1280px; display: block; }
+
+  /* The diagram carries ~50 text nodes, so the two family stacks live here
+     instead of as a font-family attribute on every one of them. */
+  svg text      { font-family: var(--font-sans); }
+  svg text.mono { font-family: var(--font-mono); }
+
+  @media (max-width: 720px) {
+    body { padding-block: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="frame">
+  <p class="eyebrow">Architecture · Preview Composition</p>
+  <h1>预览由 issue 组合而成</h1>
+
+  <p class="lede">每个 issue 贡献自己的一块界面。main 上的预览由已合并的界面组合而成。main 上的预览就是稳定版。新 issue 在自己的分支上工作。分支从 main 的预览快照起步，只加本 issue 的界面。评审通过后，分支通过 PR 合并回 main。</p>
+
+  <div class="diagram-container">
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="preview-arch-title preview-arch-desc">
+      <title id="preview-arch-title">预览由 issue 组合而成</title>
+      <desc id="preview-arch-desc">架构图。main 上的 web 预览由一个一个已合并 issue 的界面组成，每块界面来自一个 issue，合起来就是稳定版。新 issue 在自己的分支上，从 main 预览的快照起步，再加上本 issue 的界面，然后通过 PR 合并回 main。</desc>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="var(--color-muted)"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="var(--color-accent)"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="var(--color-paper)"/>
+
+      <!-- ============ ARROWS (drawn before nodes) ============ -->
+      <!-- Snapshot down from each main region into its branch. -->
+      <line x1="230" y1="196" x2="230" y2="452" stroke="var(--color-accent)" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#arrow-accent)"/>
+      <line x1="610" y1="196" x2="610" y2="452" stroke="var(--color-accent)" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#arrow-accent)"/>
+      <line x1="990" y1="196" x2="990" y2="452" stroke="var(--color-accent)" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#arrow-accent)"/>
+      <!-- PR merge back up into main. -->
+      <line x1="270" y1="452" x2="270" y2="196" stroke="var(--color-muted)" stroke-width="1" marker-end="url(#arrow)"/>
+      <line x1="650" y1="452" x2="650" y2="196" stroke="var(--color-muted)" stroke-width="1" marker-end="url(#arrow)"/>
+      <line x1="1030" y1="452" x2="1030" y2="196" stroke="var(--color-muted)" stroke-width="1" marker-end="url(#arrow)"/>
+
+      <!-- ============ ARROW LABELS ============ -->
+      <!-- The two lines of a lane sit 40px apart, so a paper-filled mask
+           behind centred text would erase the neighbour. Each label sits
+           beside its own line instead. -->
+      <text x="222" y="328" fill="var(--color-muted-soft)" font-size="10" font-weight="500" text-anchor="end">↓ 快照</text>
+      <text x="602" y="328" fill="var(--color-muted-soft)" font-size="10" font-weight="500" text-anchor="end">↓ 快照</text>
+      <text x="982" y="328" fill="var(--color-muted-soft)" font-size="10" font-weight="500" text-anchor="end">↓ 快照</text>
+      <text x="278" y="328" fill="var(--color-muted-soft)" font-size="10" font-weight="500">↑ PR 合并</text>
+      <text x="658" y="328" fill="var(--color-muted-soft)" font-size="10" font-weight="500">↑ PR 合并</text>
+      <text x="1038" y="328" fill="var(--color-muted-soft)" font-size="10" font-weight="500">↑ PR 合并</text>
+
+      <!-- ============ MAIN PREVIEW WINDOW ============ -->
+      <!-- One window, not three cards: the window is split into three panes.
+           The split is the claim - main's preview is a composition. -->
+      <rect x="60" y="40" width="1140" height="156" rx="6" fill="var(--color-surface)" stroke="var(--color-muted)" stroke-width="1"/>
+      <path d="M60 80 V46 a6 6 0 0 1 6 -6 H1194 a6 6 0 0 1 6 6 V80 Z" fill="var(--color-chrome)"/>
+      <line x1="60" y1="80" x2="1200" y2="80" stroke="var(--color-line)"/>
+      <line x1="440" y1="80" x2="440" y2="196" stroke="var(--color-line)"/>
+      <line x1="820" y1="80" x2="820" y2="196" stroke="var(--color-line)"/>
+
+      <rect x="76" y="53" width="36" height="14" rx="2" fill="none" stroke="var(--color-chip-stroke)" stroke-width="0.8"/>
+      <text x="94" y="63" class="mono" fill="var(--color-muted)" font-size="7" font-weight="500" text-anchor="middle" letter-spacing="0.08em">MAIN</text>
+      <text x="122" y="64" fill="var(--color-ink)" font-size="12" font-weight="600">main 的 web 预览</text>
+      <text x="1184" y="64" fill="var(--color-muted)" font-size="10" text-anchor="end">已合并 issue 的界面组合 · 稳定版</text>
+
+      <!-- ============ PANES (one merged issue each) ============ -->
+      <rect x="76" y="98" width="36" height="14" rx="2" fill="none" stroke="var(--color-chip-stroke)" stroke-width="0.8"/>
+      <text x="94" y="108" class="mono" fill="var(--color-muted)" font-size="7" font-weight="500" text-anchor="middle" letter-spacing="0.08em">#102</text>
+      <text x="76" y="136" fill="var(--color-ink)" font-size="13" font-weight="600">工作台</text>
+      <text x="76" y="154" fill="var(--color-muted)" font-size="10">列表与筛选栏</text>
+      <rect x="76" y="166" width="348" height="8" rx="2" fill="var(--color-track)"/>
+      <rect x="76" y="178" width="220" height="8" rx="2" fill="var(--color-track)"/>
+
+      <rect x="456" y="98" width="36" height="14" rx="2" fill="none" stroke="var(--color-chip-stroke)" stroke-width="0.8"/>
+      <text x="474" y="108" class="mono" fill="var(--color-muted)" font-size="7" font-weight="500" text-anchor="middle" letter-spacing="0.08em">#118</text>
+      <text x="456" y="136" fill="var(--color-ink)" font-size="13" font-weight="600">侧栏</text>
+      <text x="456" y="154" fill="var(--color-muted)" font-size="10">会话切换与搜索</text>
+      <rect x="456" y="166" width="348" height="8" rx="2" fill="var(--color-track)"/>
+      <rect x="456" y="178" width="220" height="8" rx="2" fill="var(--color-track)"/>
+
+      <rect x="836" y="98" width="36" height="14" rx="2" fill="none" stroke="var(--color-chip-stroke)" stroke-width="0.8"/>
+      <text x="854" y="108" class="mono" fill="var(--color-muted)" font-size="7" font-weight="500" text-anchor="middle" letter-spacing="0.08em">#205</text>
+      <text x="836" y="136" fill="var(--color-ink)" font-size="13" font-weight="600">详情页</text>
+      <text x="836" y="154" fill="var(--color-muted)" font-size="10">任务详情与操作</text>
+      <rect x="836" y="166" width="348" height="8" rx="2" fill="var(--color-track)"/>
+      <rect x="836" y="178" width="220" height="8" rx="2" fill="var(--color-track)"/>
+
+      <!-- ============ BRANCHES (one new issue each) ============ -->
+      <!-- Sits under its pane, so the PR arrow points at the pane it
+           produced without a label saying so. -->
+      <rect x="72" y="452" width="356" height="148" rx="6" fill="var(--color-surface)" stroke="var(--color-muted)" stroke-width="1"/>
+      <rect x="88" y="466" width="48" height="14" rx="2" fill="none" stroke="var(--color-chip-stroke)" stroke-width="0.8"/>
+      <text x="112" y="476" class="mono" fill="var(--color-muted)" font-size="7" font-weight="500" text-anchor="middle" letter-spacing="0.12em">BRANCH</text>
+      <text x="144" y="476" class="mono" fill="var(--color-muted)" font-size="9">feat/102-workbench</text>
+      <rect x="88" y="490" width="324" height="44" rx="2" fill="var(--color-snapshot)"/>
+      <text x="102" y="510" fill="var(--color-muted)" font-size="10" font-weight="600">main 的预览快照</text>
+      <text x="102" y="526" fill="var(--color-muted)" font-size="9">起点与 main 的稳定版一致</text>
+      <rect x="88" y="542" width="324" height="44" rx="2" fill="var(--color-accent-wash)" stroke="var(--color-accent)" stroke-width="1"/>
+      <text x="102" y="562" class="mono" fill="var(--color-accent)" font-size="10" font-weight="600">+ #102</text>
+      <text x="144" y="562" fill="var(--color-accent)" font-size="10" font-weight="600">的界面</text>
+      <text x="102" y="578" fill="var(--color-muted)" font-size="9">只含本 issue 新增的部分</text>
+
+      <rect x="452" y="452" width="356" height="148" rx="6" fill="var(--color-surface)" stroke="var(--color-muted)" stroke-width="1"/>
+      <rect x="468" y="466" width="48" height="14" rx="2" fill="none" stroke="var(--color-chip-stroke)" stroke-width="0.8"/>
+      <text x="492" y="476" class="mono" fill="var(--color-muted)" font-size="7" font-weight="500" text-anchor="middle" letter-spacing="0.12em">BRANCH</text>
+      <text x="524" y="476" class="mono" fill="var(--color-muted)" font-size="9">feat/118-sidebar</text>
+      <rect x="468" y="490" width="324" height="44" rx="2" fill="var(--color-snapshot)"/>
+      <text x="482" y="510" fill="var(--color-muted)" font-size="10" font-weight="600">main 的预览快照</text>
+      <text x="482" y="526" fill="var(--color-muted)" font-size="9">起点与 main 的稳定版一致</text>
+      <rect x="468" y="542" width="324" height="44" rx="2" fill="var(--color-accent-wash)" stroke="var(--color-accent)" stroke-width="1"/>
+      <text x="482" y="562" class="mono" fill="var(--color-accent)" font-size="10" font-weight="600">+ #118</text>
+      <text x="524" y="562" fill="var(--color-accent)" font-size="10" font-weight="600">的界面</text>
+      <text x="482" y="578" fill="var(--color-muted)" font-size="9">只含本 issue 新增的部分</text>
+
+      <rect x="832" y="452" width="356" height="148" rx="6" fill="var(--color-surface)" stroke="var(--color-muted)" stroke-width="1"/>
+      <rect x="848" y="466" width="48" height="14" rx="2" fill="none" stroke="var(--color-chip-stroke)" stroke-width="0.8"/>
+      <text x="872" y="476" class="mono" fill="var(--color-muted)" font-size="7" font-weight="500" text-anchor="middle" letter-spacing="0.12em">BRANCH</text>
+      <text x="904" y="476" class="mono" fill="var(--color-muted)" font-size="9">feat/205-detail</text>
+      <rect x="848" y="490" width="324" height="44" rx="2" fill="var(--color-snapshot)"/>
+      <text x="862" y="510" fill="var(--color-muted)" font-size="10" font-weight="600">main 的预览快照</text>
+      <text x="862" y="526" fill="var(--color-muted)" font-size="9">起点与 main 的稳定版一致</text>
+      <rect x="848" y="542" width="324" height="44" rx="2" fill="var(--color-accent-wash)" stroke="var(--color-accent)" stroke-width="1"/>
+      <text x="862" y="562" class="mono" fill="var(--color-accent)" font-size="10" font-weight="600">+ #205</text>
+      <text x="904" y="562" fill="var(--color-accent)" font-size="10" font-weight="600">的界面</text>
+      <text x="862" y="578" fill="var(--color-muted)" font-size="9">只含本 issue 新增的部分</text>
+
+      <!-- ============ LEGEND ============ -->
+      <line x1="60" y1="656" x2="1200" y2="656" stroke="var(--color-line)"/>
+      <text x="60" y="684" class="mono" fill="var(--color-muted)" font-size="8" letter-spacing="0.14em">LEGEND</text>
+      <rect x="180" y="668" width="14" height="10" rx="2" fill="var(--color-surface)" stroke="var(--color-muted)" stroke-width="1"/>
+      <text x="202" y="677" fill="var(--color-muted)" font-size="10">MAIN 预览</text>
+      <rect x="380" y="668" width="14" height="10" rx="2" fill="var(--color-accent-wash)" stroke="var(--color-accent)" stroke-width="1.2"/>
+      <text x="402" y="677" fill="var(--color-muted)" font-size="10">本 issue 新增</text>
+      <rect x="600" y="668" width="14" height="10" rx="2" fill="var(--color-snapshot)"/>
+      <text x="622" y="677" fill="var(--color-muted)" font-size="10">MAIN 快照</text>
+      <line x1="820" y1="673" x2="850" y2="673" stroke="var(--color-accent)" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#arrow-accent)"/>
+      <text x="858" y="677" fill="var(--color-muted)" font-size="10">快照方向</text>
+      <line x1="1000" y1="673" x2="1030" y2="673" stroke="var(--color-muted)" stroke-width="1" marker-end="url(#arrow)"/>
+      <text x="1038" y="677" fill="var(--color-muted)" font-size="10">PR 合并</text>
+    </svg>
+  </div>
+</div>
+
+</body>
+</html>

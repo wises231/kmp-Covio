@@ -81,6 +81,8 @@ Amper 自动装 pnpm 与 Node，自动生成 `index.html`。不用手写 HTML。
 新 issue 的分支先取 `main` 的快照。分支只加自己的一条打样。
 合并回 `main` 后，这一条进入稳定版。下一个 issue 取到的快照就含这一条。
 
+模型图见 [预览由 issue 组合而成](preview-composition.html)。此文件是 HTML，用浏览器打开。
+
 **注意：** `previews` 是共用的入口列表。在分支上只追加自己的条目。
 改动已合并的条目会让两条分支冲突。两条分支都在末尾追加时，后合并的一条要解冲突。
 
