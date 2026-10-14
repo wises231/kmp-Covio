@@ -8,7 +8,7 @@
 | 状态 | 初稿，可评审 |
 | 日期 | `2026-10-13` |
 | 适用对象 | 维护人、负责人 |
-| 作用 | 支撑 [流程文件](../doc/process/workflow.md) 的机制选择 |
+| 作用 | 支撑 [流程文件](../process/workflow.md) 的机制选择 |
 | 问题类别 | 轻量团队的 issue 驱动流程设计 |
 
 本文件回答两个问题。
@@ -76,7 +76,7 @@ GitHub、Linear、Jira 三者的数据模型里都没有「决策」这个对象
 | issue types | **个人账号没有。** 类型属于组织级。 | GraphQL 的 `repository.issueTypes` 返回 `null`；`gh issue create --type` 报 `available types:` 为空 |
 | issue fields | **个人账号没有。** | `GET /user/issue-fields` 返回 404 |
 | 标签 | 可用。两种账号都一样。 | 已建四个标签并验证加得上 |
-| Project 字段 | 可用。两种账号都一样。 | 已核对 Project 8 的 19 个字段，见 [Project 字段](../doc/process/project-fields.md) |
+| Project 字段 | 可用。两种账号都一样。 | 已核对 Project 8 的 19 个字段，见 [Project 字段](../process/project-fields.md) |
 | 读 Project 字段 | 需要 `read:project` 权限。 | 无该权限时 `gh project field-list` 报错；加上后成功 |
 | 写 Project 字段 | 需要 `project` 权限。 | 只有 `read:project` 的令牌改不了字段 |
 | 表单自动加标签 | 可用。标签不存在时不加。 | 官方文档：`labels` 接受数组或逗号分隔字符串 |
@@ -119,6 +119,6 @@ GitHub、Linear、Jira 三者的数据模型里都没有「决策」这个对象
 
 ## 7. 关联文档
 
-- [流程文件](../doc/process/workflow.md)
-- [ADR 模板](../doc/adr/adr-template.md)
-- [Agent 契约](../AGENTS.md)
+- [流程文件](../process/workflow.md)
+- [ADR 模板](../adr/adr-template.md)
+- [Agent 契约](../../AGENTS.md)

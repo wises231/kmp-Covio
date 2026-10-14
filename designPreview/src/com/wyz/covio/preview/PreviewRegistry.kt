@@ -7,7 +7,7 @@ import com.wyz.covio.preview.previews.workbench.WorkbenchPreview
  * 一份打样。
  *
  * 一个改界面的 issue 对应一份打样。issue 正文里记打样的地址与截图。
- * 见 `doc/process/workflow.md` 的设计闸门。
+ * 见 `docs/process/workflow.md` 的设计闸门。
  */
 data class Preview(
     /** 首页上显示的名字。用界面自己的名字，不用 issue 的标题。 */

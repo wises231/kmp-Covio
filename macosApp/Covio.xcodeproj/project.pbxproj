@@ -144,7 +144,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# kmpDomain.framework 由 konanc 产出，Amper 不做这件事。见 doc/adr/adr-0001-macos-ui-swiftui.md\ncd \"$SRCROOT/..\" || exit 1\nBUILD_TYPE=\"$CONFIGURATION\" bash scripts/build-kmp-framework.sh\n";
+			shellScript = "# kmpDomain.framework 由 konanc 产出，Amper 不做这件事。见 docs/adr/adr-0001-macos-ui-swiftui.md\ncd \"$SRCROOT/..\" || exit 1\nBUILD_TYPE=\"$CONFIGURATION\" bash scripts/build-kmp-framework.sh\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

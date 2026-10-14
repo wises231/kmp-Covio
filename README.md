@@ -31,8 +31,8 @@ The script also checks the rules that cross two sections of the contract.
 Ideas turn into research reports, research reports into decisions, and decisions into issues.
 
 - [Agent contract](AGENTS.md) is the rule set that Claude Code and Codex load each session.
-- [Workflow](doc/process/workflow.md) is the seven-step process. The agent contract carries the per-session rules.
-- [Architecture decisions](doc/adr/) hold the accepted decisions. The template is `doc/adr/adr-template.md`.
+- [Workflow](docs/process/workflow.md) is the seven-step process. The agent contract carries the per-session rules.
+- [Architecture decisions](docs/adr/) hold the accepted decisions. The template is `docs/adr/adr-template.md`.
 
 A big feature gets one parent issue and child issues, linked as GitHub sub-issues.
 A small feature gets one issue.
