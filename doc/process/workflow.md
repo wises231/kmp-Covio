@@ -268,6 +268,7 @@ GitHub 默认只有 task、bug、feature 三种 issue type，且只在组织账�
 | R10 | 大功能的预览是第一个 sub-issue，实施 sub-issue 阻塞于它 | 依赖关系在 GitHub 上可见 |
 | R11 | 小功能的预览写在同一 issue 里 | 正文含预览结论 |
 | R12 | 需求正文必须有「表现预期」一栏 | 表单必填 |
+| R13 | 预览逐条累积。issue 的分支只加自己的一条 | `main` 上的预览是全部已合并的打样 |
 
 **分级：**
 
@@ -299,6 +300,8 @@ GitHub 默认只有 task、bug、feature 三种 issue type，且只在组织账�
 2. 用 `./kotlin run -m designPreview` 起本地服务。地址是 `http://127.0.0.1:8080`。
 3. 截图存进 `docs/design/previews/`，路径写进 issue 正文。
 4. 预览不进发布物，也不接 `kmpDomain`。
+5. `main` 上的预览是稳定版，含全部已合并的打样。issue 的分支从 `main` 取快照，
+   只加自己的一条。见 [Compose Web 打样模块](../../docs/design/design-preview.md)。
 
 **依据：** Amper 0.12.1 能建 `wasm-js/app` 模块并在浏览器里渲染 Compose 内容。实测见 #103。
 
