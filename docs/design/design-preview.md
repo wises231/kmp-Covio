@@ -4,9 +4,9 @@
 
 | 项目 | 内容 |
 | --- | --- |
-| 文档版本 | `1.0` |
+| 文档版本 | `1.1` |
 | 状态 | 待评审 |
-| 日期 | `2026-10-13` |
+| 日期 | `2026-10-14` |
 | 适用范围 | `designPreview` 模块。只在开发机上跑。 |
 | 上游文档 | [研发工作流](../../doc/process/workflow.md) 的设计闸门、[设计合同](../covio-design-contract.json) |
 | 下游文档 | 每一份打样对应的 issue |
@@ -33,9 +33,10 @@ product:
   type: wasm-js/app
 
 dependencies:
-  - org.jetbrains.compose.runtime:runtime:1.12.1
-  - org.jetbrains.compose.foundation:foundation:1.12.1
-  - org.jetbrains.compose.ui:ui:1.12.1
+  - $compose.runtime
+  - $compose.foundation
+  - $compose.material3
+  - $compose.ui
 
 settings:
   compose:
@@ -46,21 +47,7 @@ settings:
 Amper 自动装 pnpm 与 Node，自动生成 `index.html`。不用手写 HTML。
 
 **注意：** 入口是 `androidx.compose.ui.window.ComposeViewport`。
-`CanvasBasedWindow` 在 1.11.1 里不存在，用它编译不过。
-
-### 2.1 为什么不写 `$compose.*`
-
-Amper 0.12.1 的内置 catalog 把 Compose 钉在 `1.11.1`。
-`1.11.1` 在 web 目标下渲染不了中文：字形全部是方框。
-
-原因是 Compose for Web 用 Skia 画字，wasm 沙箱读不到系统字体。
-`1.12.0` 起才有按需下载 Noto 子集的字体回退。所以这里写显式坐标。
-
-`1.12.1` 没有 `material3` 的稳定版本，只有 `1.12.0-alpha03` 这样的预发布版。
-所以本模块不引 material3，只用 foundation 画。
-打样要还原的是 Covio 的设计，不是 Material 的默认样式，少这一层反而干净。
-
-**警告：** 不要把这三行换回 `$compose.*`。换回去中文就没了。
+`CanvasBasedWindow` 在 Compose Multiplatform 1.11.1 里不存在，用它编译不过。
 
 ## 3. 起服务
 
@@ -89,7 +76,7 @@ Amper 0.12.1 的内置 catalog 把 Compose 钉在 `1.11.1`。
 **注意：** 只加画得完的条目。首页上点进去是空壳就是死路，违反设计闸门的 R7。
 
 色值从设计合同取。合同的取值进 Kotlin 侧的通道还没建，先手抄，
-并在注释里写清抄的是哪一枚令牌。见第 6 节。
+并在注释里写清抄的是哪一枚令牌。见第 7 节。
 
 宿主的颜色写在 `PreviewApp.kt` 的 `Harness` 里。宿主是工具，不是 Covio 的界面，
 所以宿主用中性灰，不读合同。
@@ -100,27 +87,53 @@ Amper 0.12.1 的内置 catalog 把 Compose 钉在 `1.11.1`。
 2. 图存进 `docs/design/previews/`。命名见该目录的 `README.md`。
 3. 图路径写进提出这份打样的 issue 正文。设计闸门的 R8 要求这一条。
 
-**注意：** 不要只看浏览器有没有报错。页面能打开不等于画对了。
-1.11.1 那次就是页面正常打开，字全是方框。
-截图之后要看一眼图，或者用第 3 节的命令跑起来自己看。
+地址栏可以带锚点，直接落到某一屏，不用手点。格式是 `#<issue 号>-<锚点>`。
+锚点名由每一份打样自己定，写在它的 `StartScreen` 里。例如 `#107-home` 直接进
+第 107 号打样的首页。锚点名不认识时，打样抛错，不静默落回首页。
 
-截图可以走命令行。脚本用系统的 WKWebView 渲染，不用装浏览器。
+**注意：** 字体是异步加载的。截图工具要在字体就绪后再拍，否则拍到豆腐块。
+判断方法是看操作台那一行。写「字体已加载」才对。写「字体加载中」要重拍。
+
+无头浏览器用 `--virtual-time-budget` 时，这个预算同时管虚拟时间与真实等待。
+预算给小了会在字体到位前拍。这个值按机器调，一次拍不对就加大重拍。
+
+## 6. 中文字体
+
+打样自带一份中文字体。没有它，中文全是豆腐块。
+
+Compose 的 wasm 端只带一份拉丁字库，也读不到系统字体。`skiko.wasm` 里既没有
+`queryLocalFonts`，也没有 `document.fonts`。所以中文必须随模块发一份。
+
+| 项目 | 内容 |
+| --- | --- |
+| 文件 | `designPreview/composeResources/font/NotoSansSC-Preview.otf` |
+| 大小 | 2,054,972 字节 |
+| 来源 | Noto Sans SC Regular 的子集 |
+| 许可证 | SIL Open Font License 1.1，全文在同目录的 `OFL.txt` |
+| 生成脚本 | `scripts/subset-preview-font.py` |
+
+加载在 `PreviewFont.kt` 里。字体没加载完时，文字用回退字库画，加载完自动重画。
+
+**注意：** 资源目录是 `designPreview/composeResources/`，不是 `designPreview/src/composeResources/`。
+放在 `src` 下面，Amper 不生成 `Res`，也不把文件复制进构建输出。
+
+字集不够用时重新生成。脚本收全部 GB2312 字符，加上 ASCII、常用标点、箭头、
+数学符号和制表符。
 
 ```bash
-swiftc -O scripts/preview-shot.swift -o build/preview-shot
-build/preview-shot http://127.0.0.1:8080 docs/design/previews/106-device-pane-1.png 1440 900 16
+python3 -I scripts/subset-preview-font.py <完整的 NotoSansSC-Regular.otf> designPreview/composeResources/font/NotoSansSC-Preview.otf
 ```
 
-第 4、5 个参数是宽高，第 6 个是等页面画完的秒数。
-脚本同时打印页面里的 JS 错误。`PROBE` 行的 `errors` 是空数组才算干净。
+遇到新的豆腐块时，先看操作台那一行写的字。写「字体已加载」是字集缺字，扩脚本里的字集。
+写「字体加载中」是截图太早，见第 5 节。
 
-## 6. 边界
+## 7. 边界
 
 1. 模块不进发布物。`macosApp` 不依赖它，打包脚本也不含它。
 2. 模块不依赖 `kmpDomain`。`kmpDomain` 现在只有 `jvm` 与 `macosArm64` 两个平台，接不上 wasmJs。
 3. 打样不是权威。权威是设计合同。打样与合同不一致时，改打样。
 
-## 7. 未决项
+## 8. 未决项
 
 | 编号 | 未决项 | 影响 |
 | --- | --- | --- |

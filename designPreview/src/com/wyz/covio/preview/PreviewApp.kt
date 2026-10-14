@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,9 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -34,12 +32,11 @@ import androidx.compose.ui.unit.sp
  *
  * 这一层只管外壳与路由。每一份打样的内容在 [previews] 里。
  *
- * 只用 foundation 画。不引 material3：打样要还原的是 Covio 的设计，
- * 不是 Material 的默认样式。见 `docs/design/design-preview.md`。
+ * 地址栏加锚点可以直接进某一份打样，见 [DeepLink]。
  */
 @Composable
 fun PreviewApp() {
-    var openIssue by remember { mutableStateOf<Int?>(null) }
+    var openIssue by remember { mutableStateOf(DeepLink.issue) }
     val open = previews.firstOrNull { it.issue == openIssue }
 
     Box(Modifier.fillMaxSize().background(Harness.canvas)) {
@@ -66,22 +63,6 @@ internal object Harness {
     val accent = Color(0xFF007AFF)
 }
 
-/** 一行字。颜色与字号每次都给，不落主题的默认值。 */
-@Composable
-internal fun Label(
-    text: String,
-    color: Color,
-    size: TextUnit,
-    weight: FontWeight = FontWeight.Normal,
-    modifier: Modifier = Modifier,
-) {
-    BasicText(
-        text = text,
-        modifier = modifier,
-        style = TextStyle(color = color, fontSize = size, fontWeight = weight),
-    )
-}
-
 /** 首页。列出全部打样。 */
 @Composable
 private fun Home(onOpen: (Preview) -> Unit) {
@@ -92,11 +73,11 @@ private fun Home(onOpen: (Preview) -> Unit) {
             .padding(horizontal = 32.dp, vertical = 28.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Label("Covio 打样", Harness.textPrimary, 26.sp, FontWeight.SemiBold)
-        Label(
+        Text("Covio 打样", color = Harness.textPrimary, fontSize = 26.sp, fontWeight = FontWeight.SemiBold)
+        Text(
             "设计闸门的预览产物。评审人拿每一份打样对照提出它的 issue 的「表现预期」。",
-            Harness.textSecondary,
-            13.sp,
+            color = Harness.textSecondary,
+            fontSize = 13.sp,
         )
         Box(Modifier.fillMaxWidth().height(1.dp).background(Harness.separator))
 
@@ -121,11 +102,11 @@ private fun EmptyState() {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Label("还没有打样", Harness.textPrimary, 15.sp, FontWeight.Medium)
-        Label(
+        Text("还没有打样", color = Harness.textPrimary, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+        Text(
             "宿主已经跑通。加第一份打样：在 PreviewRegistry.kt 的 previews 里加一条。",
-            Harness.textSecondary,
-            13.sp,
+            color = Harness.textSecondary,
+            fontSize = 13.sp,
         )
     }
 }
@@ -147,10 +128,10 @@ private fun PreviewCard(preview: Preview, onOpen: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Label(preview.title, Harness.textPrimary, 17.sp, FontWeight.Medium)
+            Text(preview.title, color = Harness.textPrimary, fontSize = 17.sp, fontWeight = FontWeight.Medium)
             IssueBadge(preview.issue)
         }
-        Label(preview.covers, Harness.textSecondary, 13.sp)
+        Text(preview.covers, color = Harness.textSecondary, fontSize = 13.sp)
     }
 }
 
@@ -166,13 +147,13 @@ private fun PreviewPage(preview: Preview, onBack: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Label(
+            Text(
                 "← 全部打样",
-                Harness.accent,
-                13.sp,
+                color = Harness.accent,
+                fontSize = 13.sp,
                 modifier = Modifier.clip(RoundedCornerShape(6.dp)).clickable(onClick = onBack).padding(4.dp),
             )
-            Label(preview.title, Harness.textPrimary, 15.sp, FontWeight.Medium)
+            Text(preview.title, color = Harness.textPrimary, fontSize = 15.sp, fontWeight = FontWeight.Medium)
             IssueBadge(preview.issue)
         }
         Box(Modifier.fillMaxWidth().height(1.dp).background(Harness.separator))
@@ -191,6 +172,6 @@ private fun IssueBadge(issue: Int) {
             .background(Harness.canvas)
             .padding(horizontal = 8.dp, vertical = 2.dp),
     ) {
-        Label("#$issue", Harness.textSecondary, 11.sp)
+        Text("#$issue", color = Harness.textSecondary, fontSize = 11.sp)
     }
 }

@@ -1,6 +1,7 @@
 package com.wyz.covio.preview
 
 import androidx.compose.runtime.Composable
+import com.wyz.covio.preview.previews.workbench.WorkbenchPreview
 
 /**
  * 一份打样。
@@ -25,6 +26,12 @@ data class Preview(
  * 加一份打样就在这里加一条。
  *
  * **注意：** 只加画得完的。首页上点进去是空壳，就是死路，违反设计闸门的 R7。
- * 第一份打样由 #106 加进来。
  */
-val previews: List<Preview> = emptyList()
+val previews: List<Preview> = listOf(
+    Preview(
+        title = "挂帘工作台",
+        covers = "S1 到 S8。菜单栏胶囊、玻璃面板、tab bar、bento 首页、编辑模式、工作区设置、错误恢复。",
+        issue = 107,
+        content = { WorkbenchPreview() },
+    ),
+)
