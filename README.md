@@ -8,8 +8,6 @@ It does not use the Tendedero name, icon, or documentation images.
 
 ## Product design
 
-- [Product design master](docs/covio-product-master.md) defines product behavior and priorities.
-- [Product design guide](docs/covio-product-design.md) explains the design system and the Figma projection.
 - The Covio Figma file is the visual projection used for implementation verification.
 - Static design status: 8 pages, 8 sections, 35 boards, 130 source component sets, 186 component nodes, and 42 prototype reactions. Static visual audit passed.
 
@@ -29,8 +27,8 @@ When the preview and the Swift host disagree, change the Swift host.
 Ideas turn into research reports, research reports into decisions, and decisions into issues.
 
 - [Agent contract](AGENTS.md) is the rule set that Claude Code and Codex load each session.
-- [Workflow](doc/process/workflow.md) is the seven-step process. The agent contract carries the per-session rules.
-- [Architecture decisions](doc/adr/) hold the accepted decisions. The template is `doc/adr/adr-template.md`.
+- [Workflow](docs/process/workflow.md) is the seven-step process. The agent contract carries the per-session rules.
+- [Architecture decisions](docs/adr/) hold the accepted decisions. The template is `docs/adr/adr-template.md`.
 
 A big feature gets one parent issue and child issues, linked as GitHub sub-issues.
 A small feature gets one issue.

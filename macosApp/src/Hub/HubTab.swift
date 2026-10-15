@@ -2,7 +2,7 @@ import Foundation
 
 /// Hub 的六个页签。
 ///
-/// 顺序与名称来自 `docs/covio-product-master.md` 第 4.2 节的表格。
+/// 顺序即声明顺序，文案取自 `Copy`。
 ///
 /// 导航栏是 960 × 52，与 `HubMetrics.tabBarWidth` / `tabBarHeight` 一致。
 enum HubTab: String, CaseIterable, Identifiable, Sendable {
@@ -27,7 +27,7 @@ enum HubTab: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    /// 模块说明。逐条对应 §4.2 的"内容"列。
+    /// 模块说明。
     var summary: LocalizedCopy {
         switch self {
         case .now: Copy.copyHubTabNowSummary
@@ -39,7 +39,7 @@ enum HubTab: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    /// 页签图标。§6.3 要求图标和文字同时显示。
+    /// 页签图标。图标和文字同时显示。
     ///
     /// 页签图标用通用 SF Symbol。
     var symbolName: String {

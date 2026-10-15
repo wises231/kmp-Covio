@@ -7,7 +7,7 @@ import XCTest
 /// 这些断言把 M1 的 NSPanel 配置表逐条钉住。其中 `level` 那一条最关键：
 /// `isFloatingPanel = true` 会把 `level` 静默重置为 `.floating`（3），
 /// 现有 Compose 版的 `FLOATING_WINDOW_LEVEL = 3` 就是踩了这个坑。
-/// 见 `doc/adr/adr-0001-macos-ui-swiftui.md` 实测 9。
+/// 见 `docs/adr/adr-0001-macos-ui-swiftui.md` 实测 9。
 @MainActor
 final class ShellPanelTests: XCTestCase {
     private let testRect = CGRect(x: 100, y: 700, width: 960, height: 352)
@@ -45,7 +45,7 @@ final class ShellPanelTests: XCTestCase {
         let panel = HubPanel(rect: testRect)
         defer { panel.orderOut(nil) }
 
-        // §4.4：用户编辑输入或拖动文件时 Hub 不自动收起。
+        // 用户编辑输入或拖动文件时 Hub 不自动收起。
         XCTAssertFalse(panel.hidesOnDeactivate)
         XCTAssertFalse(panel.isMovable)
         XCTAssertFalse(panel.hasShadow)
@@ -79,7 +79,7 @@ final class ShellPanelTests: XCTestCase {
         XCTAssertFalse(hotZone.ignoresMouseEvents)
     }
 
-    /// Escape 收起 Hub。§4.4。
+    /// Escape 收起 Hub。
     func testEscapeAsksTheControllerToCollapse() {
         let panel = HubPanel(rect: testRect)
         defer { panel.orderOut(nil) }

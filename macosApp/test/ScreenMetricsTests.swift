@@ -4,7 +4,7 @@ import AppKit
 /// M0 spike：打印刘海与热区所需的屏幕量。
 ///
 /// M1 的 NSPanel 定位要用这些值。本测试只记录事实，断言只做基本合理性检查。
-/// 结果写进 doc/adr/adr-0001-macos-ui-swiftui.md 的未决事项表。
+/// 结果写进 docs/adr/adr-0001-macos-ui-swiftui.md 的未决事项表。
 @MainActor
 final class ScreenMetricsTests: XCTestCase {
     func testPrintScreenMetrics() {

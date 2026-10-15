@@ -5,7 +5,7 @@ set -euo pipefail
 #
 # 为什么不用 Amper 的 Xcode 集成：`kotlin tool xcode-integration` 只支持 iOS。
 # 用 macOS 环境执行会报 `doesn't support ... sdk=macosx`。
-# 证据见 doc/adr/adr-0001-macos-ui-swiftui.md 的实测 3。
+# 证据见 docs/adr/adr-0001-macos-ui-swiftui.md 的实测 3。
 # 若 Amper 将来支持 macOS SDK，删除本脚本，改用 xcode-integration。
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

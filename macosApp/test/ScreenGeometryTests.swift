@@ -5,7 +5,7 @@ import XCTest
 ///
 /// 用手写的屏幕数值，不依赖运行测试的机器。
 /// 数值取自 M0 在本机内建视网膜屏上的实测：1728 × 1117，顶部安全区 32 点，
-/// 刘海占 x 从 771.5 到 956.5。见 `doc/adr/adr-0001-macos-ui-swiftui.md` 实测 8。
+/// 刘海占 x 从 771.5 到 956.5。见 `docs/adr/adr-0001-macos-ui-swiftui.md` 实测 8。
 final class ScreenGeometryTests: XCTestCase {
     /// 本机实测的刘海屏。
     private let notched = ScreenGeometry(
@@ -92,7 +92,7 @@ final class ScreenGeometryTests: XCTestCase {
         XCTAssertTrue(notched.isMenuBarVisible)
         XCTAssertTrue(notchless.isMenuBarVisible)
 
-        // 全屏 Space 里菜单栏自动隐藏，可见区等于完整区。§4.4 要求此时隐藏热区。
+        // 全屏 Space 里菜单栏自动隐藏，可见区等于完整区。此时要隐藏热区。
         let fullScreen = ScreenGeometry(
             frame: CGRect(x: 0, y: 0, width: 1920, height: 1080),
             visibleFrame: CGRect(x: 0, y: 0, width: 1920, height: 1080),

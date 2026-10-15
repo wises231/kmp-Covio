@@ -128,7 +128,7 @@ final class ShelfMotionTests: XCTestCase {
         XCTAssertLessThan(ShelfMotionSpec.pressedScale, 1)
     }
 
-    /// 减弱动态效果时去掉连续动作与大位移，这是产品文档第 6 节的要求。
+    /// 减弱动态效果时去掉连续动作与大位移。
     func testReduceMotionRemovesContinuousAndLargeTravel() {
         for state in ShelfVisualState.allCases where state != .falling {
             let plan = shelfMotionPlan(state: state, reduceMotion: true)
@@ -141,14 +141,14 @@ final class ShelfMotionTests: XCTestCase {
 
     // MARK: - 时长
 
-    /// 两个时长直接来自产品文档第 6.4 节，并且与 `HubMotion` 是同一个值。
+    /// 两个时长与 `HubMotion` 是同一个值。
     ///
     /// `HubMotion` 是 Hub 与晾衣线共用的来源。这里断言它们相等，
     /// 免得以后有人只改一边，让同一次动画在两个界面里快慢不一。
-    func testTimingsComeFromTheProductDocument() {
-        XCTAssertEqual(ShelfMotionSpec.flyInSeconds, 0.650, accuracy: 0.0001, "第 6.4 节：截图捕获")
-        XCTAssertEqual(ShelfMotionSpec.copyToastSeconds, 1.200, accuracy: 0.0001, "第 6.4 节：截图复制")
-        XCTAssertEqual(ShelfMotionSpec.reducedMotionSeconds, 0.120, accuracy: 0.0001, "第 6.4 节：减弱动态效果")
+    func testTimingsMatchHubMotion() {
+        XCTAssertEqual(ShelfMotionSpec.flyInSeconds, 0.650, accuracy: 0.0001, "截图捕获")
+        XCTAssertEqual(ShelfMotionSpec.copyToastSeconds, 1.200, accuracy: 0.0001, "截图复制")
+        XCTAssertEqual(ShelfMotionSpec.reducedMotionSeconds, 0.120, accuracy: 0.0001, "减弱动态效果")
         XCTAssertEqual(HubMotion.screenshotCapture, ShelfMotionSpec.flyInSeconds)
         XCTAssertEqual(HubMotion.screenshotCopy, ShelfMotionSpec.copyToastSeconds)
     }

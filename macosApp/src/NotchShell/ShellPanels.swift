@@ -10,7 +10,7 @@ import AppKit
 /// | 先 `isFloatingPanel`，再 `level` | 25 |
 /// | 先 `level`，再 `isFloatingPanel` | 3 |
 ///
-/// 见 `doc/adr/adr-0001-macos-ui-swiftui.md` 实测 9。
+/// 见 `docs/adr/adr-0001-macos-ui-swiftui.md` 实测 9。
 /// 现有 Compose 版的 `FLOATING_WINDOW_LEVEL = 3` 就是踩了这个坑。
 @MainActor
 class ShellPanel: NSPanel {
@@ -27,11 +27,11 @@ class ShellPanel: NSPanel {
         level = .statusBar
 
         collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary, .ignoresCycle]
-        // §4.4：编辑输入或拖动文件时 Hub 不自动收起。
+        // 编辑输入或拖动文件时 Hub 不自动收起。
         hidesOnDeactivate = false
         isMovable = false
         isMovableByWindowBackground = false
-        // §6.3 要求轻量阴影。窗口阴影关掉，改由 SwiftUI 侧画，控制更直接。
+        // 阴影要轻量。窗口阴影关掉，改由 SwiftUI 侧画，控制更直接。
         hasShadow = false
         isOpaque = false
         backgroundColor = .clear
@@ -76,7 +76,7 @@ final class HubPanel: ShellPanel {
         super.init(contentRect: rect)
         ignoresMouseEvents = false
         // 默认值为 true，面板只在有视图需要键盘时才成为 key window。
-        // §4.4 要求 Escape 立即收起，所以这里关掉这个优化。
+        // Escape 要立即收起，所以这里关掉这个优化。
         becomesKeyOnlyIfNeeded = false
     }
 

@@ -18,7 +18,7 @@ ADR-0001 把 macOS 宿主换成 SwiftUI。设计合同是这一层之上的一�
 | --- | --- |
 | 取值账本 | `docs/covio-design-contract.json`，238 KB |
 | Schema | `docs/covio-design-contract.schema.json` |
-| 生成脚本 | `scripts/generate-contract-constants.py`，产出 `Copy.swift` 与 `Tokens.swift` |
+| 生成脚本 | `scripts/generate-contract-constants.py`，产出 `ContractCopy.swift` 与 `ContractTokens.swift` |
 | 校验脚本 | `scripts/validate-contract.py` |
 | 读取与测试 | `kmpDomain` 的 `DesignContract.kt`、4 份测试、2 个 CI 作业 |
 
@@ -46,7 +46,7 @@ ADR-0001 把 macOS 宿主换成 SwiftUI。设计合同是这一层之上的一�
 5. `MacTheme.swift` 把取值转成 SwiftUI 的颜色与尺寸。
 6. 类型名去掉 `Contract` 前缀：`Copy`、`TokenColors`、`TokenColor`、`TokenDimensions`、`Motion`、`MotionToken`。
 7. Compose 打样画的是目标画面。打样与 macOS 实现不一致时，改 macOS 实现。
-8. Figma 侧的页面、画板与组件清单留在 `docs/covio-product-design.md`，作为视觉基准的表格。
+8. Figma 侧的页面、画板与组件清单随合同一起消失。视觉基准改由打样的截图承担。
 
 ## 后果
 
@@ -60,7 +60,7 @@ ADR-0001 把 macOS 宿主换成 SwiftUI。设计合同是这一层之上的一�
 ### 负面
 
 - 失去「改了合同忘了重跑脚本」这道检查。这道检查只为两个副本而存在。
-- 失去机器可读的 Figma 节点映射。映射改由 `docs/covio-product-design.md` 的表格承担。
+- 失去机器可读的 Figma 节点映射。映射改由打样的截图承担。
 - `kmpDomain` 不再认识界面取值。跨平台宿主将来要另立一份取值。
 
 ### 风险
@@ -92,13 +92,12 @@ ADR-0001 把 macOS 宿主换成 SwiftUI。设计合同是这一层之上的一�
 
 | 项目 | 状态 | 确认方法 |
 | --- | --- | --- |
-| Figma 侧的表格会不会与 Swift 漂移 | 待观察 | 改完 Figma 后核对 `docs/covio-product-design.md` 的验收清单 |
+| Figma 侧与 Swift 侧的偏差不再自动拦 | 待观察 | 改完 Figma 后与打样的截图核对 |
 | 将来加第二个平台宿主时取值怎么分 | 未定 | 届时另写一条 ADR |
 
 ## 参考
 
 - [ADR-0001](adr-0001-macos-ui-swiftui.md)
 - `macosApp/src/Design/`：`Copy.swift`、`Tokens.swift`、`MacTheme.swift`、`LocalizedCopy.swift`
-- [产品设计](../covio-product-design.md)
 - [打样模块](../design/design-preview.md)
 - [研发工作流](../process/workflow.md)的设计闸门

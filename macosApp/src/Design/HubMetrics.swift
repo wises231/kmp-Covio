@@ -2,26 +2,25 @@ import CoreGraphics
 
 /// Hub 的几何参数。
 ///
-/// 来源有两处：
-/// - `docs/covio-product-master.md` 第 6.3 节给 Hub 的宽高限制。
+/// 来源有一处：
 /// - `MacTheme` 的间距令牌，用来把高度按各段相加。
 ///
 /// 卡片的组成是「左栏导航栏 + 右栏（胶囊 + 页内容）」。
 /// 高度按各段相加，不写死一个数：少算一段会把底部裁掉。
 enum HubMetrics {
-    /// Hub 最小宽度 720 点。来源是 §6.3。
+    /// Hub 最小宽度 720 点。
     static let minWidth: CGFloat = 720
 
-    /// Hub 最大宽度是屏幕宽度减 80 点。来源是 §6.3。
+    /// Hub 最大宽度是屏幕宽度减 80 点。
     static let horizontalScreenMargin: CGFloat = 80
 
-    /// Hub 最大高度是屏幕高度减 120 点。来源是 §6.3。
+    /// Hub 最大高度是屏幕高度减 120 点。
     static let verticalScreenMargin: CGFloat = 120
 
-    /// Hub 边框 1 点。来源是 §6.3。
+    /// Hub 边框 1 点。
     static let borderWidth: CGFloat = 1
 
-    /// 卡片宽度 960 点。来源是 §6.3。
+    /// 卡片宽度 960 点。
     static let cardWidth: CGFloat = 960
 
     // MARK: - 卡片内边距与栏间距
@@ -154,7 +153,7 @@ enum HubMetrics {
     static let minHitTarget: CGFloat = 24
     static let preferredHitTarget: CGFloat = 44
 
-    /// 非刘海屏的热区尺寸。§4.4 要求热区在菜单栏下方，所以做得又窄又薄。
+    /// 非刘海屏的热区尺寸。热区在菜单栏下方，所以做得又窄又薄。
     static let notchlessHotZoneWidth: CGFloat = 200
     static let notchlessHotZoneHeight: CGFloat = 6
 

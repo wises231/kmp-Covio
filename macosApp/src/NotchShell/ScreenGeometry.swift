@@ -3,7 +3,7 @@ import AppKit
 /// 一块屏幕的触发几何。
 ///
 /// 全部从 `NSScreen` 读出，不写死数值。M0 实测本机内建视网膜屏是 1728 × 1117，
-/// 顶部安全区 32 点，刘海占 x 从 771.5 到 956.5。见 `doc/adr/adr-0001-macos-ui-swiftui.md` 实测 8。
+/// 顶部安全区 32 点，刘海占 x 从 771.5 到 956.5。见 `docs/adr/adr-0001-macos-ui-swiftui.md` 实测 8。
 struct ScreenGeometry: Equatable, Sendable {
     /// 屏幕的完整坐标系。
     let frame: CGRect
@@ -19,7 +19,7 @@ struct ScreenGeometry: Equatable, Sendable {
     /// 菜单栏当前是否可见。
     ///
     /// 全屏 Space 里菜单栏自动隐藏，`visibleFrame` 就与 `frame` 一样高。
-    /// §4.4 要求全屏 Space 隐藏顶部热区，所以这个判断是热区开关的依据。
+    /// 全屏 Space 要隐藏顶部热区，所以这个判断是热区开关的依据。
     var isMenuBarVisible: Bool { visibleFrame.maxY < frame.maxY }
 
     /// 面板的顶边。刘海屏贴屏幕顶边，非刘海屏贴菜单栏下沿。
@@ -35,7 +35,7 @@ struct ScreenGeometry: Equatable, Sendable {
     /// 顶部热区在屏幕坐标里的矩形。
     ///
     /// 刘海屏用刘海本身。刘海那一块没有菜单栏项目，所以挡住点击没有代价。
-    /// 非刘海屏用菜单栏下方的一条窄带，这是 §4.4 的要求。
+    /// 非刘海屏用菜单栏下方的一条窄带。
     var hotZoneRect: CGRect {
         if let notch {
             return notch

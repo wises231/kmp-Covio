@@ -2,7 +2,7 @@
 
 **把想法变成可追踪的 issue。七步，只用 GitHub 原生能力。**
 
-版本 0.6 · 2026-10-13
+版本 0.7 · 2026-10-14
 
 ---
 
@@ -128,7 +128,7 @@ flowchart LR
 **何时用：** S3 判定为长期决策。
 **谁做：** 负责人。
 
-1. 从 `doc/adr/adr-template.md` 复制，文件名写成 `adr-NNNN-<slug>.md`。
+1. 从 `docs/adr/adr-template.md` 复制，文件名写成 `adr-NNNN-<slug>.md`。
 2. 编号取现有最大值加一。编号不复用。
 3. 按模板填写。
 4. 提交 PR。合并前把 Status 改成 `accepted`。PR 合并即生效。
@@ -235,7 +235,7 @@ GitHub 的 issue 搜索不保证支持标点。命令里只写关键词 `decisio
 | 调研 | Issue | `research` | `research:` |
 | 大功能 | Issue | `feature` | 无 |
 | 小功能 | Issue | `task` | 无 |
-| 决策 | 仓库文件 | `doc/adr/` | 无 |
+| 决策 | 仓库文件 | `docs/adr/` | 无 |
 
 GitHub 默认只有 task、bug、feature 三种 issue type，且只在组织账号可用。本流程不依赖 type。区分对象看标签。
 
@@ -306,24 +306,27 @@ GitHub 默认只有 task、bug、feature 三种 issue type，且只在组织账�
 
 ADR 与流程文件放在同一个仓库。跨仓库的对象用 `owner/repo#123` 引用。
 
+文档只有一个根目录 `docs/`。ADR、流程文件和研究报告都放在它下面。
+
 ```text
 repo/
 ├─ .github/ISSUE_TEMPLATE/
 │  ├─ research.yml
 │  └─ feature.yml
-├─ doc/
-│  ├─ adr/
-│  │  ├─ adr-template.md
-│  │  ├─ adr-0001-macos-ui-swiftui.md
-│  │  └─ adr-NNNN-<slug>.md
-│  └─ process/
-│     └─ workflow.md          ← 本文件
-└─ research/
-   └─ workflow-research.md
-
-另有研究归档在 docs/research/，按 docs/research/AUTHORING.md 生成。
-两类研究的边界：产品与技术的调研报告走 docs/research/；本流程自身的依据走 research/。
+└─ docs/
+   ├─ adr/
+   │  ├─ adr-template.md
+   │  ├─ adr-0001-macos-ui-swiftui.md
+   │  └─ adr-NNNN-<slug>.md
+   ├─ process/
+   │  └─ workflow.md          ← 本文件
+   └─ research/
+      ├─ workflow-research.md
+      └─ <主题>/              ← 按 AUTHORING.md 生成
 ```
+
+调研报告按 `docs/research/AUTHORING.md` 生成。
+本流程自身的依据是单文件 `workflow-research.md`，不建主题目录。
 
 ---
 
@@ -358,4 +361,4 @@ repo/
 1. spike 要有时间盒和交付物。issue 装不下全部需求。这两条是 Reddit 与 Hacker News 上的多数共识。
 2. 工具没有原生的决策对象，回链靠约定。实施追踪的成熟做法有两种：Rust 给每个已接受的 RFC 建 tracking issue；Kubernetes 让 KEP 编号等于 tracking issue 编号。
 
-完整调研见 `research/workflow-research.md`。
+完整调研见 `docs/research/workflow-research.md`。

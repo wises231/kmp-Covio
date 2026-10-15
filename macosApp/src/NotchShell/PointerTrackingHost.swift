@@ -6,7 +6,7 @@ import SwiftUI
 /// 为什么不用全局鼠标监听：M0 实测在 `AXIsProcessTrusted = false` 时
 /// `NSEvent.addGlobalMonitorForEvents` 仍然返回非 nil 的 token。
 /// 注册成功不能作为拿到权限的依据。窗口自己的 tracking area 不依赖辅助功能权限。
-/// 见 `doc/adr/adr-0001-macos-ui-swiftui.md` 实测 10。
+/// 见 `docs/adr/adr-0001-macos-ui-swiftui.md` 实测 10。
 @MainActor
 final class PointerTrackingHost<Content: View>: NSView {
     var onPointerEnter: (() -> Void)?

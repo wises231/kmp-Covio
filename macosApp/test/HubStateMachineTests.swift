@@ -66,7 +66,7 @@ final class HubStateMachineTests: XCTestCase {
         XCTAssertEqual(machine.state, .exit)
     }
 
-    /// §4.4：指针移出 Hub 后收起，所以 ACTIVE → OPEN 是一条真实存在的边。
+    /// 指针移出 Hub 后收起，所以 ACTIVE → OPEN 是一条真实存在的边。
     func testActiveReturnsToOpenWhenPointerLeaves() {
         var machine = HubStateMachine()
         machine.handle(.pointerEnteredHotZone)

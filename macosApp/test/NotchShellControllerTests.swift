@@ -119,7 +119,7 @@ final class NotchShellControllerTests: XCTestCase {
         XCTAssertFalse(controller.isHubPanelOnScreen, "收起后面板应该离开屏幕")
     }
 
-    /// §4.4：Control+Option+T 打开或收起。
+    /// Control+Option+T 打开或收起。
     func testToggleOpensAndCloses() throws {
         let controller = try controllerWithPointerInsideHub()
         controller.start()

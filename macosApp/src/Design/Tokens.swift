@@ -224,25 +224,25 @@ struct MotionToken: Sendable, Equatable {
 
 /// 界面用的动效时长。
 enum Motion {
-    /// 错误出现。来源第 6.4 节：160 毫秒，淡入和轻微位移。
+    /// 错误出现。160 毫秒，淡入和轻微位移。
     static let tokenMotionErrorAppear = MotionToken(seconds: 0.16, minSeconds: 0.16, maxSeconds: 0.16, reducedSeconds: nil, curve: "淡入和轻微位移")
-    /// Hub 收起。来源第 6.4 节：160 至 220 毫秒，缓出曲线。
+    /// Hub 收起。160 至 220 毫秒，缓出曲线。
     static let tokenMotionHubCollapse = MotionToken(seconds: 0.19, minSeconds: 0.16, maxSeconds: 0.22, reducedSeconds: 0.12, curve: "缓出曲线")
-    /// Hub 展开。来源 covio-product-master.md 第 6.4 节：220 至 280 毫秒，弹性曲线。
+    /// Hub 展开。220 至 280 毫秒，弹性曲线。
     static let tokenMotionHubExpand = MotionToken(seconds: 0.25, minSeconds: 0.22, maxSeconds: 0.28, reducedSeconds: 0.12, curve: "弹性曲线")
-    /// 指针移出 Hub 后收起的等待时间。来源 covio-product-master.md 第 4.4 节。
+    /// 指针移出 Hub 后收起的等待时间。
     static let tokenMotionPointerExitCollapse = MotionToken(seconds: 0.5, minSeconds: 0.5, maxSeconds: 0.5, reducedSeconds: nil, curve: "指针移出后等待，然后收起")
-    /// 减弱动态效果。来源第 6.4 节：120 毫秒，只改变透明度。
+    /// 减弱动态效果。120 毫秒，只改变透明度。
     static let tokenMotionReducedMotion = MotionToken(seconds: 0.12, minSeconds: 0.12, maxSeconds: 0.12, reducedSeconds: nil, curve: "只改变透明度")
-    /// 截图捕获。来源第 6.4 节：650 毫秒，保留现有捕获动画。
+    /// 截图捕获。650 毫秒，保留现有捕获动画。
     static let tokenMotionScreenshotCapture = MotionToken(seconds: 0.65, minSeconds: 0.65, maxSeconds: 0.65, reducedSeconds: nil, curve: "保留现有捕获动画")
-    /// 截图复制。来源第 6.4 节：1200 毫秒提示，保留现有摆动反馈。
+    /// 截图复制。1200 毫秒提示，保留现有摆动反馈。
     static let tokenMotionScreenshotCopy = MotionToken(seconds: 1.2, minSeconds: 1.2, maxSeconds: 1.2, reducedSeconds: nil, curve: "保留现有摆动反馈")
-    /// 页签切换。来源第 6.4 节：160 毫秒，横向滑动加淡入。
+    /// 页签切换。160 毫秒，横向滑动加淡入。
     static let tokenMotionTabSwitch = MotionToken(seconds: 0.16, minSeconds: 0.16, maxSeconds: 0.16, reducedSeconds: nil, curve: "横向滑动加淡入")
-    /// 传输完成。来源第 6.4 节：240 毫秒，进度变为完成状态。
+    /// 传输完成。240 毫秒，进度变为完成状态。
     static let tokenMotionTransferComplete = MotionToken(seconds: 0.24, minSeconds: 0.24, maxSeconds: 0.24, reducedSeconds: nil, curve: "进度变为完成状态")
-    /// 传输开始。来源第 6.4 节：180 毫秒，卡片抬起并显示进度。
+    /// 传输开始。180 毫秒，卡片抬起并显示进度。
     static let tokenMotionTransferStart = MotionToken(seconds: 0.18, minSeconds: 0.18, maxSeconds: 0.18, reducedSeconds: nil, curve: "卡片抬起并显示进度")
 
 }
