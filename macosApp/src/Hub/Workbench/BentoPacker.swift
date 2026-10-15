@@ -90,6 +90,25 @@ enum BentoPacker {
         if rows >= 2 { return .tall }
         return .small
     }
+
+    /// 缩放手柄拖了多远，换成新档位。
+    ///
+    /// 从 `base` 算，不从当前档位算：一次拖动里 `onChanged` 会连着来很多次，
+    /// 每次都拿当前档位累加会自己滚起来。`base` 是这一次拖动开始时的档位，
+    /// 松手后由调用方清掉。
+    ///
+    /// 上限是最大档跨的列与行，不是网格的列数：四档里最宽最高的就是「大」。
+    /// 网格比这还窄时由 `pack` 收窄。
+    static func resized(from base: WidgetSize, translation: CGSize) -> WidgetSize {
+        let width = HubMetrics.bentoCardWidth(columns: base.gridColumns) + translation.width
+        let height = HubMetrics.bentoCardHeight(rows: base.gridRows) + translation.height
+        return size(
+            columns: Int((width / HubMetrics.bentoColumnStep).rounded())
+                .clamped(to: 1...WidgetSize.large.gridColumns),
+            rows: Int((height / HubMetrics.bentoRowStep).rounded())
+                .clamped(to: 1...WidgetSize.large.gridRows)
+        )
+    }
 }
 
 extension WidgetSize {

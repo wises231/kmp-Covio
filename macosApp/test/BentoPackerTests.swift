@@ -163,4 +163,58 @@ final class BentoPackerTests: XCTestCase {
         XCTAssertEqual(WidgetSize.from(key: "wide").key, "wide")
         XCTAssertEqual(WidgetSize.from(key: "nonsense").key, WidgetSize.companion.FALLBACK.key)
     }
+
+    // MARK: - 缩放手柄
+
+    /// 没拖动就保持原档位。
+    func testResizingByNothingKeepsTheSize() {
+        for size in [WidgetSize.small, .wide, .tall, .large] {
+            XCTAssertEqual(resized(from: size, by: .zero).key, size.key)
+        }
+    }
+
+    /// 往右拖过一列就把档位加宽。
+    func testDraggingRightWidensTheCard() {
+        XCTAssertEqual(resized(from: .small, by: CGSize(width: HubMetrics.bentoColumnStep, height: 0)), .wide)
+    }
+
+    /// 往下拖过一行就加高。
+    func testDraggingDownHeightensTheCard() {
+        XCTAssertEqual(resized(from: .small, by: CGSize(width: 0, height: HubMetrics.bentoRowStep)), .tall)
+    }
+
+    /// 拖过头夹到最大档。四档里最大的是「大」，占两列两行。
+    func testDraggingTooFarStopsAtTheLargestSize() {
+        XCTAssertEqual(resized(from: .small, by: CGSize(width: 9_999, height: 9_999)), .large)
+    }
+
+    /// 往回收缩夹到一格，不会算出零列零行。
+    func testDraggingBackwardsStopsAtOneCell() {
+        let size = resized(from: .large, by: CGSize(width: -9_999, height: -9_999))
+        XCTAssertEqual(size.gridColumns, 1)
+        XCTAssertEqual(size.gridRows, 1)
+    }
+
+    /// 基准是这次拖动开始时的档位，不是当前档位。
+    ///
+    /// 一次拖动里 `onChanged` 连着来，位移是从起点累计的。
+    /// 若拿当前档位当基准，第二次 `onChanged` 会在第一次的结果上再加一遍，卡片自己滚起来。
+    func testTheTranslationIsMeasuredFromTheBaseNotTheCurrentSize() {
+        let half = CGSize(width: HubMetrics.bentoColumnStep / 2, height: 0)
+        // 从「小」出发拖半格，还在第一列。
+        XCTAssertEqual(resized(from: .small, by: half), .small)
+        // 从「宽」出发拖同样半格，仍在第二列，不会跳到第三列。
+        XCTAssertEqual(resized(from: .wide, by: half), .wide)
+    }
+
+    /// 往右下一起拖，一次到「大」。
+    func testDraggingRightAndDownTogetherGivesTheLargestCard() {
+        let diagonal = CGSize(width: HubMetrics.bentoColumnStep, height: HubMetrics.bentoRowStep)
+        XCTAssertEqual(resized(from: .small, by: diagonal), .large)
+    }
+
+    /// 缩放手柄的换算。
+    private func resized(from base: WidgetSize, by translation: CGSize) -> WidgetSize {
+        BentoPacker.resized(from: base, translation: translation)
+    }
 }

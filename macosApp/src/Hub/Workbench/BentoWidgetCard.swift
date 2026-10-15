@@ -63,6 +63,8 @@ struct BentoWidgetCard: View {
     let language: AppLanguage
     let onDelete: () -> Void
     let onResize: (CGSize) -> Void
+    /// 缩放手势松手。`BentoGrid` 用它忘掉起点档位。
+    let onResizeEnded: () -> Void
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -129,6 +131,7 @@ struct BentoWidgetCard: View {
             .gesture(
                 DragGesture(minimumDistance: 1)
                     .onChanged { onResize($0.translation) }
+                    .onEnded { _ in onResizeEnded() }
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .accessibilityLabel(ContractCopy.copyHubWidgetResize.text(for: language))

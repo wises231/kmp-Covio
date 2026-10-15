@@ -21,9 +21,8 @@ struct BentoGrid: View {
     /// 正在拖动的卡片 id 与累计位移。
     @State private var draggingID: String?
     @State private var dragOffset: CGSize = .zero
-    /// 正在缩放的卡片 id、累计位移与起始档位。
+    /// 正在缩放的卡片 id 与起始档位。
     @State private var resizingID: String?
-    @State private var resizeOffset: CGSize = .zero
     @State private var resizeBase: WidgetSize = .small
 
     private var spots: [BentoSpot] { BentoPacker.pack(widgets, columns: HubMetrics.bentoColumns) }
@@ -59,7 +58,8 @@ struct BentoGrid: View {
             isDragging: isDragging,
             language: language,
             onDelete: { onDelete(spot.id) },
-            onResize: { translation in resize(spot, translation: translation) }
+            onResize: { translation in resize(spot, translation: translation) },
+            onResizeEnded: { endResize(spot) }
         )
         .offset(
             x: CGFloat(spot.column) * HubMetrics.bentoColumnStep + (isDragging ? dragOffset.width : 0),
@@ -117,21 +117,21 @@ struct BentoGrid: View {
     private func resize(_ spot: BentoSpot, translation: CGSize) {
         if resizingID != spot.id {
             resizingID = spot.id
-            resizeOffset = .zero
             resizeBase = spot.size
         }
-        resizeOffset = translation
 
-        let baseWidth = HubMetrics.bentoCardWidth(columns: resizeBase.gridColumns)
-        let baseHeight = HubMetrics.bentoCardHeight(rows: resizeBase.gridRows)
-        let columns = Int(((baseWidth + resizeOffset.width) / HubMetrics.bentoColumnStep).rounded())
-        let rows = Int(((baseHeight + resizeOffset.height) / HubMetrics.bentoRowStep).rounded())
-        let size = BentoPacker.size(
-            columns: columns.clamped(to: 1...HubMetrics.bentoColumns),
-            rows: rows.clamped(to: 1...HubMetrics.bentoMaxRows)
-        )
+        let size = BentoPacker.resized(from: resizeBase, translation: translation)
         guard size.key != spot.size.key else { return }
         onResize(spot.id, size)
+    }
+
+    /// 松手就忘掉起点档位。
+    ///
+    /// 不忘记的话，第二次拖同一块会先跳回第一次的起点：
+    /// 位移从零重新计，而基准还是上一轮那个旧档位。
+    private func endResize(_ spot: BentoSpot) {
+        guard resizingID == spot.id else { return }
+        resizingID = nil
     }
 }
 
