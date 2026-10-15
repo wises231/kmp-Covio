@@ -1,4 +1,5 @@
 import AppKit
+import SwiftUI
 import XCTest
 @testable import Covio
 
@@ -121,5 +122,84 @@ final class MenuBarCapsuleTests: XCTestCase {
             let rect = MenuBarCapsulePanel.windowRect(for: capsule, on: geometry)
             XCTAssertLessThan(rect.width, geometry.frame.width / 4, "胶囊窗口太宽，会挡住别的菜单栏项")
         }
+    }
+
+    // MARK: - 真窗口的落位
+
+    /// 开一个真窗口，用完关掉。
+    ///
+    /// 不关的话它会留在 `NSApp.windows` 里，把
+    /// `NotchShellControllerTests.testHostApplicationShowsTheMenuBarCapsule` 的计数弄乱。
+    private func makePanel() -> MenuBarCapsulePanel {
+        let panel = MenuBarCapsulePanel()
+        panel.isReleasedWhenClosed = false
+        return panel
+    }
+
+    /// 窗口里画胶囊的那个宿主视图，以及它在屏幕坐标里的矩形。
+    ///
+    /// 按类型找，不假设层级：内容视图是不是一层容器是内部结构，不是被守护的契约。
+    private func capsuleFrame(in panel: MenuBarCapsulePanel) throws -> CGRect {
+        let root = try XCTUnwrap(panel.contentView)
+        root.layoutSubtreeIfNeeded()
+
+        let host: NSView
+        if let direct = root as? NSHostingView<MenuBarCapsule> {
+            host = direct
+        } else {
+            host = try XCTUnwrap(
+                root.subviews.first { $0 is NSHostingView<MenuBarCapsule> },
+                "窗口里没有画胶囊的宿主视图"
+            )
+        }
+        // `convert(_:to: nil)` 给的是窗口坐标，加上窗口原点才是屏幕坐标。
+        return host.convert(host.bounds, to: nil).offsetBy(dx: panel.frame.minX, dy: panel.frame.minY)
+    }
+
+    /// 窗口就停在 `place(on:)` 算出来的那个矩形上。
+    ///
+    /// 这一条只守得住「窗口尺寸跟着 `capsuleSize` 走」。
+    /// 真机上那个「窗口被内容视图的内在尺寸缩掉」的毛病要窗口上屏才复现，
+    /// 单元测试里窗口没显示，量不到，只能在真机上验收。
+    func testTheWindowStaysWhereItWasPlaced() {
+        let panel = makePanel()
+        defer { panel.close() }
+
+        panel.place(on: notched)
+        panel.contentView?.layoutSubtreeIfNeeded()
+
+        let expected = MenuBarCapsulePanel.windowRect(for: panel.capsuleSize, on: notched)
+        XCTAssertEqual(panel.frame.minX, expected.minX, accuracy: 0.5)
+        XCTAssertEqual(panel.frame.minY, expected.minY, accuracy: 0.5)
+        XCTAssertEqual(panel.frame.width, expected.width, accuracy: 0.5)
+        XCTAssertEqual(panel.frame.height, expected.height, accuracy: 0.5)
+    }
+
+    /// 胶囊左边缘离刘海右边缘正好一个 `capsuleNotchGap`。
+    ///
+    /// 窗口比胶囊宽一圈悬停余量，所以窗口贴到刘海边上是对的，
+    /// 但胶囊本身必须让出那 6 点。之前胶囊压在刘海边上，就是这一条挂了。
+    func testTheCapsuleClearsTheNotchByTheGap() throws {
+        let panel = makePanel()
+        defer { panel.close() }
+
+        panel.place(on: notched)
+        let notch = try XCTUnwrap(notched.notch)
+        let capsule = try capsuleFrame(in: panel)
+
+        XCTAssertEqual(capsule.minX, notch.maxX + ScreenGeometry.capsuleNotchGap, accuracy: 0.5)
+    }
+
+    /// 胶囊铺满窗口减去四周的悬停余量。余量是给指针的，不该画出来。
+    func testTheCapsuleFillsTheWindowInsideTheHoverInset() throws {
+        let panel = makePanel()
+        defer { panel.close() }
+
+        let capsule = try capsuleFrame(in: panel)
+        let inset = HubMetrics.menuBarCapsuleHoverInset
+
+        XCTAssertEqual(capsule.width, panel.frame.width - inset * 2, accuracy: 0.5)
+        XCTAssertEqual(capsule.height, panel.frame.height - inset * 2, accuracy: 0.5)
+        XCTAssertEqual(capsule.width, panel.capsuleSize.width, accuracy: 0.5)
     }
 }

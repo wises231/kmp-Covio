@@ -19,34 +19,44 @@ final class MenuBarCapsulePanel: ShellPanel {
     /// 点击胶囊。挂帘打开时收起，否则打开。
     var onClick: (() -> Void)?
 
-    private let host: CapsuleHostingView
+    private let host: NSHostingView<MenuBarCapsule>
+    private let container = CapsuleContainerView()
     /// 胶囊本身的尺寸，不含悬停余量。
     private(set) var capsuleSize: CGSize
 
     init() {
-        let host = CapsuleHostingView(rootView: MenuBarCapsule(isHovered: false))
-        // 宽度按实测取，不写死：胶囊里的字随语言变。
-        // 实测为 0 时（视图还没上屏）回落到一个够放得下胶囊的宽度。
-        let measured = host.fittingSize
-        let size = CGSize(
-            width: max(measured.width, Self.minimumCapsuleWidth),
-            height: max(measured.height, HubMetrics.menuBarCapsuleHeight)
-        )
+        let host = NSHostingView(rootView: MenuBarCapsule(isHovered: false))
+        let size = Self.measuredCapsuleSize(of: host)
         self.host = host
         self.capsuleSize = size
         super.init(contentRect: Self.windowRect(for: size, on: nil))
 
         ignoresMouseEvents = false
-        contentView = host
-        host.onPointerEnter = { [weak self] in self?.onPointerEnter?() }
-        host.onPointerExit = { [weak self] in self?.onPointerExit?() }
-        host.onClick = { [weak self] in self?.onClick?() }
+        container.inset = HubMetrics.menuBarCapsuleHoverInset
+        host.translatesAutoresizingMaskIntoConstraints = true
+        container.addSubview(host)
+        contentView = container
+        container.autoresizingMask = [.width, .height]
+
+        container.onPointerEnter = { [weak self] in self?.onPointerEnter?() }
+        container.onPointerExit = { [weak self] in self?.onPointerExit?() }
+        container.onClick = { [weak self] in self?.onClick?() }
     }
 
-    /// 实测失败时的兜底宽度。「◈ Covio」加两边内边距大约 60 点，留一点余量。
+    /// 量胶囊的自然尺寸。宿主视图还没上屏时量出来是 0，回落到兜底值。
     ///
-    /// 窗口比胶囊宽没有代价：胶囊在窗口里居中，底色只包住内容。
-    private static let minimumCapsuleWidth: CGFloat = 72
+    /// 不给宽度设下限：胶囊宽度直接决定窗口宽度，多出来的部分会变成胶囊与刘海
+    /// 之间的空隙，`ScreenGeometry.capsuleNotchGap` 就不再是 6 点。
+    private static func measuredCapsuleSize(of host: NSView) -> CGSize {
+        let measured = host.fittingSize
+        return CGSize(
+            width: measured.width > 0 ? measured.width : fallbackCapsuleWidth,
+            height: measured.height > 0 ? measured.height : HubMetrics.menuBarCapsuleHeight
+        )
+    }
+
+    /// 实测失败时的兜底宽度。「◈ Covio」加两边内边距大约 57 点，留一点余量。
+    private static let fallbackCapsuleWidth: CGFloat = 72
 
     @available(*, unavailable)
     required init?(coder: NSCoder) {
@@ -63,8 +73,8 @@ final class MenuBarCapsulePanel: ShellPanel {
 
     /// 把窗口挪到某块屏幕的菜单栏上。显示器变化与菜单栏显隐变化时调用。
     func place(on geometry: ScreenGeometry) {
-        let rect = Self.windowRect(for: capsuleSize, on: geometry)
-        setFrame(rect, display: true)
+        setFrame(Self.windowRect(for: capsuleSize, on: geometry), display: true)
+        container.needsLayout = true
     }
 
     /// 窗口矩形：胶囊矩形四周各外扩 `menuBarCapsuleHoverInset` 点。
@@ -79,21 +89,41 @@ final class MenuBarCapsulePanel: ShellPanel {
     }
 }
 
-/// 胶囊的宿主视图。在跟踪区之外再补一层鼠标事件。
+/// 胶囊窗口的内容视图。窗口尺寸由它定，胶囊摆在正中间。
+///
+/// 不能直接把 `NSHostingView` 当 `contentView`：那样 AppKit 会把窗口的内容尺寸
+/// 绑到 SwiftUI 视图的内在尺寸上。实测过一次，窗口被缩成胶囊的自然尺寸并贴到
+/// 左上角，`setFrame` 与 `place(on:)` 全部白设，胶囊压在刘海边上。
+///
+/// 跟踪区放在这一层，不放宿主视图：悬停余量那几点也要算「指针在胶囊上」。
 ///
 /// `NSPanel` 的 `mouseEntered` 要等指针动一次才来，而菜单栏那一条很薄，
-/// 指针可能停进去就不再动。所以这里同时用 tracking area 与 `mouseMoved`。
+/// 指针可能停进去就不再动。所以用 `.activeAlways` 的 tracking area。
 @MainActor
-private final class CapsuleHostingView: NSHostingView<MenuBarCapsule> {
+private final class CapsuleContainerView: NSView {
     var onPointerEnter: (() -> Void)?
     var onPointerExit: (() -> Void)?
     var onClick: (() -> Void)?
+
+    /// 内容四周留出的悬停余量。
+    var inset: CGFloat = 0
 
     private var trackingArea: NSTrackingArea?
 
     /// 菜单栏那一条很薄，指针往往是从别的应用切过来时直接落上去的。
     /// 不接受「第一次点击」的话，用户得先点一下再点一下。
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    /// 鼠标事件一律由这一层接。宿主视图在上面，不接管点击。
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        bounds.contains(convert(point, from: superview)) ? self : nil
+    }
+
+    /// 胶囊居中：四周各让出 `inset`。
+    override func layout() {
+        super.layout()
+        subviews.first?.frame = bounds.insetBy(dx: inset, dy: inset)
+    }
 
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
