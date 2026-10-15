@@ -30,6 +30,14 @@ enum AppPaths {
         supportDirectory.appendingPathComponent("config.json")
     }
 
+    /// 工作台配置。工作区顺序与首页组件都在这里。
+    ///
+    /// 权威在 `kmpDomain` 的 `WorkbenchStore.defaultWorkbenchPath()`，这里跟着它走。
+    /// 与 `config.json` 分两个文件：工作台配置损坏时只回退布局，不动用户设置。
+    static var workbenchFile: URL {
+        supportDirectory.appendingPathComponent("workbench.json")
+    }
+
     /// SwiftUI 版的单实例锁文件。
     static var lockFile: URL {
         supportDirectory.appendingPathComponent(swiftUILockFileName)

@@ -6,7 +6,7 @@ import kmpDomain
 /// 文件页签。工作区条目的列表。
 ///
 /// 一行一条条目。左边是类型图标与名称，右边是这一条的动作。
-/// 放入文件与清理过期在顶部胶囊里，见 [FilesCapsuleActions]。
+/// 放入文件与清理过期在页标题行右端，见 [FilesHeadingActions]。
 /// 失败与说明留在页内，因为它属于内容。
 ///
 /// 内容只读工作区的索引与内容目录，不引用用户的原文件路径。
@@ -22,8 +22,7 @@ struct FilesTabView: View {
                 MacAlert(message: notice, kind: noticeKind)
             }
         }
-        .padding(.horizontal, MacTheme.space4)
-        .padding(.vertical, MacTheme.space3)
+        // 内边距由内容列给，这里不再加一层。
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .onDrop(of: [.fileURL], isTargeted: nil) { providers in
             intake(providers)
@@ -143,7 +142,7 @@ struct FilesTabView: View {
 }
 
 /// 文件页的胶囊动作：放入文件、清理过期、占用。
-struct FilesCapsuleActions: View {
+struct FilesHeadingActions: View {
     let workspace: WorkspaceRuntime
     let language: AppLanguage
 

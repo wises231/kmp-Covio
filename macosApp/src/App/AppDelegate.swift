@@ -1,4 +1,5 @@
 import AppKit
+import kmpDomain
 
 /// 应用代理。装配 Notch Shell、菜单栏图标与全局快捷键。
 ///
@@ -36,6 +37,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let runtime = AppRuntime()
         self.runtime = runtime
         shell.runtime = runtime
+        // 工作台配置落盘。文件不存在时 `load()` 给默认值，所以首次启动就有六块组件。
+        shell.workbench.attach(
+            store: WorkbenchStore.companion.create(path: AppPaths.workbenchFile.path)
+        )
         // 测试进程里不启动运行时。`start()` 会连真实的存储与系统设置：
         // 它打开真实的截图接管并改写 `com.apple.screencapture`，还会写真实 `shelf.json`。
         // 界面装配照旧，所以 `testHostApplicationRunsTheShell` 仍然有效。

@@ -9,7 +9,7 @@ import kmpDomain
 /// 面板里那块区域是可交互的（Hub 本身不接受鼠标穿透），
 /// 所以这里的卡片能点、能拖、能右键，与工具栏上的卡片行为一致。
 ///
-/// 三个模块级动作在顶部胶囊里，见 `ScreenshotsCapsuleActions`。
+/// 三个模块级动作在页标题行右端，见 `ScreenshotsHeadingActions`。
 struct ScreenshotsTabView: View {
     let shelf: ShelfRuntime
     /// 界面语言。晾衣线上的卡片按它取文案。
@@ -20,9 +20,8 @@ struct ScreenshotsTabView: View {
     private var layout: ShelfLayout { ShelfLayout.shared }
 
     var body: some View {
+        // 内边距由内容列给，这里不再加一层。再加一层内容列就从 912 缩到 880。
         clothesline
-            .padding(.horizontal, MacTheme.space4)
-            .padding(.vertical, MacTheme.space3)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
@@ -57,13 +56,13 @@ struct ScreenshotsTabView: View {
         .frame(maxWidth: .infinity, alignment: .center)
     }
 
-    /// 晾衣线区域的宽度。等于右栏内容宽度减去左右内边距。
+    /// 晾衣线区域的宽度。等于内容列宽度，内边距已经由内容列留过。
     ///
     /// 卡片按这个宽度居中排布，所以 Hub 里也能看到绳子的下垂。
     ///
     /// 标 `nonisolated` 是因为 `HubMetrics`（非隔离）要用它算内容高度。
     nonisolated static var areaWidth: CGFloat {
-        HubMetrics.contentColumnWidth - MacTheme.space4 * 2
+        HubMetrics.contentColumnWidth
     }
 
     /// 晾衣线区域的高度。与独立面板一样高。
@@ -74,7 +73,7 @@ struct ScreenshotsTabView: View {
 ///
 /// 这三个动作各对应 Compose 版托盘菜单里的一项。原先在页内容底部，
 /// 搬到胶囊后晾衣线区域占满整页。
-struct ScreenshotsCapsuleActions: View {
+struct ScreenshotsHeadingActions: View {
     let shelf: ShelfRuntime
     let language: AppLanguage
 

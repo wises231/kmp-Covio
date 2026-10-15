@@ -42,6 +42,14 @@ enum AppLanguage: String, CaseIterable, Sendable {
         if let code, let match = AppLanguage(rawValue: code) { return match }
         return CopyLocale.prefersChinese ? .simplifiedChinese : .english
     }
+
+    /// 格式化日期与数字用的区域。合同只给两种语言，所以区域也只有两种。
+    var locale: Locale {
+        switch self {
+        case .simplifiedChinese: Locale(identifier: "zh-Hans")
+        case .english: Locale(identifier: "en")
+        }
+    }
 }
 
 enum CopyLocale {

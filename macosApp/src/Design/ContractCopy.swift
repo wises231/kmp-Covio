@@ -149,6 +149,24 @@ enum ContractCopy {
     static let copyGeneralSleepModeFastest = LocalizedCopy(key: "copy/general/sleep-mode/fastest", en: "0 · Fastest", zhHans: "0 · 最快")
     /// `copy/general/sleep-mode/lowest-power`
     static let copyGeneralSleepModeLowestPower = LocalizedCopy(key: "copy/general/sleep-mode/lowest-power", en: "25 · Lowest power", zhHans: "25 · 最省电")
+    /// `copy/hub/action/back`
+    static let copyHubActionBack = LocalizedCopy(key: "copy/hub/action/back", en: "Back", zhHans: "返回")
+    /// `copy/hub/action/done`
+    static let copyHubActionDone = LocalizedCopy(key: "copy/hub/action/done", en: "Done", zhHans: "完成")
+    /// `copy/hub/action/edit`
+    static let copyHubActionEdit = LocalizedCopy(key: "copy/hub/action/edit", en: "Edit", zhHans: "编辑")
+    /// `copy/hub/action/home`
+    static let copyHubActionHome = LocalizedCopy(key: "copy/hub/action/home", en: "Home", zhHans: "首页")
+    /// `copy/hub/action/settings`
+    static let copyHubActionSettings = LocalizedCopy(key: "copy/hub/action/settings", en: "Settings", zhHans: "设置")
+    /// `copy/hub/edit/banner`
+    static let copyHubEditBanner = LocalizedCopy(key: "copy/hub/edit/banner", en: "Edit mode: drag tabs to reorder, drag cards to move, drag the corner to resize, click the cross to remove.", zhHans: "编辑模式：拖动页签排序，拖动卡片移动，拖右下角缩放，点叉删除。")
+    /// `copy/hub/edit/reorder`
+    static let copyHubEditReorder = LocalizedCopy(key: "copy/hub/edit/reorder", en: "Reorder", zhHans: "排序")
+    /// `copy/hub/edit/widget-count`
+    static let copyHubEditWidgetCount = LocalizedCopy(key: "copy/hub/edit/widget-count", en: "widgets", zhHans: "块组件")
+    /// `copy/hub/edit/workspace-count`
+    static let copyHubEditWorkspaceCount = LocalizedCopy(key: "copy/hub/edit/workspace-count", en: "workspaces", zhHans: "个工作区")
     /// `copy/hub/files/action/import`
     static let copyHubFilesActionImport = LocalizedCopy(key: "copy/hub/files/action/import", en: "Import Files…", zhHans: "放入文件…")
     /// `copy/hub/files/action/open`
@@ -185,12 +203,22 @@ enum ContractCopy {
     static let copyHubFilesNoticeSwept = LocalizedCopy(key: "copy/hub/files/notice/swept", en: "Removed expired entries.", zhHans: "已清理过期条目。")
     /// `copy/hub/files/usage`
     static let copyHubFilesUsage = LocalizedCopy(key: "copy/hub/files/usage", en: "In use", zhHans: "已占用")
+    /// `copy/hub/home/empty-hint`
+    static let copyHubHomeEmptyHint = LocalizedCopy(key: "copy/hub/home/empty-hint", en: "Turn on edit mode to add widgets.", zhHans: "进入编辑模式可以添加组件。")
+    /// `copy/hub/home/empty-hint-editing`
+    static let copyHubHomeEmptyHintEditing = LocalizedCopy(key: "copy/hub/home/empty-hint-editing", en: "Drag one in from the widget library.", zhHans: "从组件库里拖一块进来。")
+    /// `copy/hub/home/empty-title`
+    static let copyHubHomeEmptyTitle = LocalizedCopy(key: "copy/hub/home/empty-title", en: "No widgets yet", zhHans: "首页还没有组件")
     /// `copy/hub/log/export`
     static let copyHubLogExport = LocalizedCopy(key: "copy/hub/log/export", en: "Export Log…", zhHans: "导出日志…")
     /// `copy/hub/log/view`
     static let copyHubLogView = LocalizedCopy(key: "copy/hub/log/view", en: "View Log", zhHans: "查看日志")
     /// `copy/hub/placeholder-notice`
     static let copyHubPlaceholderNotice = LocalizedCopy(key: "copy/hub/placeholder-notice", en: "This tab is a placeholder. Content lands in a later phase.", zhHans: "本页签是占位。内容在后续阶段落地。")
+    /// `copy/hub/tab/board`
+    static let copyHubTabBoard = LocalizedCopy(key: "copy/hub/tab/board", en: "Custom", zhHans: "自建")
+    /// `copy/hub/tab/board/summary`
+    static let copyHubTabBoardSummary = LocalizedCopy(key: "copy/hub/tab/board/summary", en: "A custom workspace with just the widget grid.", zhHans: "自建工作区，只有组件网格。")
     /// `copy/hub/tab/clipboard`
     static let copyHubTabClipboard = LocalizedCopy(key: "copy/hub/tab/clipboard", en: "Clipboard", zhHans: "剪贴板")
     /// `copy/hub/tab/clipboard/summary`
@@ -217,6 +245,30 @@ enum ContractCopy {
     static let copyHubTabSettingsSummary = LocalizedCopy(key: "copy/hub/tab/settings/summary", en: "Permissions, language, notifications, privacy, and retention.", zhHans: "权限、语言、通知、隐私和保留策略。")
     /// `copy/hub/update/up-to-date`
     static let copyHubUpdateUpToDate = LocalizedCopy(key: "copy/hub/update/up-to-date", en: "Covio is up to date.", zhHans: "Covio 已是最新版本。")
+    /// `copy/hub/widget/actions/title`
+    static let copyHubWidgetActionsTitle = LocalizedCopy(key: "copy/hub/widget/actions/title", en: "Shortcuts", zhHans: "快捷操作")
+    /// `copy/hub/widget/battery/title`
+    static let copyHubWidgetBatteryTitle = LocalizedCopy(key: "copy/hub/widget/battery/title", en: "Battery", zhHans: "电量")
+    /// `copy/hub/widget/clock/title`
+    static let copyHubWidgetClockTitle = LocalizedCopy(key: "copy/hub/widget/clock/title", en: "Now", zhHans: "现在")
+    /// `copy/hub/widget/devices/title`
+    static let copyHubWidgetDevicesTitle = LocalizedCopy(key: "copy/hub/widget/devices/title", en: "Devices", zhHans: "设备")
+    /// `copy/hub/widget/remove`
+    static let copyHubWidgetRemove = LocalizedCopy(key: "copy/hub/widget/remove", en: "Remove", zhHans: "删除")
+    /// `copy/hub/widget/resize`
+    static let copyHubWidgetResize = LocalizedCopy(key: "copy/hub/widget/resize", en: "Resize", zhHans: "缩放")
+    /// `copy/hub/widget/shots/title`
+    static let copyHubWidgetShotsTitle = LocalizedCopy(key: "copy/hub/widget/shots/title", en: "Recent Shots", zhHans: "最近截图")
+    /// `copy/hub/widget/size/large`
+    static let copyHubWidgetSizeLarge = LocalizedCopy(key: "copy/hub/widget/size/large", en: "Large", zhHans: "大")
+    /// `copy/hub/widget/size/small`
+    static let copyHubWidgetSizeSmall = LocalizedCopy(key: "copy/hub/widget/size/small", en: "Small", zhHans: "小")
+    /// `copy/hub/widget/size/tall`
+    static let copyHubWidgetSizeTall = LocalizedCopy(key: "copy/hub/widget/size/tall", en: "Tall", zhHans: "高")
+    /// `copy/hub/widget/size/wide`
+    static let copyHubWidgetSizeWide = LocalizedCopy(key: "copy/hub/widget/size/wide", en: "Wide", zhHans: "宽")
+    /// `copy/hub/widget/transfer/title`
+    static let copyHubWidgetTransferTitle = LocalizedCopy(key: "copy/hub/widget/transfer/title", en: "Transfers", zhHans: "传输")
     /// `copy/icon/concept/blue-grid`
     static let copyIconConceptBlueGrid = LocalizedCopy(key: "copy/icon/concept/blue-grid", en: "05 · BLUE GRID", zhHans: "05 · 蓝色网格")
     /// `copy/icon/concept/blue-koala`
@@ -268,11 +320,11 @@ enum ContractCopy {
     /// `copy/nav/quit`
     static let copyNavQuit = LocalizedCopy(key: "copy/nav/quit", en: "Quit Covio", zhHans: "退出 Covio")
     /// `copy/nav/rail-label`
-    static let copyNavRailLabel = LocalizedCopy(key: "copy/nav/rail-label", en: "Hub navigation", zhHans: "Hub 导航")
+    static let copyNavRailLabel = LocalizedCopy(key: "copy/nav/rail-label", en: "Hub tab bar", zhHans: "Hub 页签栏")
     /// `copy/nav/search-empty`
     static let copyNavSearchEmpty = LocalizedCopy(key: "copy/nav/search-empty", en: "No matching settings", zhHans: "没有匹配的设置")
     /// `copy/nav/search-placeholder`
-    static let copyNavSearchPlaceholder = LocalizedCopy(key: "copy/nav/search-placeholder", en: "Search settings", zhHans: "搜索设置")
+    static let copyNavSearchPlaceholder = LocalizedCopy(key: "copy/nav/search-placeholder", en: "Search workspaces and settings", zhHans: "搜索工作区与设置")
     /// `copy/nav/search-results`
     static let copyNavSearchResults = LocalizedCopy(key: "copy/nav/search-results", en: "Search results", zhHans: "搜索结果")
     /// `copy/nav/status-paused`
@@ -642,6 +694,15 @@ enum ContractCopy {
         copyGeneralSleepModeDefault,
         copyGeneralSleepModeFastest,
         copyGeneralSleepModeLowestPower,
+        copyHubActionBack,
+        copyHubActionDone,
+        copyHubActionEdit,
+        copyHubActionHome,
+        copyHubActionSettings,
+        copyHubEditBanner,
+        copyHubEditReorder,
+        copyHubEditWidgetCount,
+        copyHubEditWorkspaceCount,
         copyHubFilesActionImport,
         copyHubFilesActionOpen,
         copyHubFilesActionPin,
@@ -660,9 +721,14 @@ enum ContractCopy {
         copyHubFilesNoticeSaved,
         copyHubFilesNoticeSwept,
         copyHubFilesUsage,
+        copyHubHomeEmptyHint,
+        copyHubHomeEmptyHintEditing,
+        copyHubHomeEmptyTitle,
         copyHubLogExport,
         copyHubLogView,
         copyHubPlaceholderNotice,
+        copyHubTabBoard,
+        copyHubTabBoardSummary,
         copyHubTabClipboard,
         copyHubTabClipboardSummary,
         copyHubTabDevices,
@@ -676,6 +742,18 @@ enum ContractCopy {
         copyHubTabSettings,
         copyHubTabSettingsSummary,
         copyHubUpdateUpToDate,
+        copyHubWidgetActionsTitle,
+        copyHubWidgetBatteryTitle,
+        copyHubWidgetClockTitle,
+        copyHubWidgetDevicesTitle,
+        copyHubWidgetRemove,
+        copyHubWidgetResize,
+        copyHubWidgetShotsTitle,
+        copyHubWidgetSizeLarge,
+        copyHubWidgetSizeSmall,
+        copyHubWidgetSizeTall,
+        copyHubWidgetSizeWide,
+        copyHubWidgetTransferTitle,
         copyIconConceptBlueGrid,
         copyIconConceptBlueKoala,
         copyIconConceptBlueOrbit,

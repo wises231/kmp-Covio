@@ -219,8 +219,8 @@ final class ContractConstantsTests: XCTestCase {
         XCTAssertTrue(result.isValid, "合同校验失败：\(errorText)")
 
         let contract = try XCTUnwrap(result.contract)
-        XCTAssertEqual(contract.components.count, 22)
-        XCTAssertEqual(contract.platformMappings.count, 25)
+        XCTAssertEqual(contract.components.count, 24)
+        XCTAssertEqual(contract.platformMappings.count, 27)
         XCTAssertEqual(contract.motionTokens.count, 10)
         XCTAssertEqual(contract.entry(key: "copy/app/name")?.en, "Covio")
 
@@ -302,62 +302,77 @@ final class SettingsSectionTests: XCTestCase {
         }
     }
 
-    /// 页签对应的内容高度。
+    /// 页面对应的内容高度。
     ///
-    /// 卡片高度是各段之和，所以这里比的是页内容高度，不是卡片高度。
-    /// 面板窗口的高度直接由卡片高度决定，改小了会把页面底部裁掉。
-    func testEachTabContentHeightIsTheSumOfItsParts() {
-        // 卡片高度 = 上下内边距 + 内部高度。
+    /// 面板高度是各段之和，所以这里比的是内容高度，不是某一页的绝对高度。
+    /// 面板窗口的高度直接由它决定，改小了会把页面底部裁掉。
+    func testEachPageContentHeightIsTheSumOfItsParts() {
         for tab in HubTab.allCases {
+            let page = HubPage.pane(tab)
             XCTAssertEqual(
-                HubMetrics.contentHeight(for: tab),
-                HubMetrics.interiorHeight(for: tab) + HubMetrics.cardPadding * 2,
-                "\(tab.rawValue) 的卡片高度不等于各段之和"
+                HubMetrics.contentHeight(for: page),
+                HubMetrics.interiorHeight(for: page),
+                "\(tab.rawValue) 的面板高度不等于内部高度"
+            )
+            XCTAssertEqual(
+                HubMetrics.pageContentHeight(for: page),
+                HubMetrics.pageHeadingHeight + HubMetrics.pageHeadingGap + HubMetrics.bodyHeight(for: page),
+                "\(tab.rawValue) 的页内容高度不等于标题行加主体"
             )
         }
 
         // 设置页最高，其次是剪切板页与文件页、截图页、占位页。
-        XCTAssertEqual(HubMetrics.pageContentHeight(for: .settings), HubMetrics.settingsPageContentHeight)
-        XCTAssertEqual(HubMetrics.pageContentHeight(for: .files), HubMetrics.filesPageContentHeight)
-        XCTAssertGreaterThan(
-            HubMetrics.settingsPageContentHeight,
-            HubMetrics.clipboardPageContentHeight
-        )
-        XCTAssertGreaterThan(
-            HubMetrics.clipboardPageContentHeight,
-            HubMetrics.screenshotsPageContentHeight
-        )
-        XCTAssertGreaterThan(
-            HubMetrics.screenshotsPageContentHeight,
-            HubMetrics.placeholderPageContentHeight
-        )
+        XCTAssertEqual(HubMetrics.bodyHeight(for: .pane(.settings)), HubMetrics.settingsBodyHeight)
+        XCTAssertEqual(HubMetrics.bodyHeight(for: .pane(.files)), HubMetrics.filesBodyHeight)
+        XCTAssertGreaterThan(HubMetrics.settingsBodyHeight, HubMetrics.clipboardBodyHeight)
+        XCTAssertGreaterThan(HubMetrics.clipboardBodyHeight, HubMetrics.screenshotsBodyHeight)
+        XCTAssertGreaterThan(HubMetrics.screenshotsBodyHeight, HubMetrics.placeholderBodyHeight)
 
-        // 两个还没落地的页签用占位高度。
-        let placeholders: [HubTab] = [.now, .devices]
-        for tab in placeholders {
+        // 还没落地的页签用占位高度。
+        for tab in [HubTab.now, .devices, .board] {
             XCTAssertEqual(
-                HubMetrics.pageContentHeight(for: tab),
-                HubMetrics.placeholderPageContentHeight,
+                HubMetrics.bodyHeight(for: .pane(tab)),
+                HubMetrics.placeholderBodyHeight,
                 "\(tab.rawValue) 应该用占位高度"
             )
         }
     }
 
-    /// 卡片必须盖得住左栏：导航栏比右栏高时卡片会被裁。
-    func testTheCardCoversTheNavigationRailOnEveryTab() {
+    /// 首页高度跟着网格行数走，不跟页签走。
+    func testTheHomeHeightFollowsTheGridRows() {
+        XCTAssertEqual(
+            HubMetrics.bodyHeight(for: .home(rows: 0)),
+            HubMetrics.emptyHomeHeight,
+            "零行时应该用空态高度"
+        )
+        for rows in 1...4 {
+            XCTAssertEqual(
+                HubMetrics.bodyHeight(for: .home(rows: rows)),
+                HubMetrics.bentoGridHeight(rows: rows),
+                "\(rows) 行的首页高度不等于网格高度"
+            )
+        }
+    }
+
+    /// 面板必须盖得住顶栏加页内容。
+    ///
+    /// 编辑模式多一条提示条，也要盖得住。
+    func testThePanelCoversTheTabBarAndThePageOnEveryPage() {
         for tab in HubTab.allCases {
-            XCTAssertGreaterThanOrEqual(
-                HubMetrics.interiorHeight(for: tab),
-                HubMetrics.navRailHeight,
-                "\(tab.rawValue) 的卡片盖不住导航栏"
-            )
-            XCTAssertGreaterThanOrEqual(
-                HubMetrics.interiorHeight(for: tab),
-                HubMetrics.toolbarCapsuleHeight
-                    + HubMetrics.pageGap
-                    + HubMetrics.pageContentHeight(for: tab),
-                "\(tab.rawValue) 的卡片盖不住胶囊加页内容"
-            )
+            let page = HubPage.pane(tab)
+            for editing in [false, true] {
+                let interior = HubMetrics.interiorHeight(for: page, editing: editing)
+                let needed = HubMetrics.tabBarHeight
+                    + HubMetrics.tabBarDividerHeight
+                    + HubMetrics.panelPadding * 2
+                    + (editing ? HubMetrics.editBannerHeight + HubMetrics.pageGap : 0)
+                    + HubMetrics.pageContentHeight(for: page)
+                XCTAssertGreaterThanOrEqual(
+                    interior,
+                    needed,
+                    "\(tab.rawValue) 编辑模式 \(editing) 的面板盖不住顶栏加页内容"
+                )
+            }
         }
     }
 }

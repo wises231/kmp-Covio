@@ -43,8 +43,8 @@ class DesignContractTest {
         assertTrue(contract.schemaVersion.isNotBlank())
         assertTrue(contract.tokens.size > 100, "令牌条数太少：${contract.tokens.size}")
         assertTrue(contract.copy.size > 100, "文案条数太少：${contract.copy.size}")
-        assertEquals(22, contract.components.size, "组件数被改动了")
-        assertEquals(25, contract.platformMappings.size, "平台映射数被改动了")
+        assertEquals(24, contract.components.size, "组件数被改动了")
+        assertEquals(27, contract.platformMappings.size, "平台映射数被改动了")
     }
 
     @Test

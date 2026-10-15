@@ -16,14 +16,9 @@ struct HubContentRoot: View {
                 reduceMotion: controller.reduceMotion,
                 hubState: controller.state,
                 outputState: controller.outputState,
-                selection: Binding(
-                    get: { controller.selection },
-                    set: { controller.selection = $0 }
-                ),
+                workbench: controller.workbench,
                 chrome: controller.chrome,
-                runtime: runtime,
-                onLanguage: { runtime?.changeLanguage($0) },
-                onQuit: { runtime?.requestQuit() }
+                runtime: runtime
             )
         } else {
             Color.clear

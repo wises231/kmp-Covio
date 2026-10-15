@@ -48,8 +48,8 @@ final class ScreenGeometryTests: XCTestCase {
         XCTAssertEqual(rect.width, 960)
         XCTAssertEqual(rect.maxY, 1117)
         XCTAssertEqual(rect.midX, 864)
-        // 高度是顶部安全区加「现在」页的内容高度。
-        XCTAssertEqual(rect.height, 32 + HubMetrics.contentHeight(for: .now), accuracy: 0.001)
+        // 高度是顶部安全区加首页的内容高度。
+        XCTAssertEqual(rect.height, 32 + HubMetrics.contentHeight(for: .home(rows: HubMetrics.defaultHomeRows)), accuracy: 0.001)
     }
 
     func testNotchedCollapsedRectMatchesTheNotch() {
@@ -83,7 +83,7 @@ final class ScreenGeometryTests: XCTestCase {
         XCTAssertEqual(notchless.panelTop, 1055)
         XCTAssertEqual(notchless.panelTopInset, 0)
         XCTAssertEqual(notchless.expandedRect.maxY, 1055)
-        XCTAssertEqual(notchless.expandedRect.height, HubMetrics.contentHeight(for: .now), accuracy: 0.001)
+        XCTAssertEqual(notchless.expandedRect.height, HubMetrics.contentHeight(for: .home(rows: HubMetrics.defaultHomeRows)), accuracy: 0.001)
     }
 
     // MARK: - 全屏 Space
@@ -104,10 +104,10 @@ final class ScreenGeometryTests: XCTestCase {
 
     // MARK: - 窄屏与非刘海屏的组合
 
-    /// 窄屏上面板比卡片宽度窄，取「屏幕宽度减 80」。
+    /// 窄屏上面板比面板宽度窄，取「屏幕宽度减 80」。
     func testSmallScreenNarrowsThePanelBelowTheCardWidth() {
         XCTAssertEqual(smallNotchless.expandedRect.width, 944)
-        XCTAssertLessThan(smallNotchless.expandedRect.width, HubMetrics.cardWidth)
+        XCTAssertLessThan(smallNotchless.expandedRect.width, HubMetrics.panelWidth)
     }
 
     /// 非刘海屏的面板挂在菜单栏下方，所以屏幕顶部中央在面板之外。

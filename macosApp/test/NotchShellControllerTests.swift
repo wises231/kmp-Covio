@@ -1,5 +1,6 @@
 import AppKit
 import XCTest
+import kmpDomain
 @testable import Covio
 
 /// `NotchShellController` 的端到端状态测试。
@@ -68,10 +69,10 @@ final class NotchShellControllerTests: XCTestCase {
         XCTAssertEqual(controller.hotZoneRects.count, NSScreen.screens.count)
         // 面板先按展开矩形建好，但不在屏幕上。
         XCTAssertFalse(controller.isHubPanelOnScreen)
-        // 窄屏上面板比 cardWidth 窄，所以比展开矩形，不比 cardWidth。
+        // 窄屏上面板比 panelWidth 窄，所以比展开矩形，不比 panelWidth。
         let expectedWidth = try hubPanelRect().width
         XCTAssertEqual(controller.hubPanelFrame?.width, expectedWidth)
-        XCTAssertLessThanOrEqual(expectedWidth, HubMetrics.cardWidth)
+        XCTAssertLessThanOrEqual(expectedWidth, HubMetrics.panelWidth)
     }
 
     /// 非刘海屏降级热区：每块屏幕的热区都必须落在该屏幕内，且贴在该屏幕顶部。
@@ -204,9 +205,52 @@ final class NotchShellControllerTests: XCTestCase {
         controller.start()
         defer { controller.stop() }
 
-        controller.selection = .screenshots
-        XCTAssertEqual(controller.selection, .screenshots)
+        controller.workbench.select(paneID: PaneKind.screenshots.defaultId)
         XCTAssertEqual(controller.state, .hidden)
+    }
+
+    /// 编辑模式里不排收起计时。拖卡片时指针划出面板不算「用户想走」。
+    func testEditingKeepsThePanelOpenWhenThePointerLeaves() throws {
+        let controller = try controllerWithPointerInsideHub()
+        controller.start()
+        defer { controller.stop() }
+
+        controller.workbench.isEditing = true
+        controller.show()
+        waitUntil("展开后应该进入 ACTIVE") { controller.state == .active }
+
+        // 指针离开面板。非编辑态下这里会排一个收起计时。
+        controller.pointerExitedHub()
+        XCTAssertNotEqual(controller.state, .exit, "编辑模式里不该开始收起")
+    }
+
+    /// 编辑模式里第一次请求收起先退出编辑，面板不动。
+    func testCollapseRequestLeavesEditingFirst() throws {
+        let controller = try controllerWithPointerInsideHub()
+        controller.start()
+        defer { controller.stop() }
+
+        controller.workbench.isEditing = true
+        controller.show()
+        waitUntil("展开后应该进入 ACTIVE") { controller.state == .active }
+
+        controller.requestCollapse()
+        XCTAssertFalse(controller.workbench.isEditing)
+        XCTAssertEqual(controller.state, .active, "第一次请求只退出编辑，不收起面板")
+
+        controller.requestCollapse()
+        XCTAssertEqual(controller.state, .exit, "第二次请求才真的收起")
+    }
+
+    // MARK: - 菜单栏胶囊
+
+    /// 宿主进程里应该有一个胶囊窗口，层级与热区一致，且不接受键盘。
+    func testHostApplicationShowsTheMenuBarCapsule() throws {
+        let capsules = NSApp.windows.compactMap { $0 as? MenuBarCapsulePanel }
+        XCTAssertEqual(capsules.count, 1, "宿主进程里应该只有一个胶囊窗口")
+        let capsule = try XCTUnwrap(capsules.first)
+        XCTAssertEqual(capsule.level, .statusBar)
+        XCTAssertFalse(capsule.canBecomeKey, "胶囊不该抢走 Hub 的键盘")
     }
 
     // MARK: - 宿主进程
