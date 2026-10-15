@@ -7,8 +7,11 @@ import kmpDomain
 /// 面板窗口的尺寸是固定的展开尺寸。展开与收起只改内容的高度，
 /// 所以视觉上是一条从顶部垂下来的窗帘。
 ///
-/// 面板从上到下分三段：顶栏 46 点、一条分隔线、内容列。
-/// 内容列自带 24 点内边距，里面是「页标题行 + 主体」。
+/// 面板是两块独立的玻璃板：上面是胶囊形的顶栏 46 点，下面是圆角矩形的内容板。
+/// 两块板之间留一条 11 点的缝，缝里露出桌面。顶栏板与菜单栏之间再留一条同宽的缝。
+/// 板与板之间没有投影 —— 层次由 Liquid Glass 的镜面亮边给。
+///
+/// 内容板自带 24 点内边距，里面是「页标题行 + 主体」。
 /// 首页没有页标题行，直接从组件网格开始。
 ///
 /// 这个视图不持有控制器，只接收值。这样它可以被预览与测试。
@@ -29,24 +32,35 @@ struct HubView: View {
             Color.clear
                 .frame(height: geometry.panelTopInset)
 
-            card
-                .frame(height: isExpanded ? cardHeight : 0)
+            // 顶栏板与菜单栏之间的缝。排在卡片外面：进了卡片的话，挂帘收起时会
+            // 先露出一条空缝，再露出顶栏板。
+            Color.clear
+                .frame(height: HubMetrics.plateTopInset)
+
+            plates
+                .frame(height: isExpanded ? plateStackHeight : 0)
                 .opacity(cardOpacity)
                 .clipped()
 
             Spacer(minLength: 0)
         }
         .frame(
-            width: geometry.expandedRect(contentHeight: cardHeight).width,
-            height: geometry.expandedRect(contentHeight: cardHeight).height,
+            width: geometry.expandedRect(contentHeight: panelHeight).width,
+            height: geometry.expandedRect(contentHeight: panelHeight).height,
             alignment: .top
         )
         .animation(curtainAnimation, value: isExpanded)
     }
 
-    /// 内容高度由目的地与编辑模式决定。首页网格与设置页都比占位页高。
+    /// 两块玻璃板加起来的高度。卡片的 frame 用它。
+    private var plateStackHeight: CGFloat {
+        HubMetrics.plateStackHeight(for: HubPage.current(workbench), editing: workbench.isEditing)
+    }
+
+    /// 面板窗口的高度：两块板加上与菜单栏之间的缝。
+    ///
     /// 面板窗口的高度由控制器按同一个值设置，两边必须一致。
-    private var cardHeight: CGFloat {
+    private var panelHeight: CGFloat {
         HubMetrics.contentHeight(for: HubPage.current(workbench), editing: workbench.isEditing)
     }
 
@@ -68,40 +82,54 @@ struct HubView: View {
     /// 当前界面语言。运行时缺失时（预览、测试）跟随系统。
     private var language: AppLanguage { runtime?.language ?? workbench.language }
 
-    // MARK: - 面板
+    // MARK: - 玻璃板
 
-    private var card: some View {
-        VStack(spacing: 0) {
-            WorkbenchTabBar(
-                panes: workbench.panes,
-                destination: workbench.destination,
-                isEditing: workbench.isEditing,
-                searchText: $chrome.searchText,
-                language: language,
-                pageAction: workbench.pageAction,
-                onHome: { workbench.destination = .home },
-                onSelect: { workbench.select(paneID: $0) },
-                onReorder: { workbench.movePane(from: $0, to: $1) },
-                onPageAction: { workbench.performPageAction() }
-            )
-
-            Rectangle()
-                .fill(MacTheme.divider.opacity(0.6))
-                .frame(height: HubMetrics.tabBarDividerHeight)
-
-            contentColumn
+    /// 面板的两块玻璃板：上面是胶囊形的顶栏，下面是圆角矩形的内容。
+    ///
+    /// 控制中心没有统一背板，是一组独立的玻璃板直接浮在桌面上，板与板之间露出
+    /// 桌面。所以这里不画背景、不描边、不加投影 —— 三样都由 Liquid Glass 自己画。
+    ///
+    /// `spacing` 取 0 而不是 `plateGap`：容器里间距小于 `spacing` 的两块玻璃会
+    /// **合并成一块**，那就毁掉了「两块板」这个形态本身。取 0 表示只有贴在一起
+    /// 才合并。
+    private var plates: some View {
+        GlassEffectContainer(spacing: 0) {
+            VStack(spacing: HubMetrics.plateGap) {
+                topBarPlate
+                contentPlate
+            }
         }
-        .frame(width: HubMetrics.panelWidth, height: cardHeight, alignment: .top)
-        .background(.regularMaterial)
-        .clipShape(cardShape)
-        .overlay(cardShape.strokeBorder(Color.primary.opacity(0.12), lineWidth: HubMetrics.borderWidth))
-        .shadow(color: .black.opacity(0.28), radius: 18, y: 8)
         // 高亮行从环境里取，六个设置页不必各自拿一遍模型。
         .environment(\.highlightedSettingsRow, chrome.highlightedRowID)
     }
 
-    private var cardShape: RoundedRectangle {
-        RoundedRectangle(cornerRadius: HubMetrics.panelRadius, style: .continuous)
+    private var topBarPlate: some View {
+        WorkbenchTabBar(
+            panes: workbench.panes,
+            destination: workbench.destination,
+            isEditing: workbench.isEditing,
+            searchText: $chrome.searchText,
+            language: language,
+            pageAction: workbench.pageAction,
+            onHome: { workbench.destination = .home },
+            onSelect: { workbench.select(paneID: $0) },
+            onReorder: { workbench.movePane(from: $0, to: $1) },
+            onPageAction: { workbench.performPageAction() }
+        )
+        .glassSurface(cornerRadius: HubMetrics.tabBarPlateRadius)
+    }
+
+    private var contentPlate: some View {
+        contentColumn
+            .frame(height: contentPlateHeight)
+            .glassSurface(cornerRadius: HubMetrics.contentPlateRadius)
+    }
+
+    /// 内容板的高度：两块板的总高减去顶栏板与中间的缝。
+    ///
+    /// 撑不出高度的话板会缩成内容那么大，与顶栏板宽度对不齐。
+    private var contentPlateHeight: CGFloat {
+        plateStackHeight - HubMetrics.tabBarHeight - HubMetrics.plateGap
     }
 
     // MARK: - 内容列
