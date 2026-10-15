@@ -242,6 +242,47 @@ final class NotchShellControllerTests: XCTestCase {
         XCTAssertEqual(controller.state, .exit, "第二次请求才真的收起")
     }
 
+    // MARK: - 热区的假离开
+
+    /// 面板盖住热区时那次「离开」不能上报。
+    ///
+    /// 这条挂过：面板一展开就盖住热区（面板 960 × 547 包住热区那一条 186 × 32），
+    /// 热区收到「离开」，状态机把刚展开的面板收回去，热区重新露出来又收到「进入」。
+    /// 指针停着不动，面板每秒开关四次。真机实测 3 秒采样 24 次：开 11 次关 13 次。
+    func testTheHotZoneStaysQuietWhileThePanelCoversIt() {
+        XCTAssertFalse(
+            NotchShellController.shouldReportHotZoneExit(hubVisible: true, pointerInsideHub: true),
+            "面板盖着热区，这次「离开」是面板挡出来的，上报会把刚展开的面板收回去"
+        )
+    }
+
+    /// 面板收起后热区的「离开」是真离开，要上报。
+    func testTheHotZoneReportsARealExit() {
+        XCTAssertTrue(
+            NotchShellController.shouldReportHotZoneExit(hubVisible: false, pointerInsideHub: false),
+            "面板不在屏幕上，指针离开热区就是走开了，不上报会留下一个收不掉的挂帘"
+        )
+    }
+
+    /// 面板可见但指针已经在面板外：这次「离开」要上报。
+    func testTheHotZoneReportsAnExitFromOutsideThePanel() {
+        XCTAssertTrue(
+            NotchShellController.shouldReportHotZoneExit(hubVisible: true, pointerInsideHub: false),
+            "指针在面板外，热区报的离开是真的"
+        )
+    }
+
+    /// 面板没上屏时，矩形盖着热区也不算数。
+    ///
+    /// 面板窗口建好就一直存在，`orderOut` 只是不显示，矩形照样包含热区那一片。
+    /// 只看矩形不看可见性的话，收起态下热区永远不报离开。
+    func testTheHotZoneReportsAnExitWhileThePanelIsOffScreen() {
+        XCTAssertTrue(
+            NotchShellController.shouldReportHotZoneExit(hubVisible: false, pointerInsideHub: true),
+            "面板没上屏，矩形盖着热区也不算数"
+        )
+    }
+
     // MARK: - 菜单栏胶囊
 
     /// 宿主进程里应该有一个胶囊窗口，层级与热区一致，且不接受键盘。

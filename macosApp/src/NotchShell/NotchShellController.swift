@@ -288,6 +288,20 @@ final class NotchShellController {
         return hubPanel.frame.contains(pointerLocation())
     }
 
+    /// 热区报的「离开」要不要转给状态机。
+    ///
+    /// 挂帘面板一露出来就盖住热区：面板是 960 × 547，热区只是刘海那一条
+    /// 186 × 32，横向纵向都被包住。热区随后收到的「离开」是面板挡出来的，
+    /// 不是用户走开。照发的话状态机按 `.hover + .pointerExitedHotZone → .hidden`
+    /// 把刚展开的面板收回去，热区重新露出来又收到「进入」，两边来回弹。
+    ///
+    /// 实测：指针停在热区不动，3 秒采样 24 次，开 11 次关 13 次。
+    ///
+    /// 面板可见时，进出由面板自己的跟踪区报，热区不再插话。
+    static func shouldReportHotZoneExit(hubVisible: Bool, pointerInsideHub: Bool) -> Bool {
+        !(hubVisible && pointerInsideHub)
+    }
+
     // MARK: - 计时
 
     private func schedule(after delay: TimeInterval, _ body: @escaping @MainActor () -> Void) -> Timer {
@@ -396,7 +410,16 @@ final class NotchShellController {
             let panel = HotZonePanel(rect: geometry.hotZoneRect)
             let host = PointerTrackingHost(rootView: Color.clear)
             host.onPointerEnter = { [weak self] in self?.send(.pointerEnteredHotZone) }
-            host.onPointerExit = { [weak self] in self?.send(.pointerExitedHotZone) }
+            host.onPointerExit = { [weak self] in
+                guard let self else { return }
+                // 面板盖住热区时那次「离开」是假的，别让它把面板收回去。
+                let report = Self.shouldReportHotZoneExit(
+                    hubVisible: self.hubPanel?.isVisible ?? false,
+                    pointerInsideHub: self.pointerIsInsideHubPanel
+                )
+                guard report else { return }
+                self.send(.pointerExitedHotZone)
+            }
             panel.contentView = host
             panel.orderFrontRegardless()
             hotZonePanels.append(panel)
