@@ -58,7 +58,7 @@ enum class PaneKind {
 
     /**
      * 显示名的文案键。自建工作区没有内置名字，返回 null。
-     * 宿主用这个键读生成的 `ContractCopy`，不自己写文案。
+     * 宿主用这个键取界面文案，不自己写文案。
      */
     val titleCopyKey: String? get() = if (isBuiltin) "copy/hub/tab/$key" else null
 }
