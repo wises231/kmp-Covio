@@ -1,0 +1,19 @@
+// 代码签名身份。
+//
+// TCC 用代码签名识别应用。ad-hoc 签名没有 Team ID，识别依据退化成 cdhash。
+// 每次构建都产生新 cdhash，系统把新构建当成新应用，于是重新要辅助功能权限，
+// 并重发「已添加设备控制和数据访问」通知。
+//
+// 默认 ad-hoc：任何机器都能构建，CI 也走这条。
+// 本机想固定身份时，建 Signing.local.xcconfig（已在 .gitignore 里）：
+//
+//     CODE_SIGN_IDENTITY = Covio Dev
+//     CODE_SIGN_STYLE = Manual
+//
+// 识别依据随之变成证书，授权跨构建保留。建证书的步骤见
+// docs/adr/adr-0005-local-code-signing.md。
+
+CODE_SIGN_IDENTITY = -
+CODE_SIGN_STYLE = Automatic
+
+#include? "Signing.local.xcconfig"
