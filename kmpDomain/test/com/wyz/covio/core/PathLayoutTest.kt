@@ -30,6 +30,20 @@ class PathLayoutTest {
         )
     }
 
+    /// 工作台配置与 `config.json` 并列。两者分开，坏掉一个不影响另一个。
+    @Test
+    fun `the workbench config sits next to the app config`() {
+        assertTrue(
+            defaultWorkbenchPath().endsWith("/Library/Application Support/$APP_ID/workbench.json"),
+            "实际值：${defaultWorkbenchPath()}",
+        )
+        assertNotEquals(
+            defaultConfigPath().substringAfterLast("/"),
+            defaultWorkbenchPath().substringAfterLast("/"),
+            "工作台配置不该与 config.json 合并成一个文件",
+        )
+    }
+
     @Test
     fun `the shelf directory uses the application name`() {
         assertTrue(

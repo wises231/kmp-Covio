@@ -29,5 +29,13 @@ internal expect object AppDirectories {
 
 internal fun defaultConfigPath(): String = "${AppDirectories.support}/config.json"
 
+/**
+ * 工作台配置。放在配置目录下，与 `config.json` 并列。
+ *
+ * 单独一个文件。理由见 [WorkbenchStore]：`config.json` 承诺与 0.4.2 双向兼容，
+ * 工作台配置不用背这个包袱；而且坏掉一个文件时另一个还能读。
+ */
+internal fun defaultWorkbenchPath(): String = "${AppDirectories.support}/workbench.json"
+
 internal fun defaultShelfPath(): String =
     "${AppDirectories.userApplicationSupport}/${APP_NAME}/Screenshots/shelf.json"
