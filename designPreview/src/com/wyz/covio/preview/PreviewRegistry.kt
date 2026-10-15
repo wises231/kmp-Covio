@@ -1,6 +1,7 @@
 package com.wyz.covio.preview
 
 import androidx.compose.runtime.Composable
+import com.wyz.covio.preview.previews.workbench.GlassWorkbenchPreview
 import com.wyz.covio.preview.previews.workbench.WorkbenchPreview
 
 /**
@@ -33,5 +34,11 @@ val previews: List<Preview> = listOf(
         covers = "S1 到 S8。菜单栏胶囊、玻璃面板、tab bar、bento 首页、编辑模式、工作区设置、错误恢复。",
         issue = 107,
         content = { WorkbenchPreview() },
+    ),
+    Preview(
+        title = "玻璃板工作台",
+        covers = "面板外壳照控制中心：两块独立玻璃板，中间露出桌面，板间没有投影。",
+        issue = 118,
+        content = { GlassWorkbenchPreview() },
     ),
 )
