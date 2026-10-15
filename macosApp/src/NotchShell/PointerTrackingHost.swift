@@ -48,4 +48,17 @@ final class PointerTrackingHost<Content: View>: NSView {
         addTrackingArea(area)
         pointerArea = area
     }
+
+    /// 跟踪区的 owner 是 `self`，事件就送到这两个方法。
+    ///
+    /// 不写这两个覆写的话，`NSView` 的默认实现只是把事件往下一环传，
+    /// `onPointerEnter` 与 `onPointerExit` 永远不会被调用：
+    /// 热区收不到进入，悬停刘海打不开挂帘（需求 R2）。
+    override func mouseEntered(with event: NSEvent) {
+        onPointerEnter?()
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        onPointerExit?()
+    }
 }
