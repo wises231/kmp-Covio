@@ -114,6 +114,69 @@ final class WorkbenchTabBarTests: XCTestCase {
     }
 }
 
+/// 页签拖动排序的换算。
+///
+/// 一次拖动里 `onChanged` 连着来，位移是从起点累计的。
+/// 这里守的是「每次只补新跨过的那几条」——把累计值重算一遍会让页签冲过头。
+final class TabReorderStateTests: XCTestCase {
+    private let step = HubMetrics.tabReorderStep
+
+    /// 没拖动就不挪。
+    func testNoTranslationMeansNoMove() {
+        var state = TabReorderState(step: step)
+        XCTAssertEqual(state.delta(forTranslation: 0), 0)
+    }
+
+    /// 不到一条的距离不算跨过。
+    func testAShortDragDoesNotMove() {
+        var state = TabReorderState(step: step)
+        XCTAssertEqual(state.delta(forTranslation: step - 1), 0)
+    }
+
+    /// 跨过一条就补一条。
+    func testCrossingOneStepMovesOne() {
+        var state = TabReorderState(step: step)
+        XCTAssertEqual(state.delta(forTranslation: step), 1)
+    }
+
+    /// 同一个位移连着报两次，第二次补零。这一条挡住的就是「冲过头」。
+    func testRepeatingTheSameTranslationAddsNothing() {
+        var state = TabReorderState(step: step)
+        XCTAssertEqual(state.delta(forTranslation: step), 1)
+        XCTAssertEqual(state.delta(forTranslation: step), 0)
+    }
+
+    /// 一路往右拖，每次只补新增的那一条。
+    func testDraggingFurtherKeepsAddingOneAtATime() {
+        var state = TabReorderState(step: step)
+        XCTAssertEqual(state.delta(forTranslation: step), 1)
+        XCTAssertEqual(state.delta(forTranslation: step * 2), 1)
+        XCTAssertEqual(state.delta(forTranslation: step * 3), 1)
+    }
+
+    /// 拖回来是负数，页签往回挪。
+    func testDraggingBackReturnsANegativeDelta() {
+        var state = TabReorderState(step: step)
+        XCTAssertEqual(state.delta(forTranslation: step * 2), 2)
+        XCTAssertEqual(state.delta(forTranslation: step), -1)
+        XCTAssertEqual(state.delta(forTranslation: 0), -1)
+    }
+
+    /// 松手之后从头计，下一次拖动不受上一次影响。
+    func testResetForgetsThePreviousDrag() {
+        var state = TabReorderState(step: step)
+        XCTAssertEqual(state.delta(forTranslation: step * 3), 3)
+        state.reset()
+        XCTAssertEqual(state.delta(forTranslation: step * 3), 3)
+    }
+
+    /// 步长为零时不换算，也不除零。
+    func testAZeroStepMovesNothing() {
+        var state = TabReorderState(step: 0)
+        XCTAssertEqual(state.delta(forTranslation: 999), 0)
+    }
+}
+
 /// 首页卡片的副标题。
 ///
 /// 有真实数据的用真实数据，没有的显示占位符，不编。

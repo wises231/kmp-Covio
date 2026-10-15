@@ -13,6 +13,35 @@ struct PaneItem: Identifiable, Equatable, Sendable {
     var glyph: String { tab.glyph }
 }
 
+/// 页签拖动排序的换算。
+///
+/// 一次拖动里 `onChanged` 连着来，`translation` 是从起点累计的。
+/// 所以每次都只补上「这一次新跨过的条数」，不把累计值重算一遍：
+/// 重算会把已经挪过的位置再挪一次，页签冲过头。
+struct TabReorderState {
+    /// 已经补过的条数。
+    private(set) var applied = 0
+    /// 跨过一条页签要拖多少点。
+    private let step: CGFloat
+
+    init(step: CGFloat) {
+        self.step = step
+    }
+
+    /// 这一次该往哪边挪几条。零表示还没跨过一条。
+    mutating func delta(forTranslation width: CGFloat) -> Int {
+        guard step > 0 else { return 0 }
+        let steps = Int(width / step)
+        defer { applied = steps }
+        return steps - applied
+    }
+
+    /// 松手，下一次拖动从头计。
+    mutating func reset() {
+        applied = 0
+    }
+}
+
 /// 挂帘顶部的横向页签栏。合同 `component/tab-bar`，`nativeSize` 是 960 × 46。
 ///
 /// 左端固定是首页入口，紧挨着搜索框，中间是工作区页签，右端是当前页的动作。
@@ -31,6 +60,10 @@ struct WorkbenchTabBar: View {
     let onPageAction: () -> Void
 
     @Namespace private var selectionNamespace
+
+    /// 正在拖的页签 id，与这一次拖动已经挪过的条数。
+    @State private var reorderID: String?
+    @State private var reorder = TabReorderState(step: HubMetrics.tabReorderStep)
 
     var body: some View {
         HStack(spacing: HubMetrics.tabBarItemGap) {
@@ -101,8 +134,8 @@ struct WorkbenchTabBar: View {
     private var tabStrip: some View {
         ScrollView(.horizontal) {
             HStack(spacing: HubMetrics.tabGap) {
-                ForEach(Array(panes.enumerated()), id: \.element.id) { index, pane in
-                    tab(pane, at: index)
+                ForEach(Array(panes.enumerated()), id: \.element.id) { _, pane in
+                    tab(pane)
                 }
             }
             .padding(.vertical, 1)
@@ -111,7 +144,7 @@ struct WorkbenchTabBar: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func tab(_ pane: PaneItem, at index: Int) -> some View {
+    private func tab(_ pane: PaneItem) -> some View {
         let isSelected = destination == .pane(id: pane.id)
         return Button {
             guard !isEditing else { return }
@@ -142,7 +175,7 @@ struct WorkbenchTabBar: View {
         .accessibilityLabel(pane.title)
         .accessibilityHint(pane.tab.summary.text(for: language))
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
-        .gesture(isEditing ? reorderGesture(index: index) : nil)
+        .gesture(isEditing ? reorderGesture(pane: pane) : nil)
     }
 
     /// 选中态是一块胶囊滑块。页签切换时滑块滑到新位置。
@@ -162,12 +195,28 @@ struct WorkbenchTabBar: View {
     }
 
     /// 编辑模式里的拖动排序。跨过一条页签的宽度就换一次位置。
-    private func reorderGesture(index: Int) -> some Gesture {
+    ///
+    /// 每次都按 id 重新找当前下标：上一次换位之后页签已经挪了，
+    /// 用闭包里那个旧下标会越挪越偏。
+    private func reorderGesture(pane: PaneItem) -> some Gesture {
         DragGesture(minimumDistance: 3)
             .onChanged { value in
-                let moves = Int(value.translation.width / HubMetrics.tabReorderStep)
-                guard moves != 0 else { return }
-                onReorder(index, index + moves)
+                if reorderID != pane.id {
+                    reorderID = pane.id
+                    reorder.reset()
+                }
+                let delta = reorder.delta(forTranslation: value.translation.width)
+                guard delta != 0,
+                      !panes.isEmpty,
+                      let current = panes.firstIndex(where: { $0.id == pane.id })
+                else { return }
+                let target = (current + delta).clamped(to: 0...(panes.count - 1))
+                guard target != current else { return }
+                onReorder(current, target)
+            }
+            .onEnded { _ in
+                reorderID = nil
+                reorder.reset()
             }
     }
 
