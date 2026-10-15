@@ -52,18 +52,26 @@ EOF
 
 openssl req -x509 -newkey rsa:2048 -sha256 -days 3650 -nodes \
   -config openssl.cnf -keyout covio.key -out covio.crt
-openssl pkcs12 -export -out covio.p12 -inkey covio.key -in covio.crt -passout pass:covio
+openssl pkcs12 -export -out covio.p12 -inkey covio.key -in covio.crt \
+  -passout pass:covio -legacy
 security import covio.p12 -k "$HOME/Library/Keychains/login.keychain-db" -P covio \
-  -T /usr/bin/codesign -T /usr/bin/xcodebuild
-security find-identity -v -p codesigning
+  -T /usr/bin/codesign -T /usr/bin/xcodebuild \
+  -T /Applications/Xcode.app/Contents/MacOS/Xcode
+security find-identity -p codesigning
 ```
 
-最后一条命令应列出 `"Covio Dev"`。然后在 `macosApp/Signing.local.xcconfig` 写：
+`-legacy` 不能省。OpenSSL 3 默认用 AES-256-CBC 与 SHA-256。macOS 的 Security 框架读不了这种 PKCS#12，`security import` 会报 `MAC verification failed`。
+
+最后一条命令应列出 `"Covio Dev"`。它同时带 `CSSMERR_TP_NOT_TRUSTED` 标记。这不影响使用：`codesign` 不要求证书被信任。不要用 `-v`，`-v` 只列受信任的身份，会显示 0 个。
+
+然后在 `macosApp/Signing.local.xcconfig` 写：
 
 ```text
 CODE_SIGN_IDENTITY = Covio Dev
 CODE_SIGN_STYLE = Manual
 ```
+
+导入成功后删掉临时目录里的 `covio.key` 与 `covio.p12`。私钥已在登录钥匙串里，临时文件是多余的副本。
 
 ## 后果
 
@@ -107,8 +115,20 @@ CODE_SIGN_STYLE = Manual
 
 | 项目 | 状态 | 确认方法 |
 | --- | --- | --- |
-| 连续两次构建的 designated requirement 是否相同 | pending | 建好证书后连续构建两次，比对 `codesign -d -r-` 的输出 |
+| 连续两次构建的 designated requirement 是否相同 | 已确认 | 见下 |
 | 分发签名与公证 | pending | 另开 issue |
+
+## 验证
+
+本机建好 `Covio Dev` 证书后，改动一个 Swift 文件，连续构建两次。两次的 cdhash 不同，designated requirement 相同：
+
+| 项目 | 第一次 | 第二次 |
+| --- | --- | --- |
+| `CDHash` | `3cfe010aeb8946315aa5be2458383c47b2e26f26` | `18efccab184a7933c262de37f9f4554662743885` |
+| `Authority` | `Covio Dev` | `Covio Dev` |
+| designated requirement | `identifier "com.wyz.covio" and certificate root = H"954adead95bb79d673dd0e818afc6ceaa6e0d623"` | 同左 |
+
+识别依据锚定到证书，所以 TCC 的授权跨构建保留。
 
 ## 参考
 
