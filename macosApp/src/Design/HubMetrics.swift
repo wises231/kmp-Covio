@@ -21,16 +21,10 @@ enum HubMetrics {
     /// Hub 最大高度是屏幕高度减 120 点。
     static let verticalScreenMargin: CGFloat = 120
 
-    /// 面板边框 1 点。
-    static let borderWidth: CGFloat = 1
-
     // MARK: - 面板
 
     /// 面板宽度 960 点。合同 `component/tab-bar` 的 `nativeSize.width`。
     static let panelWidth: CGFloat = 960
-
-    /// 面板圆角 22 点。合同 `token/radius/panel`。
-    static let panelRadius: CGFloat = 22
 
     /// 面板内边距 24 点。合同 `token/space/6`。
     static let panelPadding: CGFloat = MacTheme.space6
@@ -39,6 +33,35 @@ enum HubMetrics {
     ///
     /// 960 − 24 × 2 = 912。合同 `component/page-title` 的 `nativeSize.width`。
     static var contentColumnWidth: CGFloat { panelWidth - panelPadding * 2 }
+
+    // MARK: - 玻璃板
+
+    /// 两块玻璃板之间的间隙 11 点。
+    ///
+    /// 控制中心的比例：间距 ÷ 模块边长 = 0.23。单位高度取顶栏的 46，
+    /// 46 × 0.23 ≈ 10.6，取 11。依据是官方宣传图的逐像素测量。
+    ///
+    /// 这条取代了原来那条 1 点的分隔线：两块板分开之后，缝本身就是分界。
+    static let plateGap: CGFloat = 11
+
+    /// 顶栏板与菜单栏之间的缝 11 点。
+    ///
+    /// 控制中心最上面那个模块离菜单栏也有一段。取与板间距同值，整个组合的
+    /// 节奏才一致。
+    ///
+    /// 它算进面板窗口的高度，但不进卡片的 frame：进了的话挂帘收起时会先露出
+    /// 一条空缝，再露出顶栏板。
+    static let plateTopInset: CGFloat = 11
+
+    /// 顶栏板的圆角 23 点。小模块用胶囊，圆角 = 高度 ÷ 2 = 46 ÷ 2。
+    static let tabBarPlateRadius: CGFloat = tabBarHeight / 2
+
+    /// 内容板的圆角 28 点。
+    ///
+    /// 控制中心宽模块的比例是「圆角 ÷ 高度 = 0.38」，但那条只对高度相近的模块
+    /// 成立：内容板高 400 点以上，照 0.38 算会到 150 点以上，不成形。所以取一
+    /// 个设计值。
+    static let contentPlateRadius: CGFloat = 28
 
     // MARK: - 顶栏
 
@@ -53,9 +76,6 @@ enum HubMetrics {
 
     /// 顶栏里各件之间的间距。
     static let tabBarItemGap: CGFloat = MacTheme.space2
-
-    /// 顶栏下面的分隔线。
-    static let tabBarDividerHeight: CGFloat = 1
 
     /// 首页入口按钮。合同 `component/button` 的命中区下限是 24 点。
     static let homeEntryWidth: CGFloat = 36
@@ -231,20 +251,28 @@ enum HubMetrics {
         }
     }
 
-    /// 面板内部高度：顶栏、分隔线、内容列的内边距，加上页内容。
+    /// 两块玻璃板加起来的高度：顶栏板、板间距、内容板。
     ///
-    /// 编辑模式在内容列顶部多一条提示条，提示条下面留一段间距。
-    static func interiorHeight(for page: HubPage, editing: Bool = false) -> CGFloat {
-        let chrome = tabBarHeight + tabBarDividerHeight + panelPadding * 2
+    /// 内容板里面是内容列的内边距与页内容。编辑模式在内容列顶部多一条提示条，
+    /// 提示条下面留一段间距。
+    ///
+    /// 与菜单栏之间那条缝不在这里，见 [plateTopInset]。卡片按这个高度排，
+    /// 面板窗口按 [contentHeight] 排。
+    static func plateStackHeight(for page: HubPage, editing: Bool = false) -> CGFloat {
+        let chrome = tabBarHeight + plateGap + panelPadding * 2
         let banner = editing ? editBannerHeight + pageGap : 0
         return chrome + banner + pageContentHeight(for: page)
     }
 
     /// 某个页面的面板高度。面板窗口的高度由它决定。
     ///
-    /// 内边距已经算在 `interiorHeight` 里，所以这里不再加一次。
+    /// 等于两块板的高度加上与菜单栏之间的缝。内边距已经算在 `plateStackHeight`
+    /// 里，所以这里不再加一次。
+    ///
+    /// `HubView` 的卡片 frame 用 `plateStackHeight`，窗口 frame 用这个值。
+    /// 两边不一致会把内容裁掉。
     static func contentHeight(for page: HubPage, editing: Bool = false) -> CGFloat {
-        interiorHeight(for: page, editing: editing)
+        plateTopInset + plateStackHeight(for: page, editing: editing)
     }
 
     // MARK: - 菜单栏

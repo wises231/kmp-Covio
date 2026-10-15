@@ -40,22 +40,40 @@ final class HubMetricsTests: XCTestCase {
         XCTAssertGreaterThan(HubMetrics.tabBarHeight, tallest)
     }
 
-    /// 面板内部高度等于顶栏、分隔线、内容列内边距与页内容之和。
-    func testTheInteriorHeightIsTheSumOfItsParts() {
+    /// 两块玻璃板的高度等于顶栏板、板间距、内容列内边距与页内容之和。
+    func testThePlateStackHeightIsTheSumOfItsParts() {
         for page in Self.allPages {
             let expected = HubMetrics.tabBarHeight
-                + HubMetrics.tabBarDividerHeight
+                + HubMetrics.plateGap
                 + HubMetrics.panelPadding * 2
                 + HubMetrics.pageContentHeight(for: page)
-            XCTAssertEqual(HubMetrics.interiorHeight(for: page), expected)
+            XCTAssertEqual(HubMetrics.plateStackHeight(for: page), expected)
         }
     }
 
-    /// 面板高度就是内部高度。内边距已经算在内部高度里，不再加一次。
-    func testThePanelHeightAddsNothingOnTopOfTheInterior() {
+    /// 面板高度是两块板加上与菜单栏之间的缝。缝不算进板里，否则挂帘收起时会先
+    /// 露出一条空缝再露出顶栏板。
+    func testThePanelHeightAddsTheGapAboveThePlates() {
         for page in Self.allPages {
-            XCTAssertEqual(HubMetrics.contentHeight(for: page), HubMetrics.interiorHeight(for: page))
+            XCTAssertEqual(
+                HubMetrics.contentHeight(for: page),
+                HubMetrics.plateTopInset + HubMetrics.plateStackHeight(for: page)
+            )
         }
+    }
+
+    /// 顶栏板是胶囊：圆角等于高度的一半。
+    func testTheTopBarPlateIsACapsule() {
+        XCTAssertEqual(HubMetrics.tabBarPlateRadius, HubMetrics.tabBarHeight / 2)
+    }
+
+    /// 内容板是圆角矩形，不是胶囊。圆角明显小于高度的一半。
+    func testTheContentPlateIsNotACapsule() {
+        let smallestPage = Self.allPages.min { a, b in
+            HubMetrics.plateStackHeight(for: a) < HubMetrics.plateStackHeight(for: b)
+        }
+        let shortestPlate = HubMetrics.plateStackHeight(for: smallestPage ?? .home(rows: 1))
+        XCTAssertLessThan(HubMetrics.contentPlateRadius, shortestPlate / 2)
     }
 
     /// 编辑模式在内容列顶部多一条提示条，提示条下面留一段间距。

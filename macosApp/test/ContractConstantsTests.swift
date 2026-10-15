@@ -311,8 +311,8 @@ final class SettingsSectionTests: XCTestCase {
             let page = HubPage.pane(tab)
             XCTAssertEqual(
                 HubMetrics.contentHeight(for: page),
-                HubMetrics.interiorHeight(for: page),
-                "\(tab.rawValue) 的面板高度不等于内部高度"
+                HubMetrics.plateTopInset + HubMetrics.plateStackHeight(for: page),
+                "\(tab.rawValue) 的面板高度不等于两块板加上顶部的缝"
             )
             XCTAssertEqual(
                 HubMetrics.pageContentHeight(for: page),
@@ -354,23 +354,23 @@ final class SettingsSectionTests: XCTestCase {
         }
     }
 
-    /// 面板必须盖得住顶栏加页内容。
+    /// 面板必须盖得住顶栏板加内容板。
     ///
     /// 编辑模式多一条提示条，也要盖得住。
     func testThePanelCoversTheTabBarAndThePageOnEveryPage() {
         for tab in HubTab.allCases {
             let page = HubPage.pane(tab)
             for editing in [false, true] {
-                let interior = HubMetrics.interiorHeight(for: page, editing: editing)
+                let plates = HubMetrics.plateStackHeight(for: page, editing: editing)
                 let needed = HubMetrics.tabBarHeight
-                    + HubMetrics.tabBarDividerHeight
+                    + HubMetrics.plateGap
                     + HubMetrics.panelPadding * 2
                     + (editing ? HubMetrics.editBannerHeight + HubMetrics.pageGap : 0)
                     + HubMetrics.pageContentHeight(for: page)
                 XCTAssertGreaterThanOrEqual(
-                    interior,
+                    plates,
                     needed,
-                    "\(tab.rawValue) 编辑模式 \(editing) 的面板盖不住顶栏加页内容"
+                    "\(tab.rawValue) 编辑模式 \(editing) 的板高盖不住顶栏加页内容"
                 )
             }
         }
