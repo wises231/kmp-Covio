@@ -4,7 +4,7 @@
 
 | 项目 | 内容 |
 | --- | --- |
-| 状态 | 尚未执行 |
+| 状态 | 部分执行。`V01`、`V03`、`V04` 已完成，见 [Case 1](case-control-center-parity.md) |
 | 日期 | `2026-10-16` |
 | 目标环境 | Apple Silicon Mac，macOS 27.0.1，3456 × 2234 像素 |
 | 问题类别 | 平台视觉语言的复现 |
@@ -16,7 +16,7 @@
 
 | 编号 | 案例 | 状态 | 记录 |
 | --- | --- | --- | --- |
-| Case 1 | 工作台与控制中心表现一致性 | 尚未执行 | [case-control-center-parity.md](case-control-center-parity.md) |
+| Case 1 | 工作台与控制中心表现一致性 | 部分执行 | [case-control-center-parity.md](case-control-center-parity.md) |
 
 ## 2. 目标
 
@@ -48,9 +48,9 @@
 
 ## 4. 当前事实
 
-1. 代码在分支 `feature/shell-match-preview`，commit `44b5207`。
-2. `bash scripts/test-all.sh` 在改动后通过过一次。
-3. 玻璃底材的默认值是 `.clear`。
+1. 代码在分支 `feature/shell-match-preview`，底材改动在 commit `6a65aea`。
+2. `bash scripts/test-all.sh` 在改动后通过过一次。494 个测试，0 失败。
+3. 玻璃底材的默认值是 `.glass`，走 `Glass.regular`。见 `E-13`。
 4. 内容区没有底板，四张卡片各自套了玻璃。
 5. 控制中心的实测取值见 [证据附录](../evidence.md) 的 `E-01` 到 `E-05`。
 6. 用户尚未目视确认。
@@ -86,17 +86,17 @@
 
 | 编号 | 场景 | 当前状态 | 结果文件 |
 | --- | --- | --- | --- |
-| V01 | 内容区没有底板，卡片之间露出桌面 | 尚未执行 | `case-control-center-parity.md` |
+| V01 | 内容区没有底板，卡片之间露出桌面 | 通过 | `case-control-center-parity.md` |
 | V02 | 卡片与顶栏板的几何与控制中心对照 | 尚未执行 | `case-control-center-parity.md` |
-| V03 | 卡片内部能看到桌面的模糊 | 尚未执行 | `case-control-center-parity.md` |
-| V04 | 四个底材取值都能起 | 尚未执行 | `case-control-center-parity.md` |
+| V03 | 卡片内部能看到桌面的模糊 | 通过 | `case-control-center-parity.md` |
+| V04 | 四个底材取值都能起 | 通过 | `case-control-center-parity.md` |
 | V05 | 深色与浅色外观 | 尚未执行 | `case-control-center-parity.md` |
 | V06 | 卡片边缘由系统绘制，没有自绘投影 | 尚未执行 | `case-control-center-parity.md` |
 | V07 | 顶栏板是胶囊，与菜单栏胶囊一致 | 尚未执行 | `case-control-center-parity.md` |
 | V08 | 编辑模式下的表现 | 尚未执行 | `case-control-center-parity.md` |
 | V09 | 减弱动态效果下的表现 | 尚未执行 | `case-control-center-parity.md` |
 | V10 | 收起态与展开动效的回归 | 尚未执行 | `case-control-center-parity.md` |
-| V11 | `bash scripts/test-all.sh` 通过 | 尚未执行 | `case-control-center-parity.md` |
+| V11 | `bash scripts/test-all.sh` 通过 | 通过。494 个测试，0 失败 | `case-control-center-parity.md` |
 
 ## 9. 证据要求
 

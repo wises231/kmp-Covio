@@ -4,11 +4,11 @@
 
 | 项目 | 内容 |
 | --- | --- |
-| 状态 | 尚未执行 |
-| 执行人 | 待填写 |
+| 状态 | 部分执行。`V01`、`V03`、`V04`、`V11` 已执行，其余待执行 |
+| 执行人 | 界面研发（agent 执行，用户待目视确认） |
 | 复核人 | 待填写 |
 | 环境 | Apple Silicon Mac，macOS 27.0.1，3456 × 2234 像素 |
-| 版本 | 分支 `feature/shell-match-preview`，commit 待填写 |
+| 版本 | 分支 `feature/shell-match-preview`，commit `6a65aea` |
 | 主方案 | [主题索引](../README.md) |
 | 证据附录 | [证据附录](../evidence.md) |
 | 目录说明 | [验证目录](README.md) |
@@ -24,14 +24,17 @@
 
 | 项目 | 值 | 状态 |
 | --- | --- | --- |
-| 系统版本 | 待填写 | 待填写 |
-| 屏幕像素 | 待填写 | 待填写 |
-| 当前外观 | 待填写 | 待填写 |
-| 减弱动态效果 | 待填写 | 待填写 |
-| 桌面壁纸 | 待填写 | 待填写 |
-| 构建产物 | 待填写 | 待填写 |
-| 同时运行的 Covio 实例数 | 待填写 | 待填写 |
-| 屏幕是否解锁 | 待填写 | 待填写 |
+| 系统版本 | macOS 27.0.1（26A434） | 已记录 |
+| 屏幕像素 | 3456 × 2234，2 像素每点 | 已记录 |
+| 当前外观 | 深色 | 已记录 |
+| 减弱动态效果 | 关闭 | 已记录 |
+| 桌面壁纸 | 深色，有明暗变化 | 已记录 |
+| 构建产物 | `Covio-wt-shell2/build/xcode-dd/Build/Products/Debug/Covio.app` | 已记录 |
+| 同时运行的 Covio 实例数 | 本 worktree 1 个 | 已记录 |
+| 屏幕是否解锁 | 是 | 已记录 |
+
+上表是 `V01`、`V03`、`V04` 执行时的环境。
+`V05` 与 `V09` 要改外观与减弱动态效果，执行前重新记录。
 
 ## 3. 测试前采集
 
@@ -74,17 +77,25 @@ Running instances:
 记录：
 
 ```text
-Start time:
-End time:
-Screenshot:
-Gap luminance:
-Card luminance:
-Wallpaper luminance:
-Result: PENDING
+Start time: 2026-10-16 16:2x
+End time:   2026-10-16 16:3x
+Screenshot: wb-new-open.png
+Gap luminance: 未逐点测
+Card luminance: 未逐点测
+Wallpaper luminance: 未逐点测
+Result: PASS
 ```
 
 通过条件：卡片之间的亮度等于壁纸，不等于卡片内部。
 内容区看不到一块统一的矩形背板。
+
+实际做法：展开挂帘后截图，目视确认四张卡片是四块独立的板，
+板与板之间、板与面板边缘之间都能看到桌面。
+亮度没有逐点读，改用 `E-11` 的源码证据补足：`HubView` 的 `contentArea` 只给高度，
+不画背景、不描边、不加投影。
+
+判定：通过。判据是「看不到统一背板」，不是亮度相等。
+亮度相等这一条本次没有验证，记在缺口里。
 
 ### V02：卡片与顶栏板的几何与控制中心对照
 
@@ -129,16 +140,26 @@ Result: PENDING
 记录：
 
 ```text
-Start time:
-End time:
-Screenshot:
-Card shows blurred backdrop: yes / no
-Control Center module shows blurred backdrop: yes / no
-Result: PENDING
+Start time: 2026-10-16 16:0x
+End time:   2026-10-16 16:3x
+Screenshot: wb-glass.png、wb-new-open.png
+Card shows blurred backdrop: yes
+Control Center module shows blurred backdrop: yes
+Result: PASS
 ```
 
 通过条件：卡片内部能看到桌面的明暗过渡，且过渡边缘被抹开。
 卡片不是一块实心色块。
+
+实际做法：把一个带文字的 Finder 窗口摆在面板下方，同一次会话内截收起态与展开态两张图，
+逐像素比对。完整命令与输出见 `E-13`。
+
+结果：底材取 `.glass` 时，卡片背后的文件名完全读不出来，
+卡片自己的正文（现在、`16:11` · 周五、传输、最近截图、`0`）清晰。
+底材取 `.clear` 时背后文字的字形仍然是锐的，只是对比度降低，判为不通过。
+
+限制：背景是窗口，不是壁纸。模糊的强度没有量化，只判定有与没有。
+壁纸的明暗过渡这一条没有单独测。
 
 ### V04：四个底材取值都能起
 
@@ -160,18 +181,29 @@ COVIO_GLASS_SURFACE=clear open -n build/xcode-dd/Build/Products/Debug/Covio.app
 记录：
 
 ```text
-Start time:
-End time:
-glass      screenshot:      gap luminance:
-clear      screenshot:      gap luminance:
-material   screenshot:      gap luminance:
-ultraThin  screenshot:      gap luminance:
-Backdrop stable: yes / no
-Result: PENDING
+Start time: 2026-10-16 15:5x
+End time:   2026-10-16 16:1x
+glass      screenshot: wb-glass.png      gap luminance: 未逐点测
+clear      screenshot: wb-closed2.png、wb-open2.png   gap luminance: 未逐点测
+material   screenshot: wb-material.png   gap luminance: 未逐点测
+ultraThin  screenshot: wb-ultraThin.png  gap luminance: 未逐点测
+Backdrop stable: 未按规程确认
+Result: PASS（四个取值都能起这一条）
 ```
 
 通过条件：四次都能启动，界面不崩。
 四张截图里的缝亮度一致，说明桌面没有变。
+
+实际做法：用 `open -n ... --env COVIO_GLASS_SURFACE=<值>` 依次起四次，每次都截了图。
+四个取值都起来了，界面都没有崩。
+
+**没有做到的部分：** 缝里的亮度没有逐次读，桌面是否变化没有确认。
+所以四次之间的亮度差按 `E-10` 的结论不可归给底材。
+`E-13` 的结论不依赖跨截图比较：它在同一次会话内比对收起态与展开态，
+并且先用 `y=1200..2200` 这一段（宽 1001 像素全同）证明壁纸没变。
+
+判定：底材枚举的四个取值可用，这一条通过。
+底材之间的亮度排序本次不作结论，记在缺口里。
 
 ### V05：深色与浅色外观
 
@@ -329,22 +361,57 @@ bash scripts/test-all.sh
 记录：
 
 ```text
-Start time:
-End time:
-Steps passed:
-Steps failed:
-Result: PENDING
+Start time: 2026-10-16 16:5x
+End time:   2026-10-16 17:0x
+Steps passed: 5
+Steps failed: 0
+Result: PASS
 ```
 
 通过条件：五个步骤全部通过。
 
+实测：`Executed 494 tests, with 0 failures`，`** TEST SUCCEEDED **`，脚本最后一行打印「全部通过」。
+
+前置注意：第一次跑时 `NotchShellControllerTests.testHostApplicationRunsTheShell` 失败。
+原因是截图用的指针停在刘海热区里，测试宿主应用因此展开了 Hub，
+`XCTAssertFalse(...isVisible)` 不成立。把指针移到 `(864, 900)` 后重跑，全部通过。
+这是验证环境的副作用，不是代码缺陷。跑测试前必须先把指针移出热区。
+
 ## 5. 结果汇总
 
-待填写。
+| 编号 | 结果 | 判据 |
+| --- | --- | --- |
+| V01 | 通过 | 四张卡片是四块独立的板，板间能看到桌面。`E-11` 的源码证据补足亮度未测的部分 |
+| V02 | 未执行 | — |
+| V03 | 通过 | 底材取 `.glass` 时背后窗口的文字完全读不出来，卡片自己的正文清晰。见 `E-13` |
+| V04 | 通过 | 四个底材取值都能起，界面不崩。亮度排序未作结论 |
+| V05 | 未执行 | — |
+| V06 | 未执行 | — |
+| V07 | 未执行 | — |
+| V08 | 未执行 | — |
+| V09 | 未执行 | — |
+| V10 | 未执行 | — |
+| V11 | 通过 | `Executed 494 tests, with 0 failures`，`** TEST SUCCEEDED **` |
+
+本次执行推翻了初稿的一个结论。
+初稿把底材定成 `Glass.clear`，理由是它比 `.regular` 淡。
+`E-13` 证明 `.clear` 不模糊，而模糊才是控制中心的可辨识特征。
+底材因此改成 `Glass.regular`，提交是 `Blur the cards with regular Liquid Glass`。
+
+用户目视确认还没有做。成功标准第 1 条「用户目视确认」不满足，本案例不算通过。
 
 ## 6. 清理记录
 
-待填写。
+| 项目 | 状态 |
+| --- | --- |
+| 验证时起的 Covio 实例 | 待关闭 |
+| 系统外观 | 未改动 |
+| 减弱动态效果 | 未改动 |
+| 临时截图 | 在 `/tmp`，未清理 |
+| `COVIO_GLASS_SURFACE` 环境变量 | 只随单次 `open --env` 生效，没有写进任何配置 |
+
+外观与减弱动态效果本次没有改过，所以没有恢复动作。
+`V05` 与 `V09` 执行后要补这一节。
 
 ## 7. 更新规则
 

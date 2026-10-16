@@ -9,8 +9,8 @@
 | 日期 | `2026-10-16` |
 | 适用对象 | Covio 界面研发与设计评审人员 |
 | 当前验证环境 | Apple Silicon Mac，macOS 27.0.1（26A434），3456 × 2234 像素，2 像素每点 |
-| 当前结论 | 推荐每个卡片自己一块 `Glass.clear` 玻璃，填充取半透明材质，不加容器底板 |
-| 验证状态 | 尚未执行 |
+| 当前结论 | 推荐每个卡片自己一块 `Glass.regular` 玻璃，填充取半透明材质，不加容器底板 |
+| 验证状态 | 部分执行。底材的模糊对照已完成，见 `E-13` |
 
 ## 前因
 
@@ -25,7 +25,7 @@
 
 控制中心是系统进程，源码不公开。
 第三方只能从截图反推它的取值，再用公开 API 逼近。
-macOS 26 起 SwiftUI 提供 `glassEffect` 与 `Glass.clear`，是公开 API 里最接近的一条路。
+macOS 26 起 SwiftUI 提供 `glassEffect`，是公开 API 里最接近的一条路。
 技术说明、来源等级和证据字段见 [investigation.md](investigation.md)。
 当前环境和原始观测见 [evidence.md](evidence.md)。
 
@@ -39,12 +39,15 @@ macOS 26 起 SwiftUI 提供 `glassEffect` 与 `Glass.clear`，是公开 API 里�
 
 ## 结果
 
-控制中心的模块由四件事定义。
-一是细亮边，宽 1 到 2 像素。
-二是半透明填充，亮度接近紧邻的桌面。
-三是模块之间没有容器底板。
-四是圆角约等于模块高度的 0.39。
+控制中心的模块由五件事定义。
+一是模糊，背后的内容被抹平。
+二是细亮边，宽 1 到 2 像素。
+三是半透明填充，亮度接近紧邻的桌面。
+四是模块之间没有填充，只有模糊。
+五是圆角约等于模块高度的 0.39。
 工作台的卡片此前用不透明填充，所以看不到模糊。
+第一版改法用 `Glass.clear`，它几乎不模糊，背后窗口的文字会压住正文。
+第二版改成 `Glass.regular`。
 根因、决策表和限制见 [conclusion.md](conclusion.md)。
 证据索引和逻辑链见 [evidence.md](evidence.md)。
 
@@ -60,7 +63,7 @@ macOS 26 起 SwiftUI 提供 `glassEffect` 与 `Glass.clear`，是公开 API 里�
 
 ## 实现预期的手段
 
-每张卡片自己一块玻璃，底材取 `Glass.clear`。
+每张卡片自己一块玻璃，底材取 `Glass.regular`。
 卡片填充取 `token/color/material-thin`，半透明。
 顶栏板用同一个底材，圆角 23 点。
 内容区不放底板。

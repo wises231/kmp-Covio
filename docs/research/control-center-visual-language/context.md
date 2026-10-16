@@ -84,7 +84,7 @@ Covio 拿不到控制中心的视图树，只能从截图取样。
 
 | 状态 | 卡片玻璃 | 卡片填充 | 内容区底板 | 顶栏板 |
 | --- | --- | --- | --- | --- |
-| 正常（macOS 26 及以上） | `Glass.clear` | `token/color/material-thin` 半透明 | 无 | `Glass.clear` 胶囊 |
+| 正常（macOS 26 及以上） | `Glass.regular` | `token/color/material-thin` 半透明 | 无 | `Glass.regular` 胶囊 |
 | 降级（玻璃不可用） | `.regularMaterial` | 同上 | 无 | `.regularMaterial` |
 | 减弱动态效果 | 不变 | 不变 | 无 | 不变 |
 | 全屏 Space | 不变 | 不变 | 无 | 隐藏 |

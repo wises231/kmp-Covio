@@ -9,7 +9,7 @@
 ### 1.1 路径选择
 
 每张卡片自己一块玻璃。
-底材取 `Glass.clear`。
+底材取 `Glass.regular`。
 卡片填充取半透明的 `token/color/material-thin`。
 内容区不放底板。
 顶栏板用同一个底材。
@@ -64,7 +64,7 @@ HubView.body
 
 1. 应用启动时读 `COVIO_GLASS_SURFACE`。
 2. 取值是 `glass`、`clear`、`material` 或 `ultraThin`。
-3. 取值无效时保持默认 `.clear`。
+3. 取值无效时保持默认 `.glass`。
 4. 只在 DEBUG 构建生效。
 
 ### 2.3 降级
@@ -151,8 +151,9 @@ HubView.body
 3. `bash scripts/test-all.sh` 出现与本次改动相关的失败。
 4. 面板展开或收起的动效出现可见异常。
 
-回滚方式：把分支 `feature/shell-match-preview` 上的两次提交反向应用。
-两次提交是 `Match the plate material to Control Center` 与 `Move the glass from the content plate onto the cards`。
+回滚方式：把分支 `feature/shell-match-preview` 上的三次提交反向应用。
+三次提交是 `Match the plate material to Control Center`、`Move the glass from the content plate onto the cards`
+与 `Blur the cards with regular Liquid Glass`。
 
 ## 11. 产品化条件
 
