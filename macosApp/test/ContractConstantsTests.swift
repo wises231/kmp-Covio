@@ -333,7 +333,7 @@ final class SettingsSectionTests: XCTestCase {
         )
 
         // 两个还没落地的页签用占位高度。
-        let placeholders: [HubTab] = [.now, .devices]
+        let placeholders: [HubTab] = [.now, .monitor]
         for tab in placeholders {
             XCTAssertEqual(
                 HubMetrics.pageContentHeight(for: tab),

@@ -195,14 +195,14 @@ enum ContractCopy {
     static let copyHubTabClipboard = LocalizedCopy(key: "copy/hub/tab/clipboard", en: "Clipboard", zhHans: "剪贴板")
     /// `copy/hub/tab/clipboard/summary`
     static let copyHubTabClipboardSummary = LocalizedCopy(key: "copy/hub/tab/clipboard/summary", en: "Recent text, images, and files.", zhHans: "最近文本、图片和文件列表。")
-    /// `copy/hub/tab/devices`
-    static let copyHubTabDevices = LocalizedCopy(key: "copy/hub/tab/devices", en: "Devices", zhHans: "设备")
-    /// `copy/hub/tab/devices/summary`
-    static let copyHubTabDevicesSummary = LocalizedCopy(key: "copy/hub/tab/devices/summary", en: "Paired devices, discovery results, and the transfer queue.", zhHans: "已配对设备、发现结果和传输队列。")
     /// `copy/hub/tab/files`
     static let copyHubTabFiles = LocalizedCopy(key: "copy/hub/tab/files", en: "Files", zhHans: "文件")
     /// `copy/hub/tab/files/summary`
     static let copyHubTabFilesSummary = LocalizedCopy(key: "copy/hub/tab/files/summary", en: "Temporary files, free space, and expiry.", zhHans: "临时文件、剩余空间和过期时间。")
+    /// `copy/hub/tab/monitor`
+    static let copyHubTabMonitor = LocalizedCopy(key: "copy/hub/tab/monitor", en: "Monitor", zhHans: "监控")
+    /// `copy/hub/tab/monitor/summary`
+    static let copyHubTabMonitorSummary = LocalizedCopy(key: "copy/hub/tab/monitor/summary", en: "Live CPU, memory, disk, network, and sensor metrics.", zhHans: "CPU、内存、磁盘、网络和传感器的实时指标。")
     /// `copy/hub/tab/now`
     static let copyHubTabNow = LocalizedCopy(key: "copy/hub/tab/now", en: "Now", zhHans: "现在")
     /// `copy/hub/tab/now/summary`
@@ -665,10 +665,10 @@ enum ContractCopy {
         copyHubPlaceholderNotice,
         copyHubTabClipboard,
         copyHubTabClipboardSummary,
-        copyHubTabDevices,
-        copyHubTabDevicesSummary,
         copyHubTabFiles,
         copyHubTabFilesSummary,
+        copyHubTabMonitor,
+        copyHubTabMonitorSummary,
         copyHubTabNow,
         copyHubTabNowSummary,
         copyHubTabScreenshots,

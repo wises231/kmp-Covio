@@ -4061,14 +4061,6 @@
       "en": "Recent text, images, and files.",
       "zh-Hans": "最近文本、图片和文件列表。"
     },
-    "copy/hub/tab/devices": {
-      "en": "Devices",
-      "zh-Hans": "设备"
-    },
-    "copy/hub/tab/devices/summary": {
-      "en": "Paired devices, discovery results, and the transfer queue.",
-      "zh-Hans": "已配对设备、发现结果和传输队列。"
-    },
     "copy/hub/tab/files": {
       "en": "Files",
       "zh-Hans": "文件"
@@ -4076,6 +4068,14 @@
     "copy/hub/tab/files/summary": {
       "en": "Temporary files, free space, and expiry.",
       "zh-Hans": "临时文件、剩余空间和过期时间。"
+    },
+    "copy/hub/tab/monitor": {
+      "en": "Monitor",
+      "zh-Hans": "监控"
+    },
+    "copy/hub/tab/monitor/summary": {
+      "en": "Live CPU, memory, disk, network, and sensor metrics.",
+      "zh-Hans": "CPU、内存、磁盘、网络和传感器的实时指标。"
     },
     "copy/hub/tab/now": {
       "en": "Now",

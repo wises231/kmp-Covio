@@ -11,7 +11,7 @@ enum HubTab: String, CaseIterable, Identifiable, Sendable {
     case clipboard = "Clipboard"
     case files = "Files"
     case screenshots = "Screenshots"
-    case devices = "Devices"
+    case monitor = "Monitor"
     case settings = "Settings"
 
     var id: String { rawValue }
@@ -23,7 +23,7 @@ enum HubTab: String, CaseIterable, Identifiable, Sendable {
         case .clipboard: ContractCopy.copyHubTabClipboard
         case .files: ContractCopy.copyHubTabFiles
         case .screenshots: ContractCopy.copyHubTabScreenshots
-        case .devices: ContractCopy.copyHubTabDevices
+        case .monitor: ContractCopy.copyHubTabMonitor
         case .settings: ContractCopy.copyHubTabSettings
         }
     }
@@ -35,7 +35,7 @@ enum HubTab: String, CaseIterable, Identifiable, Sendable {
         case .clipboard: ContractCopy.copyHubTabClipboardSummary
         case .files: ContractCopy.copyHubTabFilesSummary
         case .screenshots: ContractCopy.copyHubTabScreenshotsSummary
-        case .devices: ContractCopy.copyHubTabDevicesSummary
+        case .monitor: ContractCopy.copyHubTabMonitorSummary
         case .settings: ContractCopy.copyHubTabSettingsSummary
         }
     }
@@ -49,7 +49,7 @@ enum HubTab: String, CaseIterable, Identifiable, Sendable {
         case .clipboard: "doc.on.clipboard"
         case .files: "folder"
         case .screenshots: "camera.viewfinder"
-        case .devices: "laptopcomputer.and.iphone"
+        case .monitor: "gauge.medium"
         case .settings: "gearshape"
         }
     }

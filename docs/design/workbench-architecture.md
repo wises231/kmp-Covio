@@ -106,8 +106,12 @@ R7 不做主屏手势。系统不向第三方应用开放 iOS 主屏手势入口
 | S7 | 工作区设置页 | 名称、图标、显示选项、删除。 | 改名、换图标、删除、重置 | 合同暂无条目 |
 | S8 | 错误与恢复 | 原因文案加恢复动作。 | 重试、打开设置、回退默认布局 | 合同板 28 |
 
-默认六个工作区，按顺序：`Now`、`Clipboard`、`Files`、`Screenshots`、`Devices`、`Settings`。
+默认六个工作区，按顺序：`Now`、`Clipboard`、`Files`、`Screenshots`、`Monitor`、`Settings`。
 用户可以调整顺序。所有平台使用同一默认顺序。
+
+`Monitor` 显示硬件指标。指标清单与数据源见
+[硬件信息监听能力研究](../research/hardware-monitoring-capability/README.md)。
+配对设备与传输队列不再占用工作区，跨设备内容归共享暂存区。
 
 标记「合同暂无条目」的画面，实现前先在合同里加条目。
 改完合同重跑 `scripts/generate-contract-constants.py`。
@@ -186,3 +190,4 @@ R7 不做主屏手势。系统不向第三方应用开放 iOS 主屏手势入口
 | 工作区数量上限 | 未定。 |
 | 内置工作区能否删除 | 未定。 |
 | 触控板手势的权限要求 | 未验证。 |
+| `Monitor` 的指标清单与刷新频率 | 调研中，见 [硬件信息监听能力研究](../research/hardware-monitoring-capability/README.md)。 |

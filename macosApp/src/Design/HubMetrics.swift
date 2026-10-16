@@ -129,7 +129,7 @@ enum HubMetrics {
     /// 某个页签的右栏内容高度，不含胶囊。
     static func pageContentHeight(for tab: HubTab) -> CGFloat {
         switch tab {
-        case .now, .devices: placeholderPageContentHeight
+        case .now, .monitor: placeholderPageContentHeight
         case .settings: settingsPageContentHeight
         case .screenshots: screenshotsPageContentHeight
         case .clipboard: clipboardPageContentHeight

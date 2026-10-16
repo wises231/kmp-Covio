@@ -66,7 +66,7 @@ final class HubMetricsTests: XCTestCase {
     ///
     /// 占位页内容只有 180 点，比 370 点的导航栏矮，所以卡片高度等于导航栏加内边距。
     func testThePlaceholderCardIsAsTallAsTheRail() {
-        for tab in [HubTab.now, .devices] {
+        for tab in [HubTab.now, .monitor] {
             XCTAssertGreaterThan(HubMetrics.navRailHeight, HubMetrics.placeholderPageContentHeight)
             XCTAssertEqual(
                 HubMetrics.contentHeight(for: tab),
