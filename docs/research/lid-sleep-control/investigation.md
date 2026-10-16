@@ -4,14 +4,19 @@
 
 ## 1. 调研方法
 
-调研分三步。
+调研分四步。
 
 1. 读 Xcode 27 SDK 头文件，列出全部电源断言类型。
 2. 读 `man caffeinate` 和 `man pmset`，核对每个机制的官方说明。
 3. 在本机做对照实验，验证断言的实效。
+4. 读 `SMAppService.h`，再在本机跑注册探针，验证换形式的可行性。
 
 第 3 步用对照法：同一台机器，同一段脚本，只改断言这一个变量。
 测量手段是心跳文件和 `pmset -g log`。心跳文件记录用户态进程是否连续运行。电源日志记录系统状态迁移。
+
+第 4 步用一个最小的探针应用包。包里有 `Contents/Library/LaunchDaemons` 下的 plist。
+探针用两种签名配置各跑一次：`Covio Dev` 自签名证书，以及 ad-hoc。ad-hoc 与 CI 一致。
+探针不修改系统设置，只调用 `register()` 和 `unregister()`，并读回 `status`。
 
 ## 2. 来源范围
 
@@ -20,11 +25,14 @@
 | A | `IOPMLib.h`（Xcode 27 SDK） | 断言类型的权威定义和废弃状态 |
 | A | `man caffeinate` | `-s` 参数的官方说明 |
 | A | `man pmset` | `pmset` 参数的官方说明 |
+| A | `SMAppService.h`（Xcode 27 SDK） | 注册接口的签名、公证和批准要求 |
 | B | `macosApp/src/Platform/MacSleepController.swift` | 现有实现边界 |
 | B | `kmpDomain/src/com/wyz/covio/core/HelperContract.kt` | helper 命令白名单 |
 | B | `kmpDomain/src/com/wyz/covio/core/HelperInstallScript.kt` | 安装与卸载脚本 |
 | B | `kmpDomain/src/com/wyz/covio/core/Engine.kt` | 合盖策略的判定逻辑 |
+| B | `docs/adr/adr-0005-local-code-signing.md` | 现有签名配置 |
 | D | 本机对照实验 | 当前环境的实际行为 |
+| D | 本机注册探针 | 当前环境的注册结果 |
 
 ## 3. 系统模型
 
@@ -101,8 +109,25 @@ helper 是 root LaunchDaemon。协议是 Unix 域套接字。命令白名单只�
 | --- | --- | --- | --- | --- | --- |
 | `PreventSystemSleep` 断言 | 否 | 低 | 无效，断言不受支持 | 已废弃 | 不适用 |
 | 保留手写 LaunchDaemon | 是 | 中 | plist 手写，卸载靠脚本 | 现行可用 | 中 |
-| 改用 `SMAppService.daemon` | 是 | 中 | 签名要求未验证 | macOS 13 起 | 高 |
+| 改用 `SMAppService.daemon` | 是 | 中 | 被阻断，要求公证 | macOS 13 起 | 不适用 |
 | 删掉合盖功能 | 否 | 低 | 功能消失 | 不适用 | 高 |
+
+### 7.1 两种 helper 形式的对比
+
+两个方案都要求特权组件。差别只在形式。
+
+| 维度 | 保留现状：手写 plist | 换 `SMAppService.daemon` |
+| --- | --- | --- |
+| 能否落地 | 能。Apple 明确保留这条路径（`E-17`） | 不能。要求公证，本机没有 Developer ID（`E-16`、`E-20`） |
+| 安装动作 | `osascript` 弹窗，一次性 | 先注册，再到 System Settings 批准（`E-18`） |
+| 卸载动作 | `osascript` 弹窗，脚本以 root 运行 | `unregister()` 一步，不需要弹窗 |
+| 清 `disablesleep` | 卸载脚本第一步做，有 root 权限 | `unregister()` 不做。仍然需要 root（`E-21`） |
+| 应用更新 | 没有额外动作 | 每次更新要重新注册，否则可能不启动（`E-19`） |
+| plist 位置 | `/Library/LaunchDaemons`，手写 | 应用包内 `Contents/Library/LaunchDaemons` |
+| 组件路径 | plist 里写绝对路径 | `BundleProgram` 写包内相对路径 |
+
+管理员动作在两个方案里都存在。现状是安装时的弹窗，`SMAppService` 是 System Settings 里的开关。
+换形式不消除提权，只改变提权发生的位置和次数。
 
 ## 8. 市场对比
 
@@ -128,7 +153,8 @@ D 级证据只说明这一台机器、这一个系统版本的行为。
 
 ## 10. 已知缺口
 
-1. `SMAppService.daemon` 在自签名证书下的注册结果未验证。本机没有 Developer ID。
-2. `man pmset` 没有 `disablesleep` 条目。这个键只有行为证据，没有文档证据。
-3. 电池供电下的合盖行为没有单独测。断言路径已判定无效，所以这个测试没有意义。
-4. 市场对比缺失。原因见第 8 节。
+1. `man pmset` 没有 `disablesleep` 条目。这个键只有行为证据，没有文档证据。
+2. 电池供电下的合盖行为没有单独测。断言路径已判定无效，所以这个测试没有意义。
+3. 市场对比缺失。原因见第 8 节。
+4. 探针从 `/tmp` 运行，没有单独隔离 `/Applications` 路径的影响。见 `E-20`。
+5. 有 Developer ID 的机器上注册是否成功未验证。本机没有 Developer ID。

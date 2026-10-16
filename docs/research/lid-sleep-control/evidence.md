@@ -18,8 +18,12 @@
 | A | `IOPMLib.h`，Xcode 27 SDK | 断言类型的权威定义 | 高 |
 | A | `man caffeinate` | 参数语义 | 高 |
 | A | `man pmset` | 参数语义和文档缺口 | 高 |
+| A | `SMAppService.h`，Xcode 27 SDK | 注册接口的签名、公证和批准要求 | 高 |
+| A | `SMErrors.h`，Xcode 27 SDK | 注册错误的错误码 | 高 |
 | B | 本仓库源码，commit `9d47e12` | 实现边界 | 高 |
+| B | `docs/adr/adr-0005-local-code-signing.md` | 现有签名配置 | 高 |
 | D | 本机对照实验 | 当前环境行为 | 高，范围小 |
+| D | 本机注册探针 | 当前环境的注册结果 | 高，范围小 |
 
 ## 2. 环境事实
 
@@ -54,6 +58,12 @@
 | E-13 | 卸载脚本的顺序 | B | 先清标志再删组件 | 高 |
 | E-14 | helper 命令白名单 | B | 只有三个命令 | 高 |
 | E-15 | 无外接显示器 | D | 排除 clamshell mode 混淆 | 高 |
+| E-16 | `SMAppService` 的公证要求 | A | 含 LaunchDaemon 的应用必须公证 | 高 |
+| E-17 | 手写 plist 路径的地位 | A | Apple 明确保留，且不需批准 | 高 |
+| E-18 | 安装后的批准要求 | A | 守护进程要等管理员批准 | 高 |
+| E-19 | 更新后的重新注册要求 | A | 改 plist 或可执行文件后要重注册 | 高 |
+| E-20 | 探针的注册结果 | D | 两种签名配置都注册失败 | 高 |
+| E-21 | 卸载脚本的 root 依赖 | B | 清标志仍然需要 root | 高 |
 
 ## 4. 证据详情
 
@@ -387,6 +397,150 @@ Color LCD:
 置信度：高
 关联：`E-05`、`E-06`
 
+### E-16：`SMAppService` 的公证要求
+
+来源等级：A
+环境：Xcode 27 SDK，`MacOSX.sdk`
+命令或来源：`SMAppService.h:49,55`
+关键输出：
+
+```text
+L49   Apps that use SMAppService APIs must be code signed.
+L55   For SMAppServices initialized as LaunchDaemons, the register and unregister APIs provide a
+      replacement for installing plists in /Library/LaunchDaemons. Apps that contain LaunchDaemons
+      must be notarized.
+```
+
+观察：Apple 要求用 `SMAppService` 注册 LaunchDaemon 的应用必须公证。
+推论：拿不到公证的应用无法满足这个要求。
+反证：无。
+限制：这是接口要求，不是行为记录。行为由 `E-20` 补充。
+置信度：高
+关联：`conclusion.md` 3、5.3；`investigation.md` 7
+
+### E-17：手写 plist 路径的地位
+
+来源等级：A
+环境：Xcode 27 SDK
+命令或来源：`SMAppService.h:57-58`
+关键输出：
+
+```text
+L57   Legacy LaunchDaemons installed in /Library/LaunchDaemons will continue to be bootstrapped without
+L58   explicit approval in System Settings since writing to /Library is protected  with filesystem permissions.
+```
+
+观察：Apple 说明手写 plist 的旧路径继续有效，而且不需要 System Settings 批准。
+推论：保留现状不承担兼容性风险。这条路径不是过渡方案。
+反证：无。
+限制：没有写明保留期限。Apple 可以随时改。
+置信度：高
+关联：`conclusion.md` 3；`solution.md` 1.1
+
+### E-18：安装后的批准要求
+
+来源等级：A
+环境：Xcode 27 SDK
+命令或来源：`SMAppService.h:160-162`
+关键输出：
+
+```text
+L160  If the service corresponds to a LaunchDaemon, the LaunchDaemon will not be bootstrapped until an
+L161  admin approves the LaunchDaemon in System Settings. LaunchDaemons registered with this API
+L162  and approved by an admin will be bootstrapped on each subsequent boot.
+```
+
+观察：注册成功后守护进程不会立刻运行。管理员要到 System Settings 里批准。
+推论：换形式之后，管理员动作从安装时的弹窗移到 System Settings 开关。动作没有消失。
+反证：无。
+限制：未验证批准后的实际引导行为。本机无法批准，因为注册就没成功。
+置信度：高
+关联：`conclusion.md` 3；`solution.md` 8
+
+### E-19：更新后的重新注册要求
+
+来源等级：A
+环境：Xcode 27 SDK
+命令或来源：`SMAppService.h:60-62`
+关键输出：
+
+```text
+L60   If an app updates either the plist or the executable for a LaunchAgent or LaunchDaemon, the SMAppService
+L61   must be re-registered or it may not launch. It is recommended to also call unregister before
+L62   re-registering if the executable has been changed.
+```
+
+观察：应用更新后必须重新注册。否则守护进程可能不启动。
+推论：每次发版都要重新注册。这是新增的失败面。
+反证：无。
+限制：没有写明重新注册是否再次触发管理员批准。
+置信度：高
+关联：`conclusion.md` 3；`solution.md` 8
+
+### E-20：探针的注册结果
+
+来源等级：D
+环境：macOS 27.0.1，`/tmp` 下的探针应用包，两种签名配置
+命令或来源：`SMAppService.daemon(plistName:).register()`
+关键输出：
+
+```text
+配置 A：Covio Dev 自签名证书
+  status before: 3 (NotFound)
+  register: FAILED
+  domain: SMAppServiceErrorDomain   code: 1
+  description: The operation couldn't be completed. Operation not permitted
+  status after: 2 (RequiresApproval)
+
+配置 B：ad-hoc，与 CI 和 package-macos-swift.sh 一致
+  status before: 2
+  register: FAILED
+  同样的错误
+  status after: 2
+
+launchctl print system/com.wyz.covio.testdaemon
+  Could not find service "com.wyz.covio.testdaemon" in domain for system
+
+系统日志：
+  smd: Job is not allowed to bootstrap
+  backgroundtaskmanagementd: disposition=[enabled, disallowed, not notified], have LWCR=true
+```
+
+观察：两种签名配置都注册失败。系统建了 BTM 条目，但标记为 `disallowed`，拒绝引导。
+推论：自签名证书和 ad-hoc 签名都过不了 `SMAppService` 的签名门槛。这与 `E-16` 的要求一致。
+反证：无。
+限制：探针从 `/tmp` 运行，不在 Apple 建议的 `/Applications`（`SMAppService.h:127-129`）。路径的影响没有单独隔离。`E-16` 的公证要求是无条件的，所以这个限制不改变结论。
+置信度：高
+关联：`E-16`；`conclusion.md` 3；验证步骤 `V04`
+
+### E-21：卸载脚本的 root 依赖
+
+来源等级：B
+环境：commit `9d47e12`
+命令或来源：`HelperInstallScript.kt:57-64`、`HelperInstaller.swift:22-26,59-65`
+关键输出：
+
+```kotlin
+append("/usr/bin/pmset -a disablesleep 0 || true\n")
+append("/bin/launchctl bootout system '$plistPath' 2>/dev/null || true\n")
+append("rm -f '$plistPath'\n")
+```
+
+```swift
+static func uninstall(logger: (String) -> Void = { _ in }) -> Bool {
+    let script = uninstallScript()
+    logger("Uninstalling privileged helper")
+    return runWithAdministrator(script)
+}
+```
+
+观察：卸载脚本的第一步清 `disablesleep`。整个脚本以 root 运行。
+推论：`SMAppService.unregister()` 只能替换后三步。清标志仍然需要 root。
+反证：无。
+限制：没有测试过由守护进程自己在退出前清标志。那条路径要求守护进程存活。
+置信度：高
+关联：`conclusion.md` 3；`solution.md` 3.2、8
+
 ## 5. 逻辑证据链
 
 ```text
@@ -400,7 +554,16 @@ Color LCD:
   -> E-08、E-09：disablesleep 是系统级键，需要 root
   -> 决策：保留特权组件
   -> E-10、E-11：电源来源分流由应用侧完成
-  -> 验证条件：V01 到 V04
+
+第二个问题：特权组件用哪种形式
+  -> E-16：SMAppService 要求公证
+  -> B 级：ADR-0005 记录本机没有 Developer ID
+  -> E-20：两种签名配置都注册失败
+  -> 推论：SMAppService 路径被阻断
+  -> E-17：手写 plist 路径被 Apple 保留，且不需要批准
+  -> E-18、E-19、E-21：换形式另有批准、重注册和清标志三项成本
+  -> 决策：保留现有 helper 形式
+  -> 验证条件：V01 到 V03、V05
   -> 回填位置：conclusion.md 3
 ```
 
@@ -413,11 +576,12 @@ Color LCD:
 
 ## 7. 已知缺口
 
-1. `SMAppService.daemon` 在自签名证书下的注册结果未验证。本机没有 Developer ID。
-2. `pmset -b disablesleep` 是否被接受未验证。该命令需要 root。
-3. 电池合盖不睡的电量代价未量化。
-4. 市场对比缺失。`WebSearch` 在本机返回 403。
-5. 实验只在一台机器和一个系统版本上做过。
+1. `pmset -b disablesleep` 是否被接受未验证。该命令需要 root。
+2. 电池合盖不睡的电量代价未量化。
+3. 市场对比缺失。`WebSearch` 在本机返回 403。
+4. 实验只在一台机器和一个系统版本上做过。
+5. 探针从 `/tmp` 运行，没有单独隔离 `/Applications` 路径的影响。见 `E-20`。
+6. 有 Developer ID 的机器上注册是否成功未验证。本机没有 Developer ID。
 
 ## 8. 复核方法
 
@@ -427,6 +591,9 @@ Color LCD:
 4. 跑 `pmset -g`，核对 `SleepDisabled` 的分段。
 5. 跑 `pmset -g custom`，核对两段的键分布。
 6. 重跑 `E-05` 和 `E-06` 的对照实验。合盖前先确认没有 `lidopen` 断言。
+7. 读 `SMAppService.h`，核对 `E-16` 到 `E-19` 的原文。
+8. 重建探针应用包，重跑注册，核对 `E-20` 的错误码。
+9. 注册探针之后必须注销。用 `status` 模式确认返回值是 0。
 
 **警告：** 重跑实验前确认 `disablesleep` 为 0。
 为 1 时机器不会睡，电池会耗尽。
@@ -436,6 +603,9 @@ Color LCD:
 - `IOPMLib.h`，Xcode 27 SDK，路径 `MacOSX.sdk/System/Library/Frameworks/IOKit.framework/Headers/pwr_mgt/IOPMLib.h`
 - `man caffeinate`，macOS 27.0.1
 - `man pmset`，macOS 27.0.1
+- `SMAppService.h`，Xcode 27 SDK，路径 `MacOSX.sdk/System/Library/Frameworks/ServiceManagement.framework/Versions/A/Headers/SMAppService.h`
+- `SMErrors.h`，同目录
+- `docs/adr/adr-0005-local-code-signing.md`，本仓库
 
 ## 9. 关联文档
 

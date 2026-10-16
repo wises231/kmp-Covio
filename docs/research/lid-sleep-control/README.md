@@ -9,8 +9,8 @@
 | 日期 | `2026-10-16` |
 | 适用对象 | 产品、研发、测试和安全评审人员 |
 | 当前验证环境 | MacBook Pro 18,2，Apple M1 Max，macOS 27.0.1（26A434），Xcode 27 SDK |
-| 当前结论 | 合盖睡眠没有非特权机制。特权组件必须保留。 |
-| 验证状态 | 尚未执行 |
+| 当前结论 | 合盖睡眠没有非特权机制。特权组件必须保留，形式也不换。 |
+| 验证状态 | 部分执行。`V04` 由注册探针回答，其余待执行。 |
 
 ## 前因
 
@@ -38,6 +38,8 @@ Apple 在头文件里把它标为「not supported in any OS X releases」。
 再读 `man caffeinate` 和 `man pmset`，核对官方说明。
 最后在本机做对照实验：同一台机器，同一段脚本，只改断言这一个变量。
 实验用心跳文件测用户态进程是否连续运行，用 `pmset -g log` 测系统状态迁移。
+第二步读 `SMAppService.h`，再在本机跑注册探针，验证换形式的可行性。
+探针用两种签名配置各注册一次，并读回 `status`。
 调研方法和方案矩阵见 [investigation.md](investigation.md)。
 复现命令、来源、观察和推论见 [evidence.md](evidence.md)。
 案例验证过程见 [validation/case-macos-lid-sleep.md](validation/case-macos-lid-sleep.md)。
@@ -49,7 +51,12 @@ Apple 在头文件里把它标为「not supported in any OS X releases」。
 没有断言时，合盖后 5 秒进入完全睡眠。两个实验的终点相同。
 Apple 的头文件写明这个断言在任何版本都不受支持。
 因此合盖睡眠只能由 root 控制，特权 helper 必须保留。
-可优化的部分是 helper 的形式，不是它的存在。
+
+helper 的形式也不换。
+`SMAppService.daemon` 要求应用公证，本机没有 Developer ID。注册探针用两种签名配置各试一次，两次都失败。
+换形式也不减少提权动作，只改变提权发生的位置。
+Apple 明确保留手写 plist 这条路径，而且不需要 System Settings 批准。
+
 插电与电池的区分不需要新设计。合同里已经是两个独立字段，`Engine.kt` 按电池状态二选一。
 根因、决策表和限制见 [conclusion.md](conclusion.md)。
 证据索引和逻辑链见 [evidence.md](evidence.md)。
@@ -65,11 +72,12 @@ Apple 的头文件写明这个断言在任何版本都不受支持。
 
 ## 实现预期的手段
 
-短期保留现有 helper。它已经可用，协议和鉴权都已经实现。
-推荐的形式改进是 `SMAppService.daemon`：plist 放在应用包内，注册和注销由系统托管。
-换形式之前必须先验证签名要求。本机只有自签名证书，`SMAppService` 可能拒绝注册。
-所以顺序是：先做 spike 验证注册，通过后再换形式。
-验证不通过时保留现有 helper，并把结论写回方案文档。
+保留现有 helper。它已经可用，协议和鉴权都已经实现。
+候选的形式改进是 `SMAppService.daemon`：plist 放在应用包内，注册和注销由系统托管。
+本主题验证了这个候选。注册探针用两种签名配置各试一次，两次都失败。
+原因在 Apple 的接口要求：含 LaunchDaemon 的应用必须公证。
+因此本主题不改代码。
+将来取得 Developer ID 时，重跑注册探针，再评估换形式。
 推荐方案、接口契约、流程、安全、失败模式和实施计划见 [solution.md](solution.md)。
 实际验证记录见 [validation/case-macos-lid-sleep.md](validation/case-macos-lid-sleep.md)。
 证据链见 [evidence.md](evidence.md)。
@@ -82,7 +90,7 @@ Apple 的头文件写明这个断言在任何版本都不受支持。
 | [investigation.md](investigation.md) | 调研方法、来源等级、断言清单、候选方案和反证 |
 | [conclusion.md](conclusion.md) | 结论、决策因素、决策表、限制和未决项 |
 | [solution.md](solution.md) | 推荐架构、接口契约、电源策略、失败模式和实施计划 |
-| [evidence.md](evidence.md) | 环境事实、复现命令、15 条证据、逻辑链和已知缺口 |
+| [evidence.md](evidence.md) | 环境事实、复现命令、21 条证据、逻辑链和已知缺口 |
 | [validation/README.md](validation/README.md) | 验证目标、范围、测试矩阵、风险和清理步骤 |
 | [validation/case-macos-lid-sleep.md](validation/case-macos-lid-sleep.md) | 合盖睡眠与特权组件验证记录，尚未执行 |
 

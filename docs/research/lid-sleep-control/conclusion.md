@@ -7,7 +7,10 @@
 合盖睡眠没有非特权机制。
 `caffeinate -s` 使用的 `PreventSystemSleep` 断言在任何 macOS 版本里都不受支持。
 合盖睡眠只能通过 `pmset disablesleep` 控制。这个键需要 root。
-因此特权 helper 必须保留。可优化的部分是 helper 的形式，不是它的存在。
+因此特权 helper 必须保留。
+
+helper 的形式也保留。`SMAppService.daemon` 要求应用公证，本机没有 Developer ID。
+换形式也不减少提权动作，只改变提权发生的位置。
 
 ## 2. 根因或决策因素
 
@@ -32,6 +35,26 @@ Apple 在 `IOPMLib.h` 里把它标为废弃，并写明「not supported in any O
 `pmset -g custom` 的 AC 段和电池段都没有这个键，而 `hibernatemode` 在两端各有一份（`E-09`）。
 所以按电源来源分流只能由应用侧完成。Covio 的合同已经这样设计（`E-10`、`E-11`）。
 
+### 2.3 换形式的阻断因素
+
+**`SMAppService` 要求公证。**
+
+Apple 写明含 LaunchDaemon 的应用必须公证（`E-16`）。
+本机只有自签名证书和 ad-hoc 签名，没有 Developer ID（ADR-0005）。
+探针用这两种配置各注册一次，两次都失败（`E-20`）。
+系统建了 BTM 条目，但标记为 `disallowed`，拒绝引导。
+
+**换形式不减少提权动作。**
+
+注册成功后守护进程要等管理员在 System Settings 批准（`E-18`）。
+清 `disablesleep` 仍然需要 root。`unregister()` 不做这件事（`E-21`）。
+应用更新后还要重新注册，否则守护进程可能不启动（`E-19`）。
+所以管理员动作从一个安装弹窗，变成一个批准开关，加一次清理提权。
+
+**现有路径没有兼容性风险。**
+
+Apple 写明手写 plist 的旧路径继续有效，而且不需要 System Settings 批准（`E-17`）。
+
 ## 3. 决策表
 
 | 决策 | 选择 | 原因 | 备选路径 |
@@ -40,7 +63,7 @@ Apple 在 `IOPMLib.h` 里把它标为废弃，并写明「not supported in any O
 | 是否保留特权组件 | 保留 | 合盖睡眠只能由 root 控制 | 删掉合盖功能 |
 | 插电与电池是否区分 | 区分 | 合同已定义两个字段，电池不睡有代价 | 合并为一个开关 |
 | 区分由谁执行 | 应用侧 | `disablesleep` 没有每电源版本 | 无 |
-| 特权组件的形式 | 待定 | `SMAppService` 的签名要求未验证 | 保留手写 plist |
+| 特权组件的形式 | 保留手写 plist | `SMAppService` 要求公证，本机没有 Developer ID | 无 |
 
 ## 4. 逻辑证据链
 
@@ -72,6 +95,20 @@ Apple 在 `IOPMLib.h` 里把它标为废弃，并写明「not supported in any O
 置信度：高
 证据：`E-10`、`E-11`
 
+### 4.5 观察五
+
+观察：`SMAppService.h` 要求含 LaunchDaemon 的应用必须公证。探针用两种签名配置各注册一次，两次都失败。
+推论：换 `SMAppService.daemon` 这条路走不通。
+置信度：高
+证据：`E-16`、`E-20`
+
+### 4.6 观察六
+
+观察：手写 plist 的路径被 Apple 明确保留，而且不需要 System Settings 批准。
+推论：保留现状不承担兼容性风险。这条路径不是过渡方案。
+置信度：高
+证据：`E-17`
+
 ## 5. 限制和未决项
 
 ### 5.1 系统限制
@@ -87,6 +124,7 @@ Apple 在 `IOPMLib.h` 里把它标为废弃，并写明「not supported in any O
 
 ### 5.3 未决项
 
-1. `SMAppService.daemon` 在自签名证书下能否注册。本机没有 Developer ID。见验证矩阵 `V04`。
-2. 电池合盖不睡的电量代价没有量化。
-3. 市场对比缺失。`WebSearch` 在本机返回 403。
+1. 电池合盖不睡的电量代价没有量化。
+2. 市场对比缺失。`WebSearch` 在本机返回 403。
+3. 有 Developer ID 的机器上注册是否成功没有验证。本机没有 Developer ID。
+4. 探针从 `/tmp` 运行，`/Applications` 路径的影响没有单独隔离。见 `E-20`。

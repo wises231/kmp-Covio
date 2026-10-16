@@ -4,7 +4,7 @@
 
 | 项目 | 内容 |
 | --- | --- |
-| 状态 | 尚未执行 |
+| 状态 | 部分执行。`V04` 已完成，其余待执行。 |
 | 日期 | `2026-10-16` |
 | 目标环境 | MacBook Pro 18,2，Apple M1 Max，macOS 27.0.1（26A434） |
 | 问题类别 | 系统级电源策略的非特权替代 |
@@ -24,7 +24,7 @@
 
 1. 电源来源切换时，标志是否按预期翻转。
 2. 卸载后系统是否回到默认睡眠行为。
-3. `SMAppService.daemon` 在自签名证书下能否注册。
+3. `SMAppService.daemon` 在自签名证书下能否注册。已完成，见 `E-20`。
 
 ## 3. 范围
 
@@ -46,6 +46,7 @@
 
 `E-05` 和 `E-06` 显示，有无 `PreventSystemSleep` 断言，合盖后都会进入完全睡眠。
 `E-08` 和 `E-09` 显示，`disablesleep` 是系统级键。
+`E-16` 和 `E-20` 显示，`SMAppService` 要求公证，两种签名配置都注册失败。
 本机没有 Developer ID，只有自签名证书。
 详见 [evidence.md](../evidence.md)。
 
@@ -62,8 +63,7 @@
 1. 一台 Apple Silicon MacBook，带内建显示器，不接外接显示器。
 2. macOS 版本与第 2 节一致，或者记录实际版本。
 3. 机器接在电源上。
-4. 执行 `V04` 前先卸载现有 helper。
-5. 执行 `V01` 前确认没有 `com.apple.powermanagement.lidopen` 断言。
+4. 执行 `V01` 前确认没有 `com.apple.powermanagement.lidopen` 断言。
 
 ## 7. 风险
 
@@ -71,7 +71,7 @@
 | --- | --- | --- |
 | `VR-01` | 合盖不睡期间电量耗尽 | 插电执行。电池测试限制在 5 分钟内。 |
 | `VR-02` | `disablesleep` 残留，机器不再睡眠 | 每步结束后跑 `pmset -g` 核对。残留时跑 `sudo pmset -a disablesleep 0`。 |
-| `VR-03` | `SMAppService` 注册失败留下半装状态 | `V04` 之前先卸载，之后再次卸载。 |
+| `VR-03` | `SMAppService` 注册失败留下半装状态 | 注册后调用 `unregister()`，再用 `status` 核对返回 0。 |
 | `VR-04` | 反复合盖开盖影响其他工作 | 每个测试集中执行，中间不穿插其他任务。 |
 | `VR-05` | 断言未释放导致机器不睡 | 测试脚本带 `-t` 时限。结束后核对断言列表。 |
 
@@ -82,7 +82,7 @@
 | V01 | 持有断言时合盖 | 待执行 | `case-macos-lid-sleep.md` |
 | V02 | 插电合盖不睡 | 待执行 | `case-macos-lid-sleep.md` |
 | V03 | 电源切换时的标志翻转 | 待执行 | `case-macos-lid-sleep.md` |
-| V04 | `SMAppService` 在自签名证书下注册 | 待执行 | `case-macos-lid-sleep.md` |
+| V04 | `SMAppService` 在自签名证书下注册 | 已完成，见 `E-20` | [evidence.md](../evidence.md) |
 | V05 | 卸载后的清理完整性 | 待执行 | `case-macos-lid-sleep.md` |
 
 ## 9. 证据要求
@@ -90,7 +90,7 @@
 1. 每个测试记录开始时间、结束时间和命令。
 2. `V01` 记录 `pmset -g log` 里的状态迁移行。
 3. `V02`、`V03` 记录 `pmset -g` 的 `SleepDisabled` 值。
-4. `V04` 记录注册的返回值和错误码。
+4. `V04` 记录注册的返回值和错误码。已完成，见 `E-20`。
 5. `V05` 记录 `ls` 的输出和 `pmset -g` 的值。
 6. 不记录设备序列号。
 7. 不记录完整的系统日志。只记录状态迁移行。
@@ -103,6 +103,8 @@
 4. 卸载 helper。确认 plist 和安装目录都不存在。
 5. 删除 `/tmp/lid-heartbeat.txt`。
 6. 确认机器能正常睡眠。合盖 30 秒，核对日志出现睡眠记录。
+7. 确认注册探针已注销。跑 `status` 模式，核对返回值是 0。
+8. 确认 `/Library/LaunchDaemons` 下没有探针的 plist。
 
 ## 11. 关联文档
 
