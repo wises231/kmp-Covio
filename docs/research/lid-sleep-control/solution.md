@@ -151,6 +151,8 @@ pmset -a disablesleep 0
 3. 验证矩阵保留 `V01` 到 `V03`、`V05`。`V04` 由注册探针回答。
 4. 将来取得 Developer ID 时，重跑注册探针，再评估换形式。
 
+决策记录见 [ADR-0006](../adr/adr-0006-lid-sleep-privileged-helper.md)。
+
 ## 9. 回滚条件
 
 本节只在将来换形式时生效。当前不换形式。

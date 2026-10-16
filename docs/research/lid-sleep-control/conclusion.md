@@ -65,6 +65,8 @@ Apple 写明手写 plist 的旧路径继续有效，而且不需要 System Setti
 | 区分由谁执行 | 应用侧 | `disablesleep` 没有每电源版本 | 无 |
 | 特权组件的形式 | 保留手写 plist | `SMAppService` 要求公证，本机没有 Developer ID | 无 |
 
+决策记录见 [ADR-0006](../adr/adr-0006-lid-sleep-privileged-helper.md)。
+
 ## 4. 逻辑证据链
 
 ### 4.1 观察一
