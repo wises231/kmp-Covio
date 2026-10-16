@@ -57,7 +57,7 @@ helper 的形式也不换。
 换形式也不减少提权动作，只改变提权发生的位置。
 Apple 明确保留手写 plist 这条路径，而且不需要 System Settings 批准。
 
-决策记录见 [ADR-0006](../adr/adr-0006-lid-sleep-privileged-helper.md)。
+决策记录见 `docs/adr/adr-0006-lid-sleep-privileged-helper.md`。
 
 插电与电池的区分不需要新设计。合同里已经是两个独立字段，`Engine.kt` 按电池状态二选一。
 根因、决策表和限制见 [conclusion.md](conclusion.md)。
