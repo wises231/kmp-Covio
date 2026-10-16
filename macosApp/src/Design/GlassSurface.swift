@@ -17,12 +17,20 @@ import SwiftUI
 /// | `.regularMaterial` | 约 +1 |
 /// | `.ultraThinMaterial` | 约 +3 |
 ///
-/// 控制中心落在 `.regular` 与毛玻璃之间，所以取更透的 `.clear`。
-/// 它同时满足两条要求：板的填充更淡，亮边更细。
+/// 只比这个数会选 `.clear`，那是错的。控制中心落在 `.regular` 与毛玻璃之间，
+/// 但那是**填充**的重量。决定能不能看清的是**模糊**：
+///
+/// 把面板开在一个有文字的窗口上，逐像素比对开态与关态。控制中心的模块之间
+/// 与模块内部都被抹平了，壁纸的细节消失。`.clear` 不抹：背后窗口的文字原样透上来，
+/// 与卡片自己的正文撞在一起。顶栏胶囊更明显，菜单栏的百分比数字透过板子压住标签。
+///
+/// 所以取 `.regular`。它是 Liquid Glass 的标准材质，模糊足够强，
+/// 也是能模糊的三档里填充最轻的一档（同一测点 +165，`.ultraThinMaterial` +178，
+/// `.regularMaterial` +192）。
 enum GlassSurfaceMode: String, CaseIterable, Sendable {
-    /// Liquid Glass 的标准材质。填充最重，亮边最宽。
+    /// Liquid Glass 的标准材质。填充最重，亮边最宽。当前取值。
     case glass
-    /// Liquid Glass 的清透材质。比 `glass` 更透，亮边更细。当前取值。
+    /// Liquid Glass 的清透材质。比 `glass` 更透，亮边更细，但几乎不模糊。
     case clear
     /// 常规毛玻璃。对照用。深色桌面上几乎看不出板。
     case material
@@ -33,7 +41,7 @@ enum GlassSurfaceMode: String, CaseIterable, Sendable {
     ///
     /// 只在主线程改：界面全部在主线程构建。
     /// 调试构建可以用环境变量 `COVIO_GLASS_SURFACE` 覆盖，便于同一次构建换材质截图。
-    @MainActor static var current: GlassSurfaceMode = .clear
+    @MainActor static var current: GlassSurfaceMode = .glass
 
     /// 从环境变量取覆盖值。取值不认识时保持原样。
     @MainActor static func applyEnvironmentOverride() {
