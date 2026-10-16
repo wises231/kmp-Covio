@@ -148,7 +148,7 @@ pmset -a disablesleep 0
 
 1. 本主题不改代码。结论是保留现有实现。
 2. 不换 helper 形式。注册探针已判定 `SMAppService` 路径不可用，见 `E-20`。
-3. 验证矩阵保留 `V01` 到 `V03`、`V05`。`V04` 由注册探针回答。
+3. 验证矩阵只保留 `V04`。它由注册探针回答，见 `E-20`。
 4. 将来取得 Developer ID 时，重跑注册探针，再评估换形式。
 
 决策记录见 `docs/adr/adr-0006-lid-sleep-privileged-helper.md`。
