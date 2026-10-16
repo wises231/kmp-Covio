@@ -128,17 +128,17 @@ R7 不做主屏手势。系统不向第三方应用开放 iOS 主屏手势入口
 | 顶栏板与菜单栏之间的缝 | 11 点。 |
 | 顶栏板 | 圆角 23 点，胶囊形。高 46 点，宽 960 点。 |
 | 内容区 | 宽 960 点。没有底板，各张卡片自己浮在桌面上。 |
-| 卡片材质 | 每张卡片自己一块玻璃。填充取 `token/color/material-thin`，半透明。 |
-| 顶栏板材质 | Liquid Glass 的 clear 变体。菜单栏胶囊用同一种。 |
+| 卡片材质 | 每张卡片自己一块玻璃，底材 `Glass.regular`。填充取 `token/color/material-thin`，半透明。 |
+| 顶栏板材质 | Liquid Glass 的 regular 变体。菜单栏胶囊用同一种。 |
 | 板边框 | Liquid Glass 自带的镜面亮边，不另描边。 |
 | 板投影 | 无。层次由亮边与明度差给。 |
 | 菜单栏胶囊 | 高 20 点。内容是品牌菱形加名字。 |
 
 内容区不放底板。控制中心的模块背后也没有容器，桌面直接露在模块之间。放底板会把刚去掉的统一背板又加回来。
 
-玻璃加在每张卡片上，不加在内容区上。控制中心的模糊属于每个模块，不属于面板。卡片的填充取半透明的 `token/color/material-thin`；用不透明的 `token/color/surface` 会把模糊整个盖住，卡片就变成实心色块。首页的彩色卡片同理：色值乘 `token/material/opacity/ultra-thin`。
+玻璃加在每张卡片上，不加在内容区上。控制中心的模糊属于每个模块，不属于面板。卡片的填充取半透明的 `token/color/material-thin`；用不透明的 `token/color/surface` 会把模糊整个盖住，卡片就变成实心色块。首页的彩色卡片同理：色值乘 `MacTheme.tintedCardOpacity`，当前取 `0.45`。这个数只调颜色浓淡，不负责清晰度。
 
-顶栏板材质取 clear 变体。真机实测：控制中心模块把深色桌面抬起约 24 级亮度。regular 变体抬起约 44 级，偏重。clear 变体的填充更淡，亮边更细。调试构建可以用 `COVIO_GLASS_SURFACE` 环境变量换底材对照，取值见 `macosApp/src/Design/GlassSurface.swift`。
+底材取 regular 变体。第一版取的是 clear 变体，依据是填充更淡，那一步是错的。把面板开在一个带文字的窗口上，同一次会话内比对收起态与展开态：clear 底材下窗口文字的字形仍然是锐的，只是对比度降低；regular 底材下完全读不出来。控制中心是模糊的，模块之间那条缝在开态下亮度改变 29 到 30 级。决定能不能看清的是模糊，不是填充重量。调试构建可以用 `COVIO_GLASS_SURFACE` 环境变量换底材对照，取值见 `macosApp/src/Design/GlassSurface.swift`。
 
 **动效**：
 
