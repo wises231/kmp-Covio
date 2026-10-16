@@ -13,6 +13,15 @@ enum MacTheme {
     static let canvas = color(ContractColors.tokenColorCanvas)
     /// 卡片与窗口表面。
     static let surface = color(ContractColors.tokenColorSurface)
+    /// 卡片材质填充。半透明，压在玻璃模糊上面，桌面能透过来。
+    ///
+    /// 合同 `token/color/material-thin`。控制中心的模块就是这样：模糊打底，
+    /// 上面一层半透明填充。不透明的 `surface` 会把模糊整个盖住。
+    static let material = color(ContractColors.tokenColorMaterialThin)
+    /// 着色卡片的填充透明度。合同 `token/material/opacity/ultra-thin`。
+    ///
+    /// 首页的彩色卡片用色值乘这个透明度，露出底下的模糊。
+    static let tintedCardOpacity = ContractDimensions.tokenMaterialOpacityUltraThin
     /// 抬起的表面。
     static let elevated = color(ContractColors.tokenColorElevated)
     /// 分隔线与控件描边。

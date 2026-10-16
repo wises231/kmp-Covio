@@ -84,19 +84,18 @@ struct HubView: View {
 
     // MARK: - 玻璃板
 
-    /// 面板的两块玻璃板：上面是胶囊形的顶栏，下面是圆角矩形的内容。
+    /// 顶栏板加内容区：上面是胶囊形的玻璃板，下面是直接浮在桌面上的卡片。
     ///
-    /// 控制中心没有统一背板，是一组独立的玻璃板直接浮在桌面上，板与板之间露出
-    /// 桌面。所以这里不画背景、不描边、不加投影 —— 三样都由 Liquid Glass 自己画。
+    /// 控制中心没有统一背板。顶栏是一块独立玻璃板，下面的内容只有一个个模块，
+    /// 模块背后没有容器。所以这里不画背景、不描边、不加投影 —— 三样都由 Liquid Glass
+    /// 或卡片自己画。
     ///
-    /// `spacing` 取 0 而不是 `plateGap`：容器里间距小于 `spacing` 的两块玻璃会
-    /// **合并成一块**，那就毁掉了「两块板」这个形态本身。取 0 表示只有贴在一起
-    /// 才合并。
+    /// 外面仍套一层 `GlassEffectContainer`：顶栏板还是玻璃。
     private var plates: some View {
         GlassEffectContainer(spacing: 0) {
             VStack(spacing: HubMetrics.plateGap) {
                 topBarPlate
-                contentPlate
+                contentArea
             }
         }
         // 高亮行从环境里取，六个设置页不必各自拿一遍模型。
@@ -119,16 +118,16 @@ struct HubView: View {
         .glassSurface(cornerRadius: HubMetrics.tabBarPlateRadius)
     }
 
-    private var contentPlate: some View {
+    /// 内容区没有底板，各张卡片自己浮在桌面上，卡与卡的缝里露出桌面。
+    private var contentArea: some View {
         contentColumn
-            .frame(height: contentPlateHeight)
-            .glassSurface(cornerRadius: HubMetrics.contentPlateRadius)
+            .frame(height: contentAreaHeight)
     }
 
-    /// 内容板的高度：两块板的总高减去顶栏板与中间的缝。
+    /// 内容区的高度：总高减去顶栏板与中间的缝。
     ///
-    /// 撑不出高度的话板会缩成内容那么大，与顶栏板宽度对不齐。
-    private var contentPlateHeight: CGFloat {
+    /// 给固定高度，滚动区域才有确定的高度。
+    private var contentAreaHeight: CGFloat {
         plateStackHeight - HubMetrics.tabBarHeight - HubMetrics.plateGap
     }
 
@@ -221,13 +220,14 @@ struct EmptyHomeView: View {
         }
         .frame(width: HubMetrics.contentColumnWidth, height: HubMetrics.emptyHomeHeight)
         .background(
-            Color.primary.opacity(0.06),
+            MacTheme.material,
             in: RoundedRectangle(cornerRadius: HubMetrics.bentoCardRadius, style: .continuous)
         )
         .overlay(
             RoundedRectangle(cornerRadius: HubMetrics.bentoCardRadius, style: .continuous)
                 .strokeBorder(MacTheme.divider, lineWidth: 1)
         )
+        .glassSurface(cornerRadius: HubMetrics.bentoCardRadius)
     }
 
     private var hint: String {

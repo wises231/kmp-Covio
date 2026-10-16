@@ -50,9 +50,11 @@ extension View {
     /// 给视图加一层玻璃底材与圆角。
     ///
     /// 圆角由调用方从 `MacTheme` 取，不在这里写数值。
+    /// `tint` 给玻璃上色，用于首页的彩色卡片。
     @MainActor
     func glassSurface(
         cornerRadius: CGFloat,
+        tint: Color? = nil,
         interactive: Bool = false,
         mode: GlassSurfaceMode? = nil
     ) -> some View {
@@ -60,6 +62,7 @@ extension View {
         modifier(
             GlassSurfaceModifier(
                 cornerRadius: cornerRadius,
+                tint: tint,
                 interactive: interactive,
                 mode: mode ?? GlassSurfaceMode.current
             )
@@ -70,6 +73,7 @@ extension View {
 /// 玻璃底材。所有模式共用圆角。
 private struct GlassSurfaceModifier: ViewModifier {
     let cornerRadius: CGFloat
+    let tint: Color?
     let interactive: Bool
     let mode: GlassSurfaceMode
 
@@ -77,23 +81,28 @@ private struct GlassSurfaceModifier: ViewModifier {
         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
     }
 
+    /// 把着色与交互开关套到玻璃变体上。
+    private func variant(_ base: Glass) -> Glass {
+        let tinted = tint.map { base.tint($0) } ?? base
+        return interactive ? tinted.interactive() : tinted
+    }
+
     @ViewBuilder
     func body(content: Content) -> some View {
         switch mode {
         case .glass:
-            content.glassEffect(
-                interactive ? .regular.interactive() : .regular,
-                in: .rect(cornerRadius: cornerRadius)
-            )
+            content.glassEffect(variant(.regular), in: .rect(cornerRadius: cornerRadius))
         case .clear:
-            content.glassEffect(
-                interactive ? .clear.interactive() : .clear,
-                in: .rect(cornerRadius: cornerRadius)
-            )
+            content.glassEffect(variant(.clear), in: .rect(cornerRadius: cornerRadius))
         case .material:
-            content.background(shape.fill(.regularMaterial))
+            // 毛玻璃模式没有原生着色，用一层半透明填充代替。
+            content
+                .background(shape.fill(tint ?? .clear))
+                .background(shape.fill(.regularMaterial))
         case .ultraThin:
-            content.background(shape.fill(.ultraThinMaterial))
+            content
+                .background(shape.fill(tint ?? .clear))
+                .background(shape.fill(.ultraThinMaterial))
         }
     }
 }

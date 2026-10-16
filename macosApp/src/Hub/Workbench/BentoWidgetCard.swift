@@ -88,7 +88,9 @@ struct BentoWidgetCard: View {
             }
         }
         .frame(width: width, height: height)
-        .background(MacTheme.color(tint), in: shape)
+        // 色值乘一个透明度，露出底下的玻璃模糊。控制中心的彩色模块也是透的。
+        .background(MacTheme.color(tint).opacity(MacTheme.tintedCardOpacity), in: shape)
+        .glassSurface(cornerRadius: HubMetrics.bentoCardRadius)
         .overlay(shape.strokeBorder(isDragging ? MacTheme.accent : .clear, lineWidth: 2))
         .shadow(color: .black.opacity(isDragging ? 0.24 : 0), radius: isDragging ? 14 : 0, y: 6)
         .accessibilityElement(children: .contain)

@@ -56,13 +56,6 @@ enum HubMetrics {
     /// 顶栏板的圆角 23 点。小模块用胶囊，圆角 = 高度 ÷ 2 = 46 ÷ 2。
     static let tabBarPlateRadius: CGFloat = tabBarHeight / 2
 
-    /// 内容板的圆角 28 点。
-    ///
-    /// 控制中心宽模块的比例是「圆角 ÷ 高度 = 0.38」，但那条只对高度相近的模块
-    /// 成立：内容板高 400 点以上，照 0.38 算会到 150 点以上，不成形。所以取一
-    /// 个设计值。
-    static let contentPlateRadius: CGFloat = 28
-
     // MARK: - 顶栏
 
     /// 顶栏高度 46 点。合同 `component/tab-bar` 的 `nativeSize.height`。
