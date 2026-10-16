@@ -10,5 +10,8 @@ xcuserdata/
 *.xcuserstate
 *.xcscmblueprint
 
+# 本机的签名身份。默认是 ad-hoc，见 macosApp/Signing.xcconfig。
+macosApp/Signing.local.xcconfig
+
 # Claude Code 个人设置。团队共享的 hook 在 .claude/settings.json。
 .claude/settings.local.json

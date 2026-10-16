@@ -237,6 +237,26 @@ The SwiftUI host reads its text from `macosApp/src/Design/Copy.swift` and its va
 The macOS host is SwiftUI. The shared layer is Kotlin Multiplatform, module `kmpDomain`.
 The host links `kmpDomain.framework`. Open `macosApp/Covio.xcodeproj` to work on the host.
 
+The project signs ad-hoc by default.
+Ad-hoc signing has no Team ID, so macOS identifies the app by its cdhash.
+Every build changes the cdhash, so macOS treats each build as a new app.
+Then macOS asks for Accessibility again, and posts the "Device Control and Data Access" notice again.
+
+To keep the grant across builds, pin a code-signing certificate:
+
+1. Create a certificate. The steps are in `docs/adr/adr-0005-local-code-signing.md`.
+2. Create `macosApp/Signing.local.xcconfig`:
+
+   ```text
+   CODE_SIGN_IDENTITY = Covio Dev
+   CODE_SIGN_STYLE = Manual
+   ```
+
+3. Build the app, then grant Accessibility once. Later builds keep the grant.
+
+`macosApp/Signing.local.xcconfig` is in `.gitignore`.
+CI has no certificate, so CI uses the ad-hoc default.
+
 The SwiftUI host is on macOS only.
 It uses the same `config.json` as the Compose version.
 The two versions use different lock files, so both can run at the same time.
