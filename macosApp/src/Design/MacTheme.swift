@@ -18,10 +18,15 @@ enum MacTheme {
     /// 合同 `token/color/material-thin`。控制中心的模块就是这样：模糊打底，
     /// 上面一层半透明填充。不透明的 `surface` 会把模糊整个盖住。
     static let material = color(ContractColors.tokenColorMaterialThin)
-    /// 着色卡片的填充透明度。合同 `token/material/opacity/ultra-thin`。
+    /// 着色卡片的填充透明度。
     ///
     /// 首页的彩色卡片用色值乘这个透明度，露出底下的模糊。
-    static let tintedCardOpacity = ContractDimensions.tokenMaterialOpacityUltraThin
+    ///
+    /// 这个数是实测定的，不是合同的值。合同里最淡的一档是 `0.62`，那一档把模糊盖住了
+    /// 六成：卡片比紧邻桌面亮 60 到 125 级，控制中心的模块只差 5 到 25 级。
+    /// 取 `0.45` 让壁纸的明暗透出来，同时卡片仍比桌面亮一档，压得住正文，
+    /// 相邻两张卡片也不会糊成一块。
+    static let tintedCardOpacity: CGFloat = 0.45
     /// 抬起的表面。
     static let elevated = color(ContractColors.tokenColorElevated)
     /// 分隔线与控件描边。
