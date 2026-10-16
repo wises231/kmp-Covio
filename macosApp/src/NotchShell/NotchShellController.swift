@@ -8,13 +8,13 @@ import SwiftUI
 /// - 维护唯一的 Hub 面板，显示时移动到指针所在屏幕。
 /// - 驱动 `HubStateMachine`，执行计时与面板显示。
 ///
-/// 状态词汇全部来自设计合同，不造新词。
+/// 状态词汇固定，不造新词。
 @MainActor
 @Observable
 final class NotchShellController {
-    /// 面板生命周期状态。来源是合同 `states.menuBarAndNotchHub.hubStates`。
+    /// 面板生命周期状态。
     private(set) var state: HubState = .hidden
-    /// 内容区状态。来源是合同 `states.notchOutputHub.states`。M1 固定为 collapsed。
+    /// 内容区状态。M1 固定为 collapsed。
     private(set) var outputState: HubOutputState = .collapsed
     /// 当前页签。设置页比占位页高，所以换页签要重排面板。
     var selection: HubTab = .now {

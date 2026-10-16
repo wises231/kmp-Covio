@@ -44,10 +44,10 @@ struct FilesTabView: View {
             Image(systemName: "folder")
                 .font(.system(size: 22))
                 .foregroundStyle(.tertiary)
-            Text(ContractCopy.copyHubFilesEmpty.text(for: language))
+            Text(Copy.copyHubFilesEmpty.text(for: language))
                 .font(.system(size: 12))
                 .foregroundStyle(.secondary)
-            Text(ContractCopy.copyHubFilesHint.text(for: language))
+            Text(Copy.copyHubFilesHint.text(for: language))
                 .font(.system(size: 11))
                 .foregroundStyle(.tertiary)
         }
@@ -150,12 +150,12 @@ struct FilesCapsuleActions: View {
     var body: some View {
         HStack(spacing: MacTheme.space2) {
             MacButton(
-                title: ContractCopy.copyHubFilesActionImport.text(for: language),
+                title: Copy.copyHubFilesActionImport.text(for: language),
                 kind: .primary,
                 action: chooseFiles
             )
             MacButton(
-                title: ContractCopy.copyHubFilesActionSweep.text(for: language),
+                title: Copy.copyHubFilesActionSweep.text(for: language),
                 isEnabled: !workspace.entries.isEmpty
             ) {
                 workspace.sweep()
@@ -164,11 +164,11 @@ struct FilesCapsuleActions: View {
         }
     }
 
-    /// 占用与上限。文案取合同，数字与单位由 `ByteCountFormatter` 给。
+    /// 占用与上限。文案取 `Copy`，数字与单位由 `ByteCountFormatter` 给。
     private var statusText: String {
         let used = ByteCountFormatter.string(fromByteCount: workspace.totalBytes, countStyle: .file)
         let limit = ByteCountFormatter.string(fromByteCount: workspace.policy.maxTotalBytes, countStyle: .file)
-        return "\(ContractCopy.copyHubFilesUsage.text(for: language)) \(used) / \(limit)"
+        return "\(Copy.copyHubFilesUsage.text(for: language)) \(used) / \(limit)"
     }
 
     /// 打开系统文件选择面板。多选。
@@ -234,25 +234,25 @@ private struct FilesRow: View {
     private var controls: some View {
         HStack(spacing: MacTheme.space1) {
             MacButton(
-                title: ContractCopy.copyHubFilesActionOpen.text(for: language),
+                title: Copy.copyHubFilesActionOpen.text(for: language),
                 kind: .plain,
                 isEnabled: hasContent,
                 action: onOpen
             )
             MacButton(
-                title: ContractCopy.copyHubFilesActionReveal.text(for: language),
+                title: Copy.copyHubFilesActionReveal.text(for: language),
                 kind: .plain,
                 isEnabled: hasContent,
                 action: onReveal
             )
             MacButton(
-                title: (entry.pinned ? ContractCopy.copyHubFilesActionUnpin : ContractCopy.copyHubFilesActionPin)
+                title: (entry.pinned ? Copy.copyHubFilesActionUnpin : Copy.copyHubFilesActionPin)
                     .text(for: language),
                 kind: .plain,
                 action: onPin
             )
             MacButton(
-                title: ContractCopy.copyHubFilesActionRemove.text(for: language),
+                title: Copy.copyHubFilesActionRemove.text(for: language),
                 kind: .plain,
                 action: onRemove
             )
@@ -271,7 +271,7 @@ private struct FilesRow: View {
                 parts.append(date.formatted(date: .abbreviated, time: .omitted))
             }
         } else {
-            parts.append(ContractCopy.copyHubFilesErrorMissing.text(for: language))
+            parts.append(Copy.copyHubFilesErrorMissing.text(for: language))
         }
         if !entry.originDeviceId.isEmpty {
             parts.append(entry.originDeviceId)

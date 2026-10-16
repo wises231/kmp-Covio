@@ -116,14 +116,14 @@ struct ScreenshotCardView: View {
     /// 有工作区时把「存入工作区」插在移除前面。
     private var cardDescription: String {
         var actions = [
-            ContractCopy.copyTopShelfActionCopy.text(for: language),
-            ContractCopy.copyTopShelfActionPreview.text(for: language),
-            ContractCopy.copyTopShelfActionMarkup.text(for: language),
+            Copy.copyTopShelfActionCopy.text(for: language),
+            Copy.copyTopShelfActionPreview.text(for: language),
+            Copy.copyTopShelfActionMarkup.text(for: language),
         ]
         if onSaveToWorkspace != nil {
-            actions.append(ContractCopy.copyTopShelfActionWorkspace.text(for: language))
+            actions.append(Copy.copyTopShelfActionWorkspace.text(for: language))
         }
-        actions.append(ContractCopy.copyTopShelfActionRemoveFromShelf.text(for: language))
+        actions.append(Copy.copyTopShelfActionRemoveFromShelf.text(for: language))
         return actions.joined(separator: ", ") + ": " + item.path
     }
 
@@ -192,20 +192,20 @@ struct ScreenshotCardView: View {
     /// 右键菜单。原生菜单，与访达和其他应用里的右键菜单一致。
     private func menuProvider() -> NSMenu {
         let menu = NSMenu()
-        menu.addItem(menuItem(ContractCopy.copyTopShelfActionCopy.text(for: language)) { [self] in
+        menu.addItem(menuItem(Copy.copyTopShelfActionCopy.text(for: language)) { [self] in
             visualState = .copied
             onCopy()
         })
-        menu.addItem(menuItem(ContractCopy.copyTopShelfActionPreview.text(for: language)) { [self] in onPreview() })
-        menu.addItem(menuItem(ContractCopy.copyTopShelfActionMarkup.text(for: language)) { [self] in onMarkup() })
+        menu.addItem(menuItem(Copy.copyTopShelfActionPreview.text(for: language)) { [self] in onPreview() })
+        menu.addItem(menuItem(Copy.copyTopShelfActionMarkup.text(for: language)) { [self] in onMarkup() })
         if let onSaveToWorkspace {
-            menu.addItem(menuItem(ContractCopy.copyTopShelfActionWorkspace.text(for: language)) { [self] in
+            menu.addItem(menuItem(Copy.copyTopShelfActionWorkspace.text(for: language)) { [self] in
                 onSaveToWorkspace()
             })
         }
         menu.addItem(.separator())
         // 只切状态。真的移除在卡片落到底之后，这样用户看得见卡片掉下去。
-        menu.addItem(menuItem(ContractCopy.copyTopShelfActionRemoveFromShelf.text(for: language)) { [self] in
+        menu.addItem(menuItem(Copy.copyTopShelfActionRemoveFromShelf.text(for: language)) { [self] in
             visualState = .falling
         })
         return menu
@@ -243,17 +243,17 @@ struct ScreenshotCardView: View {
 
     private var menuButton: some View {
         Menu {
-            Button(ContractCopy.copyTopShelfActionCopy.text(for: language)) {
+            Button(Copy.copyTopShelfActionCopy.text(for: language)) {
                 visualState = .copied
                 onCopy()
             }
-            Button(ContractCopy.copyTopShelfActionPreview.text(for: language), action: onPreview)
-            Button(ContractCopy.copyTopShelfActionMarkup.text(for: language), action: onMarkup)
+            Button(Copy.copyTopShelfActionPreview.text(for: language), action: onPreview)
+            Button(Copy.copyTopShelfActionMarkup.text(for: language), action: onMarkup)
             if let onSaveToWorkspace {
-                Button(ContractCopy.copyTopShelfActionWorkspace.text(for: language), action: onSaveToWorkspace)
+                Button(Copy.copyTopShelfActionWorkspace.text(for: language), action: onSaveToWorkspace)
             }
             Divider()
-            Button(ContractCopy.copyTopShelfActionRemoveFromShelf.text(for: language)) { visualState = .falling }
+            Button(Copy.copyTopShelfActionRemoveFromShelf.text(for: language)) { visualState = .falling }
         } label: {
             Text("⋯")
                 .font(.system(size: 13))
@@ -266,11 +266,11 @@ struct ScreenshotCardView: View {
         .menuIndicator(.hidden)
         .frame(width: 26, height: 26)
         .offset(x: CGFloat(layout.CARD_WIDTH) - 32, y: 6)
-        .accessibilityLabel("\(ContractCopy.copyTopShelfActionPreview.text(for: language)): \(item.path)")
+        .accessibilityLabel("\(Copy.copyTopShelfActionPreview.text(for: language)): \(item.path)")
     }
 
     private var toast: some View {
-        Text(ContractCopy.copyTopShelfActionCopy.text(for: language))
+        Text(Copy.copyTopShelfActionCopy.text(for: language))
             .font(.system(size: 12))
             .foregroundStyle(.white)
             .padding(.horizontal, 14)

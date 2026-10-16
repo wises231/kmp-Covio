@@ -522,7 +522,7 @@ final class ClipboardTests: XCTestCase {
         XCTAssertFalse(runtime.hasHotKeyConflict(.captureSelection), "没被占用的那个不受影响")
         XCTAssertNil(registry.registered[GlobalHotKey.pasteStack.id])
         XCTAssertNotNil(registry.registered[GlobalHotKey.captureSelection.id])
-        XCTAssertEqual(reported.map { $0.text }, [ContractCopy.copyClipboardErrorHotKey.text])
+        XCTAssertEqual(reported.map { $0.text }, [Copy.copyClipboardErrorHotKey.text])
     }
 
     /// 改键：换一个组合之后旧的组合要放开，新的要真的生效。

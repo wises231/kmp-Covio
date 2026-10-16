@@ -11,9 +11,9 @@ struct GeneralPage: View {
     var body: some View {
         VStack(alignment: .leading, spacing: MacTheme.space6) {
             MacCard {
-                MacSettingRow(title: ContractCopy.copyGeneralDarkwake.text(for: runtime.language)) {
+                MacSettingRow(title: Copy.copyGeneralDarkwake.text(for: runtime.language)) {
                     MacSwitch(
-                        label: ContractCopy.copyGeneralDarkwake.text(for: runtime.language),
+                        label: Copy.copyGeneralDarkwake.text(for: runtime.language),
                         isOn: Binding(
                             get: { runtime.config.darkWakeAwarenessEnabled },
                             set: { runtime.setDarkWakeAwareness($0) }
@@ -25,30 +25,30 @@ struct GeneralPage: View {
             .settingsRowAnchor(SettingsRowID.generalDarkWake)
 
             MacCard {
-                MacSectionTitle(text: ContractCopy.copyGeneralSleepMode.text(for: runtime.language))
+                MacSectionTitle(text: Copy.copyGeneralSleepMode.text(for: runtime.language))
                 SleepModeOptions(runtime: runtime)
             }
             .settingsRowAnchor(SettingsRowID.generalSleepMode)
 
             MacCard {
-                MacSectionTitle(text: ContractCopy.copyGeneralLanguage.text(for: runtime.language))
+                MacSectionTitle(text: Copy.copyGeneralLanguage.text(for: runtime.language))
                 LanguageOptions(runtime: runtime)
             }
             .settingsRowAnchor(SettingsRowID.generalLanguage)
 
             MacCard {
-                MacSettingRow(title: ContractCopy.copyGeneralLaunchAtLogin.text(for: runtime.language)) {
+                MacSettingRow(title: Copy.copyGeneralLaunchAtLogin.text(for: runtime.language)) {
                     MacSwitch(
-                        label: ContractCopy.copyGeneralLaunchAtLogin.text(for: runtime.language),
+                        label: Copy.copyGeneralLaunchAtLogin.text(for: runtime.language),
                         isOn: Binding(
                             get: { runtime.config.launchAtLogin },
                             set: { runtime.setLaunchAtLogin($0) }
                         )
                     )
                 }
-                MacSettingRow(title: ContractCopy.copyGeneralNotifications.text(for: runtime.language)) {
+                MacSettingRow(title: Copy.copyGeneralNotifications.text(for: runtime.language)) {
                     MacSwitch(
-                        label: ContractCopy.copyGeneralNotifications.text(for: runtime.language),
+                        label: Copy.copyGeneralNotifications.text(for: runtime.language),
                         isOn: Binding(
                             get: { runtime.config.notificationsEnabled },
                             set: { runtime.setNotifications($0) }
@@ -60,17 +60,17 @@ struct GeneralPage: View {
             .settingsRowAnchor(SettingsRowID.generalLogin)
 
             MacCard {
-                MacSettingRow(title: ContractCopy.copyGeneralCheckUpdates.text(for: runtime.language)) {
+                MacSettingRow(title: Copy.copyGeneralCheckUpdates.text(for: runtime.language)) {
                     HStack(spacing: MacTheme.space2) {
                         MacSwitch(
-                            label: ContractCopy.copyGeneralCheckUpdates.text(for: runtime.language),
+                            label: Copy.copyGeneralCheckUpdates.text(for: runtime.language),
                             isOn: Binding(
                                 get: { runtime.config.updateCheckEnabled },
                                 set: { runtime.setUpdateChecks($0) }
                             )
                         )
                         MacButton(
-                            title: ContractCopy.copyGeneralCheckUpdates.text(for: runtime.language),
+                            title: Copy.copyGeneralCheckUpdates.text(for: runtime.language),
                             isEnabled: !runtime.busy
                         ) { runtime.checkForUpdates(manual: true) }
                     }
@@ -80,10 +80,10 @@ struct GeneralPage: View {
 
             MacCard {
                 HStack(spacing: MacTheme.space2) {
-                    MacButton(title: ContractCopy.copyHubLogView.text(for: runtime.language)) { runtime.viewLog() }
-                    MacButton(title: ContractCopy.copyHubLogExport.text(for: runtime.language)) { runtime.exportLog() }
+                    MacButton(title: Copy.copyHubLogView.text(for: runtime.language)) { runtime.viewLog() }
+                    MacButton(title: Copy.copyHubLogExport.text(for: runtime.language)) { runtime.exportLog() }
                     MacButton(
-                        title: ContractCopy.copyGeneralClearConfig.text(for: runtime.language),
+                        title: Copy.copyGeneralClearConfig.text(for: runtime.language),
                         kind: .plain,
                         isEnabled: !runtime.busy
                     ) { confirmClearConfig() }
@@ -97,10 +97,10 @@ struct GeneralPage: View {
     /// 清除配置不可撤销，所以先弹确认。
     private func confirmClearConfig() {
         let alert = NSAlert()
-        alert.messageText = ContractCopy.copyDialogResetTitle.text(for: runtime.language)
-        alert.informativeText = ContractCopy.copyDialogResetBody.text(for: runtime.language)
-        alert.addButton(withTitle: ContractCopy.copyDialogResetTitle.text(for: runtime.language))
-        alert.addButton(withTitle: ContractCopy.copyStateCancel.text(for: runtime.language))
+        alert.messageText = Copy.copyDialogResetTitle.text(for: runtime.language)
+        alert.informativeText = Copy.copyDialogResetBody.text(for: runtime.language)
+        alert.addButton(withTitle: Copy.copyDialogResetTitle.text(for: runtime.language))
+        alert.addButton(withTitle: Copy.copyStateCancel.text(for: runtime.language))
         alert.alertStyle = .warning
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         runtime.clearConfig()

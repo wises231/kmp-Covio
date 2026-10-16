@@ -54,7 +54,7 @@ Covio 是 macOS 菜单栏应用。界面是 SwiftUI 宿主，放在 `macosApp/`�
 
 | 知识 | 位置 |
 | --- | --- |
-| 设计合同 | `docs/covio-design-contract.json` |
+| 界面取值与文案 | `macosApp/src/Design/`。颜色与间距在 `MacTheme.swift`，取值在 `Tokens.swift`，文案在 `Copy.swift` |
 | 架构决策 | `docs/adr/` |
 | 目标架构 | `docs/design/` |
 | 界面打样 | `designPreview/`，读法见 `docs/design/design-preview.md` |
@@ -85,4 +85,4 @@ Co-Authored-By: Claude Code <noreply@anthropic.com>
 1. 禁止直接向 `main` 推送。改 `main` 走 PR。
 2. 禁止 `git add -A` 或 `git add .`。多个会话共用一个工作目录，会扫进别人的文件。
 3. 禁止把本机绝对路径写进仓库文件。
-4. 改设计合同后要重跑 `scripts/generate-contract-constants.py`。
+4. 禁止在 `macosApp/src/Design/Copy.swift` 之外构造 `LocalizedCopy`。`CopySingleSourceTests` 会拦。

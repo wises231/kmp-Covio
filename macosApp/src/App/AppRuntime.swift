@@ -285,7 +285,7 @@ final class AppRuntime {
 
     func setEnabled(_ enabled: Bool) {
         if !updateConfigDraft({ $0.enabled = enabled }) {
-            statusMessage = ContractCopy.copyToastError.text(for: language)
+            statusMessage = Copy.copyToastError.text(for: language)
         }
     }
 
@@ -400,7 +400,7 @@ final class AppRuntime {
         _ = engine.updateConfig(newConfig: defaults)
         syncState()
         shelf.applyConfiguration()
-        statusMessage = ContractCopy.copyDialogResetTitle.text(for: language)
+        statusMessage = Copy.copyDialogResetTitle.text(for: language)
     }
 
     // MARK: - helper
@@ -413,7 +413,7 @@ final class AppRuntime {
             await refreshHelperStatus(waitForInstalled: installed)
             busy = false
             let success = helperStatus == .installed
-            let entry = success ? ContractCopy.copyOverviewHelperInstalled : ContractCopy.copyDialogHelperUnavailableBody
+            let entry = success ? Copy.copyOverviewHelperInstalled : Copy.copyDialogHelperUnavailableBody
             statusMessage = entry.text(for: language)
             if success { dismissWelcome() }
         }
@@ -428,7 +428,7 @@ final class AppRuntime {
             _ = engine.setLidSleepAvailable(available: true)
             syncState()
             busy = false
-            let entry = removed ? ContractCopy.copyOverviewHelperMissing : ContractCopy.copyToastError
+            let entry = removed ? Copy.copyOverviewHelperMissing : Copy.copyToastError
             statusMessage = entry.text(for: language)
         }
     }
@@ -455,7 +455,7 @@ final class AppRuntime {
 
     private func lidPolicyAvailable() -> Bool {
         guard helperStatus == .installed else {
-            statusMessage = ContractCopy.copyStatusItemHelperError.text(for: language)
+            statusMessage = Copy.copyStatusItemHelperError.text(for: language)
             return false
         }
         return true
@@ -472,7 +472,7 @@ final class AppRuntime {
             write { $0.lastUpdateCheckEpochSeconds = now }
             if let update {
                 notifier.notify(
-                    title: ContractCopy.copyDialogUpdateTitle.text(for: language),
+                    title: Copy.copyDialogUpdateTitle.text(for: language),
                     subtitle: "",
                     message: "\(update.version) · \(update.title)",
                     releaseUrl: update.releaseUrl
@@ -480,9 +480,9 @@ final class AppRuntime {
                 if manual, let url = URL(string: update.releaseUrl) {
                     NSWorkspace.shared.open(url)
                 }
-                statusMessage = "\(ContractCopy.copyDialogUpdateTitle.text(for: language)): \(update.version)"
+                statusMessage = "\(Copy.copyDialogUpdateTitle.text(for: language)): \(update.version)"
             } else if manual {
-                let entry = release == nil ? ContractCopy.copyToastError : ContractCopy.copyHubUpdateUpToDate
+                let entry = release == nil ? Copy.copyToastError : Copy.copyHubUpdateUpToDate
                 statusMessage = entry.text(for: language)
             }
         }
@@ -522,10 +522,10 @@ final class AppRuntime {
             let home = FileManager.default.homeDirectoryForCurrentUser.path
             try text.replacingOccurrences(of: home, with: "~")
                 .write(to: target, atomically: true, encoding: .utf8)
-            statusMessage = ContractCopy.copyToastSuccess.text(for: language)
+            statusMessage = Copy.copyToastSuccess.text(for: language)
         } catch {
             logger.warn(message: "Cannot export log", error: nil)
-            statusMessage = ContractCopy.copyToastError.text(for: language)
+            statusMessage = Copy.copyToastError.text(for: language)
         }
     }
 
@@ -594,7 +594,7 @@ final class AppRuntime {
     func setLaunchAtLogin(_ enabled: Bool) {
         let applied = enabled ? loginItem.enable() : loginItem.disable()
         guard applied else {
-            statusMessage = ContractCopy.copyToastError.text(for: language)
+            statusMessage = Copy.copyToastError.text(for: language)
             return
         }
         write { $0.launchAtLogin = enabled }
@@ -642,14 +642,14 @@ final class AppRuntime {
 
     /// 实时电池文字。与 Compose 版 `formatBattery` 一致。
     func batteryText() -> String {
-        guard let battery = appState.battery else { return ContractCopy.copyStateEmpty.text(for: language) }
+        guard let battery = appState.battery else { return Copy.copyStateEmpty.text(for: language) }
         let stateText: String
         switch battery.state {
-        case .discharging: stateText = ContractCopy.copyTrayTooltipBattery.text(for: language)
-        case .charging: stateText = ContractCopy.copyTrayTooltipCharging.text(for: language)
-        // `AC` 是单位记号，不是文案，不进合同。
+        case .discharging: stateText = Copy.copyTrayTooltipBattery.text(for: language)
+        case .charging: stateText = Copy.copyTrayTooltipCharging.text(for: language)
+        // `AC` 是单位记号，不是文案。
         case .charged, .acPower: stateText = "AC"
-        default: stateText = ContractCopy.copyStateEmpty.text(for: language)
+        default: stateText = Copy.copyStateEmpty.text(for: language)
         }
         return "\(battery.percent)% · \(stateText)"
     }

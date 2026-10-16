@@ -2,9 +2,9 @@ import Foundation
 
 /// Hub 面板的生命周期状态。
 ///
-/// 取值来自设计合同 `states.menuBarAndNotchHub.hubStates`，一个不多一个不少。
-/// 合同的 `interactionPath` 给出 `HIDDEN → HOVER → OPEN → ACTIVE → EXIT → HIDDEN`
-/// 与 `ERROR → OPEN`。本文件把这条路径补全为可执行的状态机。
+/// 六个状态，一个不多一个不少。
+/// 主路径是 `HIDDEN → HOVER → OPEN → ACTIVE → EXIT → HIDDEN`，
+/// 另有一条 `ERROR → OPEN`。本文件把这条路径补全为可执行的状态机。
 enum HubState: String, CaseIterable, Sendable {
     case hidden = "HIDDEN"
     case hover = "HOVER"
@@ -13,7 +13,7 @@ enum HubState: String, CaseIterable, Sendable {
     case exit = "EXIT"
     case error = "ERROR"
 
-    /// 合同里的 slug。用于拼 `copyKey` 与 `contractKey`。
+    /// 状态的小写名。
     var slug: String {
         switch self {
         case .hidden: "hidden"
@@ -25,21 +25,14 @@ enum HubState: String, CaseIterable, Sendable {
         }
     }
 
-    /// 合同 `hubStates[].copyKey`。
-    var copyKey: String { "copy/notch-hub/state/\(slug)" }
-
-    /// 合同 `hubStates[].contractKey`。
-    var contractKey: String { "state/notch-hub/\(slug)" }
-
     /// 面板窗口是否应该出现在屏幕上。
     var isPanelVisible: Bool { self != .hidden }
 }
 
 /// Hub 内容区的输出状态。
 ///
-/// 取值来自设计合同 `states.notchOutputHub.states`。
 /// 这台状态机与 `HubState` 正交：`HubState` 管窗口的可见性与生命周期，
-/// `HubOutputState` 管内容区显示什么。合同给了两条独立的 `interactionPath`，
+/// `HubOutputState` 管内容区显示什么。两条独立的 `interactionPath`
 /// 说明设计上本来就是两台机器。
 ///
 /// M1 只把内容区固定为 `collapsed`。M3 的截图与 M4 的剪贴板会驱动它。
@@ -51,7 +44,7 @@ enum HubOutputState: String, CaseIterable, Sendable {
     case processing = "PROCESSING"
     case error = "ERROR"
 
-    /// 合同里的 slug。`EXPANDED OUTPUT` 的 slug 是 `expanded`，不是 `expanded-output`。
+    /// 状态的小写名。`EXPANDED OUTPUT` 的是 `expanded`，不是 `expanded-output`。
     var slug: String {
         switch self {
         case .collapsed: "collapsed"
@@ -63,16 +56,11 @@ enum HubOutputState: String, CaseIterable, Sendable {
         }
     }
 
-    /// 合同 `notchOutputHub.states[].copyKey`。
-    var copyKey: String { "copy/notch-hub/state/\(slug)" }
-
-    /// 合同 `notchOutputHub.states[].contractKey`。
-    var contractKey: String { "review/notch-output-hub/state/\(slug)" }
 }
 
 /// 驱动 `HubState` 的事件。
 ///
-/// 事件名不是合同词汇。合同只定义了状态与状态之间的路径，没有定义事件。
+/// 事件覆盖指针进出、收起请求、动画结束与错误。
 enum HubEvent: String, CaseIterable, Sendable {
     /// 指针进入顶部热区。
     case pointerEnteredHotZone
@@ -102,7 +90,7 @@ struct HubStateMachine: Sendable {
 
     /// 状态迁移表。
     ///
-    /// 合同 `interactionPath` 里的 6 条边都在表内。其余边是这条路径的逆操作。
+    /// 主路径的 6 条边都在表内。其余边是这条路径的逆操作。
     private static let transitions: [HubState: [HubEvent: HubState]] = [
         .hidden: [
             .pointerEnteredHotZone: .hover,
@@ -137,7 +125,7 @@ struct HubStateMachine: Sendable {
             .pointerEnteredHotZone: .hover,
         ],
         .error: [
-            // 合同的 `ERROR → OPEN`。
+            // 主路径之外的 `ERROR → OPEN`。
             .failureCleared: .open,
             .collapseRequested: .exit,
         ],
@@ -146,7 +134,7 @@ struct HubStateMachine: Sendable {
     /// 处理一个事件。返回状态是否改变。
     @discardableResult
     mutating func handle(_ event: HubEvent) -> Bool {
-        // 错误可以从任何状态进入。合同的 `interactionPath` 只画了 `ERROR → OPEN`，
+        // 错误可以从任何状态进入。主路径只画了 `ERROR → OPEN`，
         // 没有画进入 ERROR 的边，所以这里单独处理。
         if event == .failureRaised {
             guard state != .error else { return false }

@@ -43,7 +43,7 @@ struct ClipboardTabView: View {
             Image(systemName: "doc.on.clipboard")
                 .font(.system(size: 22))
                 .foregroundStyle(.tertiary)
-            Text(ContractCopy.copyClipboardEmpty.text(for: language))
+            Text(Copy.copyClipboardEmpty.text(for: language))
                 .font(.system(size: 12))
                 .foregroundStyle(.secondary)
         }
@@ -97,7 +97,7 @@ struct ClipboardTabView: View {
             return error.text(for: language)
         }
         if !clipboard.failedHotKeys.isEmpty {
-            return ContractCopy.copyClipboardErrorHotKey.text(for: language)
+            return Copy.copyClipboardErrorHotKey.text(for: language)
         }
         return nil
     }
@@ -123,13 +123,13 @@ struct ClipboardCapsuleActions: View {
         HStack(spacing: MacTheme.space2) {
             MacButton(
                 title: clipboard.isPaused
-                    ? ContractCopy.copyClipboardStateResume.text(for: language)
-                    : ContractCopy.copyClipboardStatePause.text(for: language)
+                    ? Copy.copyClipboardStateResume.text(for: language)
+                    : Copy.copyClipboardStatePause.text(for: language)
             ) {
                 clipboard.setPaused(!clipboard.isPaused)
             }
             MacButton(
-                title: ContractCopy.copyClipboardActionClear.text(for: language),
+                title: Copy.copyClipboardActionClear.text(for: language),
                 isEnabled: clipboard.items.contains { !$0.pinned }
             ) {
                 clipboard.clearAll()
@@ -209,15 +209,15 @@ private struct ClipboardRow: View {
 
     private var controls: some View {
         HStack(spacing: MacTheme.space1) {
-            MacButton(title: ContractCopy.copyTopShelfActionCopy.text(for: language), kind: .plain, action: onCopy)
-            MacButton(title: ContractCopy.copyClipboardActionPaste.text(for: language), kind: .plain, action: onPaste)
+            MacButton(title: Copy.copyTopShelfActionCopy.text(for: language), kind: .plain, action: onCopy)
+            MacButton(title: Copy.copyClipboardActionPaste.text(for: language), kind: .plain, action: onPaste)
             MacButton(
-                title: (item.pinned ? ContractCopy.copyClipboardActionUnpin : ContractCopy.copyClipboardActionPin).text(for: language),
+                title: (item.pinned ? Copy.copyClipboardActionUnpin : Copy.copyClipboardActionPin).text(for: language),
                 kind: .plain,
                 action: onPin
             )
-            MacButton(title: ContractCopy.copyClipboardActionWorkspace.text(for: language), kind: .plain, action: onSave)
-            MacButton(title: ContractCopy.copyClipboardActionRemove.text(for: language), kind: .plain, action: onRemove)
+            MacButton(title: Copy.copyClipboardActionWorkspace.text(for: language), kind: .plain, action: onSave)
+            MacButton(title: Copy.copyClipboardActionRemove.text(for: language), kind: .plain, action: onRemove)
         }
     }
 
@@ -225,7 +225,7 @@ private struct ClipboardRow: View {
     private var summary: String {
         let body = item.text.isEmpty ? (item.filePath as NSString).lastPathComponent : item.text
         let firstLine = body.split(separator: "\n", maxSplits: 1).first.map(String.init) ?? body
-        return firstLine.isEmpty ? ContractCopy.copyClipboardEmpty.text(for: language) : firstLine
+        return firstLine.isEmpty ? Copy.copyClipboardEmpty.text(for: language) : firstLine
     }
 
     private var symbol: String {

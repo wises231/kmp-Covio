@@ -3,7 +3,7 @@ import SwiftUI
 /// Hub 左侧的悬浮导航栏。
 ///
 /// 顶部是搜索栏，中间是六个页签，底部是运行状态、设置、语言与退出。
-/// 对应合同 `component/tab-bar`，`nativeSize` 是 200 × 370。
+/// 导航栏是 200 × 370 点。
 ///
 /// 高度是固定值：内容用 `Spacer` 撑开，所以内容再少也不会缩。
 struct HubNavRail: View {
@@ -30,7 +30,7 @@ struct HubNavRail: View {
         .frame(width: HubMetrics.navRailWidth, height: HubMetrics.navRailHeight, alignment: .top)
         .glassSurface(cornerRadius: MacTheme.cardRadius)
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(ContractCopy.copyNavRailLabel.text(for: language))
+        .accessibilityLabel(Copy.copyNavRailLabel.text(for: language))
     }
 
     // MARK: - 搜索
@@ -55,7 +55,7 @@ struct HubNavRail: View {
     }
 
     private var placeholder: String {
-        ContractCopy.copyNavSearchPlaceholder.text(for: language)
+        Copy.copyNavSearchPlaceholder.text(for: language)
     }
 
     // MARK: - 页签
@@ -133,14 +133,14 @@ struct HubNavRail: View {
     }
 
     private var statusText: String {
-        let copy = isActive ? ContractCopy.copyNavStatusRunning : ContractCopy.copyNavStatusPaused
+        let copy = isActive ? Copy.copyNavStatusRunning : Copy.copyNavStatusPaused
         return copy.text(for: language)
     }
 
     private var settingsRow: some View {
         bottomButton(
             symbolName: "gearshape",
-            title: ContractCopy.copyHubTabSettings.text(for: language),
+            title: Copy.copyHubTabSettings.text(for: language),
             isSelected: selection == .settings
         ) {
             select(.settings)
@@ -170,12 +170,12 @@ struct HubNavRail: View {
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
-        .accessibilityLabel(ContractCopy.copyGeneralLanguage.text(for: language))
+        .accessibilityLabel(Copy.copyGeneralLanguage.text(for: language))
     }
 
     /// 退出是不可逆动作，所以排在底部组最后一项。
     private var quitRow: some View {
-        bottomButton(symbolName: "power", title: ContractCopy.copyNavQuit.text(for: language)) {
+        bottomButton(symbolName: "power", title: Copy.copyNavQuit.text(for: language)) {
             onQuit()
         }
     }
@@ -209,8 +209,8 @@ struct HubNavRail: View {
     /// 语言名用当前界面语言显示。
     private func languageName(_ display: AppLanguage) -> String {
         switch language {
-        case .simplifiedChinese: ContractCopy.copyGeneralLanguageChinese.text(for: display)
-        case .english: ContractCopy.copyGeneralLanguageEnglish.text(for: display)
+        case .simplifiedChinese: Copy.copyGeneralLanguageChinese.text(for: display)
+        case .english: Copy.copyGeneralLanguageEnglish.text(for: display)
         }
     }
 

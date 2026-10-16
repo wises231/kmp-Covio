@@ -59,7 +59,7 @@ import kotlin.math.roundToInt
  * 画的是需求文档第 5 节的 S1、S2、S3 与第 6 节的版式。
  */
 
-/** 菜单栏高。系统值，合同里没有这一条。 */
+/** 菜单栏高。系统值。 */
 private val menuBarHeight = 28.dp
 
 /** 页签之间的间距。 */

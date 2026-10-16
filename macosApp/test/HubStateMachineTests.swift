@@ -3,15 +3,14 @@ import XCTest
 
 /// `HubStateMachine` 的迁移测试。
 ///
-/// 重点是把设计合同 `states.menuBarAndNotchHub.interactionPath` 的每一条边
-/// 都走一遍，证明状态机没有偏离合同。
+/// 重点是把主路径的每一条边都走一遍，证明状态机没有偏离。
 final class HubStateMachineTests: XCTestCase {
     func testInitialStateIsHidden() {
         XCTAssertEqual(HubStateMachine().state, .hidden)
     }
 
-    /// 合同的 `interactionPath`：HIDDEN → HOVER → OPEN → ACTIVE → EXIT → HIDDEN。
-    func testContractInteractionPathIsWalkable() {
+    /// 主路径：HIDDEN → HOVER → OPEN → ACTIVE → EXIT → HIDDEN。
+    func testTheInteractionPathIsWalkable() {
         var machine = HubStateMachine()
 
         XCTAssertTrue(machine.handle(.pointerEnteredHotZone))
@@ -30,8 +29,8 @@ final class HubStateMachineTests: XCTestCase {
         XCTAssertEqual(machine.state, .hidden)
     }
 
-    /// 合同的 `interactionPath` 还有一条 ERROR → OPEN。
-    func testContractErrorEdgeReturnsToOpen() {
+    /// 主路径之外还有一条 ERROR → OPEN。
+    func testTheErrorEdgeReturnsToOpen() {
         var machine = HubStateMachine()
         machine.handle(.pointerEnteredHotZone)
         machine.handle(.expandFinished)
@@ -127,14 +126,12 @@ final class HubStateMachineTests: XCTestCase {
         }
     }
 
-    /// 合同词汇的键路径。
-    func testContractKeysMatchStateNames() {
-        XCTAssertEqual(HubState.hidden.copyKey, "copy/notch-hub/state/hidden")
-        XCTAssertEqual(HubState.hidden.contractKey, "state/notch-hub/hidden")
-        XCTAssertEqual(HubState.exit.copyKey, "copy/notch-hub/state/exit")
+    /// 状态的小写名固定。
+    func testStateSlugsAreStable() {
+        XCTAssertEqual(HubState.hidden.slug, "hidden")
+        XCTAssertEqual(HubState.exit.slug, "exit")
         XCTAssertEqual(HubOutputState.expandedOutput.slug, "expanded")
         XCTAssertEqual(HubOutputState.dragTarget.slug, "drag-target")
-        XCTAssertEqual(HubOutputState.dragTarget.copyKey, "copy/notch-hub/state/drag-target")
     }
 
     // MARK: - 辅助

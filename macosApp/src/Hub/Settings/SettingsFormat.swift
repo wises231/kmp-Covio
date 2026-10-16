@@ -14,14 +14,14 @@ enum SettingsFormat {
         }
     }
 
-    /// 休眠模式的显示名。文案来自合同 `copy/general/sleep-mode/*`。
+    /// 休眠模式的显示名。文案来自 `Copy`。
     ///
-    /// 认不出的模式只显示数字：合同没有对应的键，界面不能编一个名字。
+    /// 认不出的模式只显示数字：界面不能编一个名字。
     static func sleepModeLabel(_ mode: Int32, language: AppLanguage) -> String {
         switch mode {
-        case 0: return ContractCopy.copyGeneralSleepModeFastest.text(for: language)
-        case 3: return ContractCopy.copyGeneralSleepModeDefault.text(for: language)
-        case 25: return ContractCopy.copyGeneralSleepModeLowestPower.text(for: language)
+        case 0: return Copy.copyGeneralSleepModeFastest.text(for: language)
+        case 3: return Copy.copyGeneralSleepModeDefault.text(for: language)
+        case 25: return Copy.copyGeneralSleepModeLowestPower.text(for: language)
         default: return "\(mode)"
         }
     }

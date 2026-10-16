@@ -8,7 +8,7 @@
 | 状态 | 待评审 |
 | 日期 | `2026-10-14` |
 | 适用范围 | `designPreview` 模块。只在开发机上跑。 |
-| 上游文档 | [研发工作流](../../docs/process/workflow.md) 的设计闸门、[设计合同](../covio-design-contract.json) |
+| 上游文档 | [研发工作流](../../docs/process/workflow.md) 的设计闸门 |
 | 下游文档 | 每一份打样对应的 issue |
 
 本文写清三件事：模块是什么、怎么起、怎么加一份打样。
@@ -75,11 +75,11 @@ Amper 自动装 pnpm 与 Node，自动生成 `index.html`。不用手写 HTML。
 
 **注意：** 只加画得完的条目。首页上点进去是空壳就是死路，违反设计闸门的 R7。
 
-色值从设计合同取。合同的取值进 Kotlin 侧的通道还没建，先手抄，
-并在注释里写清抄的是哪一枚令牌。见第 7 节。
+色值写在每一份打样自己的 `Tokens` 里，例如 `previews/workbench/WorkbenchTokens.kt`。
+打样画的是目标画面，所以取值以打样为准。
 
 宿主的颜色写在 `PreviewApp.kt` 的 `Harness` 里。宿主是工具，不是 Covio 的界面，
-所以宿主用中性灰，不读合同。
+所以宿主用中性灰。
 
 ## 5. 截图
 
@@ -131,14 +131,11 @@ python3 -I scripts/subset-preview-font.py <完整的 NotoSansSC-Regular.otf> des
 
 1. 模块不进发布物。`macosApp` 不依赖它，打包脚本也不含它。
 2. 模块不依赖 `kmpDomain`。`kmpDomain` 现在只有 `jvm` 与 `macosArm64` 两个平台，接不上 wasmJs。
-3. 打样不是权威。权威是设计合同。打样与合同不一致时，改打样。
+3. 打样画的是目标画面。打样与 macOS 实现不一致时，改实现。
 
 ## 8. 未决项
 
-| 编号 | 未决项 | 影响 |
-| --- | --- | --- |
-| `Q-E` | 打样与合同漂移时谁来拦 | 校验脚本要不要读打样 |
-| `Q-F` | `platformMapping` 的 `status` 三值是否还要 | 去掉 Figma 后只剩 Swift 一个平台 |
-| `Q-H` | 合同令牌怎么进 Kotlin 侧 | 打样现在手抄色值 |
+无。
 
-`Q-E` 与 `Q-F` 记在 #98。`Q-H` 记在 #103 的后续动作第 3 条。
+`Q-E`、`Q-F` 与 `Q-H` 随设计合同一起作废。界面取值的权威现在是
+`macosApp/src/Design/` 下的 Swift 代码，打样与它不一致时改 Swift。

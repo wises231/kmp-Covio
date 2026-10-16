@@ -16,16 +16,6 @@ fi
 
 cd "$ROOT"
 
-# 先查合同常量有没有漂移。
-#
-# `ContractCopy.swift` 与 `ContractTokens.swift` 是生成文件，改了合同忘了重跑
-# 生成器时界面用的还是旧文案。这一步在编译前拦住它，比事后比对便宜。
-# 用 `-I` 跑：隔离模式不读当前目录，防止目录里被放一个同名模块顶替标准库。
-python3 -I "$ROOT/scripts/generate-contract-constants.py" --check
-
-# 再查合同的跨段规则。schema 管形状，管不了「macOS 下 swiftMapping 必填」这类要求。
-python3 -I "$ROOT/scripts/validate-contract.py"
-
 # spike 测试会把测量结果打到 stdout。--quiet 会压掉它们，所以不加。
 xcodebuild \
   -project "$PROJECT" \

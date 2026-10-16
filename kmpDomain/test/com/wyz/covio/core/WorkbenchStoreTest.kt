@@ -8,7 +8,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import okio.FileSystem
 import okio.Path
-import okio.Path.Companion.toPath
 
 /**
  * 工作台配置的模型与持久化。
@@ -281,24 +280,17 @@ class WorkbenchStoreTest {
      * 内置工作区的显示名来自设计合同，不在模型里写死。
      *
      * 名字写死在模型里，换语言时不会跟着变。所以模型只给文案键，
-     * 宿主用这个键读生成的 `ContractCopy`。
+     * 宿主用这个键取界面文案。文案本身在 `macosApp/src/Design/Copy.swift`。
      */
     @Test
-    fun `every builtin pane reads its name from the design contract`() {
-        val contractPath = sequenceOf(
-            "docs/covio-design-contract.json",
-            "../docs/covio-design-contract.json",
-            "../../docs/covio-design-contract.json",
-        ).firstOrNull { FileSystem.SYSTEM.exists(it.toPath()) }
-        assertNotNull(contractPath, "找不到设计合同。工作目录是 ${FileSystem.SYSTEM.canonicalize(".".toPath())}")
-
-        val result = DesignContractReader.read(contractPath)
-        val contract = assertNotNull(result.contract, "设计合同读不出来：${result.errors.map { it.describe() }}")
-
-        for (kind in PaneKind.entries.filter { it.isBuiltin }) {
+    fun `every builtin pane carries its own copy key`() {
+        val keys = PaneKind.entries.filter { it.isBuiltin }.map { kind ->
             val key = assertNotNull(kind.titleCopyKey, "${kind.name} 是内置工作区，应当有文案键")
-            assertNotNull(contract.entry(key), "$key 不在设计合同的 copy 段里")
+            assertEquals("copy/hub/tab/${kind.key}", key, "${kind.name} 的文案键由键名拼出")
+            key
         }
+
+        assertEquals(keys.size, keys.toSet().size, "内置工作区的文案键各不相同")
         assertNull(PaneKind.BOARD.titleCopyKey, "自建工作区没有内置名字")
     }
 }

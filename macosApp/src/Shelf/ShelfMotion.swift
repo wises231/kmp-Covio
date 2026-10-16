@@ -34,8 +34,7 @@ struct ShelfMotionPlan: Equatable, Sendable {
 /// `app/src/com/wyz/covio/app/ui/MacTheme.kt` 的 `MacMotionSpec`。
 /// 弹簧参数与微风的保持时长直接写在 `app/src/com/wyz/covio/app/ui/ShelfWindow.kt` 里，
 /// 这里一并收拢，好让两个宿主的动画参数只有一处可查。
-/// 设计合同目前没有 motion token，所以这里是这些数值在 Swift 侧的唯一落点。
-/// M5 会把它们补进合同，那时本文件改成读合同。
+/// 这里是这些数值在 Swift 侧的唯一落点。
 ///
 /// 捕获 0.65 秒与复制 1.2 秒已经在 `HubMotion` 里，这里不重复定义。
 enum ShelfMotionSpec {
@@ -78,9 +77,9 @@ enum ShelfMotionSpec {
     static let rotationSpringStiffness: CGFloat = 330
     static let rotationSpringDamping: CGFloat = 0.62
 
-    /// 卡片从屏幕外飞入的时长。等于合同的「截图捕获 650 毫秒」。
+    /// 卡片从屏幕外飞入的时长。与截图捕获同长。
     static var flyInSeconds: TimeInterval { HubMotion.screenshotCapture }
-    /// 复制提示的停留时长。等于合同的「截图复制 1200 毫秒提示」。
+    /// 复制提示的停留时长。与截图复制同长。
     static var copyToastSeconds: TimeInterval { HubMotion.screenshotCopy }
 }
 

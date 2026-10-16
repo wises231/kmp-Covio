@@ -149,7 +149,7 @@ final class ShelfRuntime {
         // 快照在磁盘上时说明接管还开着。还原之后把快照清掉，避免下次重复还原。
         if takeover.isActive, store.load().preferenceSnapshot != nil {
             if !takeover.restoreOnExit() {
-                report(ContractCopy.copyTopShelfErrorRestore)
+                report(Copy.copyTopShelfErrorRestore)
             }
         }
         panel?.dismiss()
@@ -214,11 +214,11 @@ final class ShelfRuntime {
         do {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         } catch {
-            report(ContractCopy.copyTopShelfErrorDirectory)
+            report(Copy.copyTopShelfErrorDirectory)
             return
         }
         guard NSWorkspace.shared.open(directory) else {
-            report(ContractCopy.copyTopShelfErrorDirectory)
+            report(Copy.copyTopShelfErrorDirectory)
             return
         }
     }
@@ -275,7 +275,7 @@ final class ShelfRuntime {
 
     func copyItem(_ item: ShelfItem) {
         guard ShelfClipboard.copy(URL(fileURLWithPath: item.path)) else {
-            report(ContractCopy.copyTopShelfErrorCopy)
+            report(Copy.copyTopShelfErrorCopy)
             return
         }
     }
@@ -283,11 +283,11 @@ final class ShelfRuntime {
     func openItem(_ item: ShelfItem) {
         let url = URL(fileURLWithPath: item.path)
         guard FileManager.default.fileExists(atPath: url.path) else {
-            report(ContractCopy.copyTopShelfErrorOpen)
+            report(Copy.copyTopShelfErrorOpen)
             return
         }
         guard NSWorkspace.shared.open(url) else {
-            report(ContractCopy.copyTopShelfErrorOpen)
+            report(Copy.copyTopShelfErrorOpen)
             return
         }
     }
@@ -297,7 +297,7 @@ final class ShelfRuntime {
         let url = URL(fileURLWithPath: item.path)
         if ShelfNative.openMarkup(fileURL: url) { return }
         guard NSWorkspace.shared.open(url) else {
-            report(ContractCopy.copyTopShelfErrorMarkup)
+            report(Copy.copyTopShelfErrorMarkup)
             return
         }
     }
@@ -390,7 +390,7 @@ final class ShelfRuntime {
     ) {
         let url = URL(fileURLWithPath: item.path)
         guard ShelfFileOperations.perform(action: action, source: url, destination: destination) else {
-            if action != .cancel { report(ContractCopy.copyTopShelfErrorMove) }
+            if action != .cancel { report(Copy.copyTopShelfErrorMove) }
             return
         }
         if action != .theCopyAndKeep { removeItem(item) }
@@ -547,7 +547,7 @@ final class ShelfRuntime {
                 return
             }
             guard succeeded else {
-                self.report(enabling ? ContractCopy.copyTopShelfErrorTakeover : ContractCopy.copyTopShelfErrorRestore)
+                self.report(enabling ? Copy.copyTopShelfErrorTakeover : Copy.copyTopShelfErrorRestore)
                 return
             }
             self.applyTakeoverState(takeover.isActive)

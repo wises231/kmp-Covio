@@ -46,7 +46,7 @@ final class WorkspaceTests: XCTestCase {
         XCTAssertNil(runtime.errorMessage)
         XCTAssertEqual(
             runtime.infoMessage?.text,
-            ContractCopy.copyHubFilesNoticeDuplicate.text
+            Copy.copyHubFilesNoticeDuplicate.text
         )
     }
 
@@ -60,7 +60,7 @@ final class WorkspaceTests: XCTestCase {
         XCTAssertTrue(runtime.entries.isEmpty)
         XCTAssertEqual(
             runtime.errorMessage?.text,
-            ContractCopy.copyHubFilesErrorImport.text
+            Copy.copyHubFilesErrorImport.text
         )
     }
 
@@ -73,7 +73,7 @@ final class WorkspaceTests: XCTestCase {
         XCTAssertTrue(runtime.entries.isEmpty)
         XCTAssertEqual(
             runtime.errorMessage?.text,
-            ContractCopy.copyHubFilesErrorTooLarge.text
+            Copy.copyHubFilesErrorTooLarge.text
         )
     }
 
@@ -191,7 +191,7 @@ final class WorkspaceTests: XCTestCase {
         XCTAssertEqual(runtime.entries.first?.kind, WorkspaceKind.text)
         XCTAssertEqual(
             runtime.infoMessage?.text,
-            ContractCopy.copyHubFilesNoticeSaved.text
+            Copy.copyHubFilesNoticeSaved.text
         )
     }
 
@@ -249,7 +249,7 @@ final class WorkspaceTests: XCTestCase {
         XCTAssertEqual(runtime.entries.first?.displayName, "shot.png")
         XCTAssertEqual(
             runtime.infoMessage?.text,
-            ContractCopy.copyHubFilesNoticeSaved.text
+            Copy.copyHubFilesNoticeSaved.text
         )
     }
 
@@ -277,7 +277,7 @@ final class WorkspaceTests: XCTestCase {
         XCTAssertNil(runtime.infoMessage)
         XCTAssertEqual(
             runtime.errorMessage?.text,
-            ContractCopy.copyHubFilesErrorSave.text
+            Copy.copyHubFilesErrorSave.text
         )
     }
 
@@ -291,7 +291,7 @@ final class WorkspaceTests: XCTestCase {
         XCTAssertTrue(runtime.entries.isEmpty)
         XCTAssertEqual(
             runtime.errorMessage?.text,
-            ContractCopy.copyHubFilesErrorSave.text
+            Copy.copyHubFilesErrorSave.text
         )
     }
 
@@ -305,7 +305,7 @@ final class WorkspaceTests: XCTestCase {
         XCTAssertNil(runtime.errorMessage)
         XCTAssertEqual(
             runtime.infoMessage?.text,
-            ContractCopy.copyHubFilesNoticeSaved.text
+            Copy.copyHubFilesNoticeSaved.text
         )
     }
 

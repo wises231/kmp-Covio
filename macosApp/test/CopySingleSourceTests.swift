@@ -1,12 +1,10 @@
 import XCTest
 @testable import Covio
 
-/// 文案只有一个来源：`docs/covio-design-contract.json`。
+/// 文案只有一个来源：`Copy.swift`。
 ///
 /// 生成文件与类型定义之外出现 `LocalizedCopy` 的构造调用就失败。
-/// 这条规则拦住「顺手在界面里写一句文案」——那正是这次重构要消掉的偏离。
-///
-/// 同一份检查也在 `scripts/validate-contract.py` 里，那边不装 Xcode 也能跑。
+/// 这条规则拦住「顺手在界面里写一句文案」。
 final class CopySingleSourceTests: XCTestCase {
     private static let repoRoot = URL(fileURLWithPath: #filePath)
         .deletingLastPathComponent()
@@ -15,17 +13,17 @@ final class CopySingleSourceTests: XCTestCase {
 
     /// 允许出现字面量的文件，相对仓库根。
     ///
-    /// `ContractCopy.swift` 是生成文件。`LocalizedCopy.swift` 定义类型本身，
+    /// `Copy.swift` 是文案的落点。`LocalizedCopy.swift` 定义类型本身，
     /// 它不写任何产品文案。
     private static let allowed: Set<String> = [
-        "macosApp/src/Design/ContractCopy.swift",
+        "macosApp/src/Design/Copy.swift",
         "macosApp/src/Design/LocalizedCopy.swift",
     ]
 
     /// 要查的字面量。
     ///
     /// 拼出来而不是写成一整串：这个文件自己也在扫描范围里，
-    /// 写成一整串会让它查到自己。`scripts/validate-contract.py` 的规则 6 同理。
+    /// 写成一整串会让它查到自己。
     private static let needle = "LocalizedCopy" + "("
 
     func testNoHandWrittenCopyOutsideTheGeneratedFile() throws {
@@ -45,7 +43,7 @@ final class CopySingleSourceTests: XCTestCase {
 
         XCTAssertTrue(
             offenders.isEmpty,
-            "这些地方手写了文案，应该读 ContractCopy：\(offenders.sorted())"
+            "这些地方手写了文案，应该读 Copy：\(offenders.sorted())"
         )
     }
 
@@ -58,7 +56,7 @@ final class CopySingleSourceTests: XCTestCase {
                 $0.path.replacingOccurrences(of: Self.repoRoot.path + "/", with: "")
             }
         )
-        XCTAssertTrue(scanned.contains("macosApp/src/Design/ContractCopy.swift"))
+        XCTAssertTrue(scanned.contains("macosApp/src/Design/Copy.swift"))
         XCTAssertTrue(scanned.contains("macosApp/test/CopySingleSourceTests.swift"))
         for allowed in Self.allowed {
             XCTAssertTrue(scanned.contains(allowed), "\(allowed) 不在扫描结果里")

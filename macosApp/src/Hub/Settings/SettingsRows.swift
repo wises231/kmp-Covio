@@ -67,20 +67,20 @@ struct HelperCard: View {
 
     var body: some View {
         MacCard {
-            MacSectionTitle(text: ContractCopy.copyAppName.text(for: runtime.language))
-            MacStatusLine(text: ContractCopy.copyDialogHelperInstallBody.text(for: runtime.language))
+            MacSectionTitle(text: Copy.copyAppName.text(for: runtime.language))
+            MacStatusLine(text: Copy.copyDialogHelperInstallBody.text(for: runtime.language))
 
             switch runtime.helperStatus {
             case .installed:
                 MacButton(
-                    title: ContractCopy.copyDialogHelperUnavailableTitle.text(for: runtime.language),
+                    title: Copy.copyDialogHelperUnavailableTitle.text(for: runtime.language),
                     isEnabled: !runtime.busy
                 ) { runtime.uninstallHelper() }
             // 未安装、版本不符、出错三种情况都给安装按钮：
             // 这三种下 helper 都不能用，用户的动作都是重装。
             default:
                 MacButton(
-                    title: ContractCopy.copyOverviewHelperInstall.text(for: runtime.language),
+                    title: Copy.copyOverviewHelperInstall.text(for: runtime.language),
                     kind: .primary,
                     isEnabled: !runtime.busy
                 ) { runtime.installHelper() }
@@ -88,7 +88,7 @@ struct HelperCard: View {
 
             if runtime.helperStatus == .outdated || runtime.helperStatus == .error {
                 MacAlert(
-                    message: ContractCopy.copyDialogHelperUnavailableBody.text(for: runtime.language),
+                    message: Copy.copyDialogHelperUnavailableBody.text(for: runtime.language),
                     kind: .warning
                 )
             }
@@ -107,9 +107,9 @@ struct ClipboardCard: View {
 
     var body: some View {
         MacCard {
-            MacSettingRow(title: ContractCopy.copyClipboardSettingsEnabled.text(for: runtime.language)) {
+            MacSettingRow(title: Copy.copyClipboardSettingsEnabled.text(for: runtime.language)) {
                 MacSwitch(
-                    label: ContractCopy.copyClipboardSettingsEnabled.text(for: runtime.language),
+                    label: Copy.copyClipboardSettingsEnabled.text(for: runtime.language),
                     isOn: Binding(
                         get: { runtime.config.clipboardEnabled },
                         set: { runtime.setClipboardEnabled($0) }
@@ -118,26 +118,26 @@ struct ClipboardCard: View {
             }
             .settingsRowAnchor(SettingsRowID.topShelfClipboard)
 
-            MacSectionTitle(text: ContractCopy.copyClipboardSettingsHotKeys.text(for: runtime.language))
+            MacSectionTitle(text: Copy.copyClipboardSettingsHotKeys.text(for: runtime.language))
             ForEach(ClipboardHotKeyAction.allCases, id: \.rawValue) { action in
                 HotKeyRow(action: action, runtime: runtime)
             }
             .settingsRowAnchor(SettingsRowID.topShelfHotKeys)
 
-            MacSectionTitle(text: ContractCopy.copyClipboardSettingsAccessibility.text(for: runtime.language))
+            MacSectionTitle(text: Copy.copyClipboardSettingsAccessibility.text(for: runtime.language))
             MacStatusLine(
-                text: "\(ContractCopy.copyClipboardSettingsAccessibility.text(for: runtime.language)): \(accessibilityText)"
+                text: "\(Copy.copyClipboardSettingsAccessibility.text(for: runtime.language)): \(accessibilityText)"
             )
             HStack(spacing: MacTheme.space2) {
-                MacButton(title: ContractCopy.copyClipboardSettingsRequestPermission.text(for: runtime.language)) {
+                MacButton(title: Copy.copyClipboardSettingsRequestPermission.text(for: runtime.language)) {
                     ClipboardPaste.requestAccessibilityPermission()
                 }
-                MacButton(title: ContractCopy.copyClipboardActionOpenSettings.text(for: runtime.language)) {
+                MacButton(title: Copy.copyClipboardActionOpenSettings.text(for: runtime.language)) {
                     ClipboardPaste.openAccessibilitySettings()
                 }
             }
             MacAlert(
-                message: ContractCopy.copyClipboardSettingsAccessibilityFallback.text(for: runtime.language),
+                message: Copy.copyClipboardSettingsAccessibilityFallback.text(for: runtime.language),
                 kind: .info
             )
         }
@@ -149,7 +149,7 @@ struct ClipboardCard: View {
     }
 
     private var accessibilityText: String {
-        (permissionGranted ? ContractCopy.copyClipboardSettingsGranted : ContractCopy.copyClipboardSettingsNotGranted)
+        (permissionGranted ? Copy.copyClipboardSettingsGranted : Copy.copyClipboardSettingsNotGranted)
             .text(for: runtime.language)
     }
 }
@@ -178,7 +178,7 @@ struct HotKeyRow: View {
             }
             if runtime.clipboard.hasHotKeyConflict(action) {
                 MacAlert(
-                    message: ContractCopy.copyClipboardSettingsHotKeyConflict.text(for: runtime.language),
+                    message: Copy.copyClipboardSettingsHotKeyConflict.text(for: runtime.language),
                     kind: .warning
                 )
             }
@@ -187,8 +187,8 @@ struct HotKeyRow: View {
 
     private var title: String {
         switch action {
-        case .pasteStack: ContractCopy.copyClipboardSettingsPasteStackHotKey.text(for: runtime.language)
-        case .captureSelection: ContractCopy.copyClipboardSettingsCaptureHotKey.text(for: runtime.language)
+        case .pasteStack: Copy.copyClipboardSettingsPasteStackHotKey.text(for: runtime.language)
+        case .captureSelection: Copy.copyClipboardSettingsCaptureHotKey.text(for: runtime.language)
         }
     }
 
@@ -204,17 +204,17 @@ struct DarkWakeStatusView: View {
 
     var body: some View {
         let status = runtime.appState.darkWake
-        MacSectionTitle(text: ContractCopy.copyGeneralDarkwake.text(for: runtime.language))
+        MacSectionTitle(text: Copy.copyGeneralDarkwake.text(for: runtime.language))
         if status.scanning {
-            MacStatusLine(text: ContractCopy.copyStateLoading.text(for: runtime.language))
+            MacStatusLine(text: Copy.copyStateLoading.text(for: runtime.language))
         } else if !status.available {
-            MacStatusLine(text: ContractCopy.copyStateEmpty.text(for: runtime.language))
+            MacStatusLine(text: Copy.copyStateEmpty.text(for: runtime.language))
         } else {
             let last = status.lastAtEpochSeconds.map {
                 SettingsFormat.wakeTime(epochSeconds: $0.int64Value)
-            } ?? ContractCopy.copyStateEmpty.text(for: runtime.language)
-            MacStatusLine(text: "\(ContractCopy.copyGeneralDarkwake.text(for: runtime.language)): \(last)")
-            MacStatusLine(text: "\(status.lastReason ?? ContractCopy.copyStateEmpty.text(for: runtime.language))")
+            } ?? Copy.copyStateEmpty.text(for: runtime.language)
+            MacStatusLine(text: "\(Copy.copyGeneralDarkwake.text(for: runtime.language)): \(last)")
+            MacStatusLine(text: "\(status.lastReason ?? Copy.copyStateEmpty.text(for: runtime.language))")
             MacStatusLine(text: "\(status.count24h)")
         }
     }
@@ -247,8 +247,8 @@ struct LanguageOptions: View {
     var body: some View {
         MacSegmented(
             options: [
-                ContractCopy.copyGeneralLanguageEnglish.text(for: runtime.language),
-                ContractCopy.copyGeneralLanguageChinese.text(for: runtime.language),
+                Copy.copyGeneralLanguageEnglish.text(for: runtime.language),
+                Copy.copyGeneralLanguageChinese.text(for: runtime.language),
             ],
             selectedIndex: Self.languages.firstIndex(of: runtime.language) ?? 0
         ) { index in

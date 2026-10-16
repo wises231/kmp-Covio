@@ -15,7 +15,7 @@ struct SettingsSearchResults: View {
         VStack(alignment: .leading, spacing: MacTheme.space1) {
             header
             if hits.isEmpty {
-                Text(ContractCopy.copyNavSearchEmpty.text(for: language))
+                Text(Copy.copyNavSearchEmpty.text(for: language))
                     .font(.system(size: 12))
                     .foregroundStyle(MacTheme.textSecondary)
                     .padding(.horizontal, MacTheme.space3)
@@ -41,7 +41,7 @@ struct SettingsSearchResults: View {
     }
 
     private var header: some View {
-        Text(ContractCopy.copyNavSearchResults.text(for: language))
+        Text(Copy.copyNavSearchResults.text(for: language))
             .font(.system(size: 10, weight: .semibold))
             .foregroundStyle(MacTheme.textSecondary)
             .padding(.horizontal, MacTheme.space3)

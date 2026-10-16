@@ -228,7 +228,7 @@ final class ClipboardRuntime {
     func copyToPasteboard(_ id: String) -> Bool {
         guard let item = items.first(where: { $0.id == id }) else { return false }
         guard ClipboardWriter.write(item, to: pasteboard) else {
-            errorMessage = ContractCopy.copyClipboardErrorImage
+            errorMessage = Copy.copyClipboardErrorImage
             return false
         }
         monitor?.ignoreOwnChange()
@@ -240,17 +240,17 @@ final class ClipboardRuntime {
     func paste(_ id: String) -> Bool {
         guard copyToPasteboard(id) else { return false }
         guard let pid = targetPID() else {
-            errorMessage = ContractCopy.copyClipboardErrorPaste
+            errorMessage = Copy.copyClipboardErrorPaste
             return false
         }
         guard environment.hasAccessibilityPermission() else {
             // 没有权限时先弹系统引导。内容已经进了剪贴板，用户手动 ⌘V 也能用。
             environment.requestAccessibilityPermission()
-            errorMessage = ContractCopy.copyClipboardErrorAccessibility
+            errorMessage = Copy.copyClipboardErrorAccessibility
             return false
         }
         guard environment.paste(pid) else {
-            errorMessage = ContractCopy.copyClipboardErrorPaste
+            errorMessage = Copy.copyClipboardErrorPaste
             return false
         }
         return true
@@ -288,7 +288,7 @@ final class ClipboardRuntime {
                 registeredHotKeys.append(spec)
             } else {
                 failedHotKeys.insert(action.hotKeyID)
-                bridge.report?(ContractCopy.copyClipboardErrorHotKey)
+                bridge.report?(Copy.copyClipboardErrorHotKey)
             }
         }
     }
@@ -335,7 +335,7 @@ final class ClipboardRuntime {
         guard let pid = targetPID() else { return }
         guard environment.hasAccessibilityPermission() else {
             environment.requestAccessibilityPermission()
-            errorMessage = ContractCopy.copyClipboardErrorAccessibility
+            errorMessage = Copy.copyClipboardErrorAccessibility
             return
         }
         _ = ClipboardPaste.copySelection(in: pid)

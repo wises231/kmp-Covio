@@ -4,7 +4,7 @@ import kmpDomain
 /// 晾衣夹。夹在绳子上，也用作品牌标记。
 ///
 /// 对应 Compose 版 `app/src/com/wyz/covio/app/ui/MacComponents.kt` 的 `Clothespin`。
-/// 尺寸是 9 × 26 点，与合同 `component/clothespin` 的 `nativeSize` 一致。
+/// 尺寸是 9 × 26 点。
 ///
 /// **与 Compose 版的差别：** Kotlin 那份在 9dp × 26dp 的画布上用裸像素画
 /// （`Offset(2.6f, 0.8f)` 这类），2 倍屏上这些数字只有一半大小，
