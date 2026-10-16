@@ -10,7 +10,7 @@
 | 适用对象 | 产品、研发、测试和安全评审人员 |
 | 当前验证环境 | MacBook Pro 18,2，Apple M1 Max，macOS 27.0.1（26A434），Xcode 27 SDK |
 | 当前结论 | 合盖睡眠没有非特权机制。特权组件必须保留，形式也不换。 |
-| 验证状态 | 部分执行。`V04` 由注册探针回答，其余待执行。 |
+| 验证状态 | `V04` 已完成，由注册探针回答。其余场景不执行。 |
 
 ## 前因
 
@@ -42,7 +42,7 @@ Apple 在头文件里把它标为「not supported in any OS X releases」。
 探针用两种签名配置各注册一次，并读回 `status`。
 调研方法和方案矩阵见 [investigation.md](investigation.md)。
 复现命令、来源、观察和推论见 [evidence.md](evidence.md)。
-案例验证过程见 [validation/case-macos-lid-sleep.md](validation/case-macos-lid-sleep.md)。
+验证目标和矩阵见 [validation/README.md](validation/README.md)。
 
 ## 结果
 
@@ -81,7 +81,7 @@ Apple 明确保留手写 plist 这条路径，而且不需要 System Settings �
 因此本主题不改代码。
 将来取得 Developer ID 时，重跑注册探针，再评估换形式。
 推荐方案、接口契约、流程、安全、失败模式和实施计划见 [solution.md](solution.md)。
-实际验证记录见 [validation/case-macos-lid-sleep.md](validation/case-macos-lid-sleep.md)。
+验证矩阵和风险见 [validation/README.md](validation/README.md)。
 证据链见 [evidence.md](evidence.md)。
 
 ## 子文档
@@ -94,7 +94,6 @@ Apple 明确保留手写 plist 这条路径，而且不需要 System Settings �
 | [solution.md](solution.md) | 推荐架构、接口契约、电源策略、失败模式和实施计划 |
 | [evidence.md](evidence.md) | 环境事实、复现命令、21 条证据、逻辑链和已知缺口 |
 | [validation/README.md](validation/README.md) | 验证目标、范围、测试矩阵、风险和清理步骤 |
-| [validation/case-macos-lid-sleep.md](validation/case-macos-lid-sleep.md) | 合盖睡眠与特权组件验证记录，尚未执行 |
 
 ## 证据链
 
@@ -104,7 +103,6 @@ Apple 明确保留手写 plist 这条路径，而且不需要 System Settings �
 4. 从 [conclusion.md](conclusion.md) 阅读决策因素和限制。
 5. 从 [solution.md](solution.md) 阅读推荐实现。
 6. 从 [validation/README.md](validation/README.md) 阅读验证矩阵。
-7. 从 [validation/case-macos-lid-sleep.md](validation/case-macos-lid-sleep.md) 阅读案例结果。
 
 ## 更新规则
 

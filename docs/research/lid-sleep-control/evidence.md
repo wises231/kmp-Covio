@@ -9,7 +9,6 @@
 | 日期 | `2026-10-16` |
 | 主文 | [主题索引](README.md) |
 | 验证目录 | [验证目录](validation/README.md) |
-| 案例 | [Case 1](validation/case-macos-lid-sleep.md) |
 
 ## 1. 来源等级
 
@@ -85,7 +84,7 @@
 反证：无。
 限制：这是头文件说明，不是行为记录。行为由 `E-05` 和 `E-06` 补充。
 置信度：高
-关联：`conclusion.md` 2.1；验证步骤 `V01`
+关联：`conclusion.md` 2.1
 
 ### E-02：断言类型全集
 
@@ -174,7 +173,7 @@ pid 61002(caffeinate): ... PreventSystemSleep named: "caffeinate command-line to
 反证：10:02:57 到 10:04:32 之间系统停在 DarkWake，看起来像断言生效。当时另有一个 `com.apple.powermanagement.lidopen` 断言，它在 10:09:09 超时。延迟的归属未确认，不采纳。
 限制：合盖时刻由人工操作，时间点不精确。
 置信度：高
-关联：`conclusion.md` 2.1；验证步骤 `V01`
+关联：`conclusion.md` 2.1
 
 ### E-06：实验 2，无断言合盖
 
@@ -202,7 +201,7 @@ PreventSystemSleep   0
 反证：无。
 限制：两个实验的合盖时刻不同，环境中的其他断言不完全一致。
 置信度：高
-关联：`conclusion.md` 2.1；验证步骤 `V01`
+关联：`conclusion.md` 2.1
 
 ### E-07：断言登记与判定的分离
 
@@ -311,7 +310,7 @@ return manualLidHold || lidCancelAtMillis != null || powerPolicy
 观察：判定读电池状态，再选对应字段。`onPowerChanged()` 在电源变化时重新判定。
 推论：电源来源分流的执行点已经存在。
 反证：无。
-限制：未在真机上验证电源切换时的行为。见验证矩阵 `V02`、`V03`。
+限制：未在真机上验证电源切换时的行为。该场景不在本主题的验证范围内。
 置信度：高
 关联：`conclusion.md` 4.4；`solution.md` 3.1
 
@@ -563,7 +562,7 @@ static func uninstall(logger: (String) -> Void = { _ in }) -> Bool {
   -> E-17：手写 plist 路径被 Apple 保留，且不需要批准
   -> E-18、E-19、E-21：换形式另有批准、重注册和清标志三项成本
   -> 决策：保留现有 helper 形式
-  -> 验证条件：V01 到 V03、V05
+  -> 验证条件：V04（已完成，见 E-20）
   -> 回填位置：conclusion.md 3
 ```
 
@@ -611,4 +610,3 @@ static func uninstall(logger: (String) -> Void = { _ in }) -> Bool {
 
 - [主题索引](README.md)
 - [验证目录](validation/README.md)
-- [Case 1](validation/case-macos-lid-sleep.md)
