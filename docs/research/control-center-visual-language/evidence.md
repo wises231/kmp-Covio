@@ -4,7 +4,7 @@
 
 | 项目 | 内容 |
 | --- | --- |
-| 文档版本 | `1.1` |
+| 文档版本 | `1.2` |
 | 状态 | 审计记录，可复核 |
 | 日期 | `2026-10-17` |
 | 主文 | [主题索引](README.md) |
@@ -23,7 +23,7 @@
 
 | 等级 | 来源 | 用途 | 置信度 |
 | --- | --- | --- | --- |
-| A | macOS 27.0 SDK 的 `SwiftUICore.swiftinterface` 与 `SwiftUI.swiftinterface` | 玻璃 API 的签名与可用版本 | 高 |
+| A | macOS 27.0 SDK 的 `SwiftUICore.swiftinterface`、`SwiftUI.swiftinterface` 与 `AppKit.framework/Headers/NSVisualEffectView.h` | 玻璃与材质的签名、可用版本和官方用法 | 高 |
 | B | Covio 仓库分支 `feature/shell-match-preview`，commit `44b5207` | 工作台视图与几何常量的现状 | 高 |
 | B | Covio 设计合同 `docs/covio-design-contract.json` | 材质与圆角令牌的定义 | 高 |
 | C | Apple 的 Liquid Glass 设计说明 | 玻璃的设计意图 | 中 |
@@ -921,6 +921,58 @@ swift plates6.swift 20 120 1200 900 matdark "$M"
 
 关联：`#124` 证据 13，`E-16`，`E-21`
 
+### E-23：AppKit 要求用语义材质，不用固定外观的材质
+
+来源等级：A
+环境：macOS 27.0 SDK，`AppKit.framework/Headers/NSVisualEffectView.h`。
+
+命令或来源：
+
+```sh
+H=$(xcrun --show-sdk-path)/System/Library/Frameworks/AppKit.framework/Headers/NSVisualEffectView.h
+grep -n "API_DEPRECATED\|instead choose\|semantic material\|hudWindow" "$H"
+```
+
+关键输出：
+
+```objc
+/// A default material appropriate for the view's effectiveAppearance.  You should instead choose an appropriate semantic material.
+NSVisualEffectMaterialAppearanceBased API_DEPRECATED("Use a specific semantic material instead.", macos(10.10, 10.14)) = 0,
+
+// Materials with specific looks.  You should instead choose an appropriate semantic material.
+NSVisualEffectMaterialLight API_DEPRECATED(...) = 1,
+NSVisualEffectMaterialDark API_DEPRECATED(...) = 2,
+NSVisualEffectMaterialMediumLight API_DEPRECATED(...) = 8,
+NSVisualEffectMaterialUltraDark API_DEPRECATED(...) = 9,
+```
+
+未废弃的材质按所属界面元素命名并说明：
+
+| 材质 | 头文件说明 |
+| --- | --- |
+| `.popover` | The material used in the background of popovers. |
+| `.sidebar` | The material used in the background of window sidebars. |
+| `.sheet` | The material used as the background of sheet windows. |
+| `.hudWindow` | The material used as the background of heads-up display (HUD) windows. |
+| `.fullScreenUI` | The material used as the background of full-screen modal UI. |
+
+观察：**固定外观的那一组（`AppearanceBased`、`Light`、`Dark`、`MediumLight`、`UltraDark`）在 macOS 10.14 就被废弃。**
+头文件要求改用语义材质。
+剩下的材质全部按所属界面元素命名。
+
+推论：工作台面板浮在桌面上，对应 `.hudWindow`。
+底材走 `NSVisualEffectView` 加 `.hudWindow`，材质原样使用。
+SwiftUI 的 `Material` 只有 `ultraThin` 到 `ultraThick` 和 `bar`，没有面板这一档。
+
+反证：无。这是 SDK 头文件的原文。
+
+限制：头文件只给用法，不给取值。
+`.hudWindow` 的透光 0.25 来自 `E-22` 的实测。
+
+置信度：高
+
+关联：`E-22`，`E-17`
+
 ## 5. 逻辑证据链
 
 ```text
@@ -970,6 +1022,16 @@ swift plates6.swift 20 120 1200 900 matdark "$M"
   -> 推论：这条差距关不掉，只能在这条线上选一点
   -> 决策：取 `.ultraThinMaterial` 加 `plateOpacity = 1.0`，选模糊不选齐平
   -> 验证条件：用户在真机上目视确认接受
+  -> 回填位置：validation/case-control-center-parity.md
+
+研究问题：底材用哪个公开接口？
+  -> 来源 A：E-23 的 AppKit 头文件
+  -> 观察 E-23：固定外观的材质组在 macOS 10.14 废弃，头文件要求改用语义材质
+  -> 推论：面板底材应当走 `NSVisualEffectView` 加语义材质
+  -> 来源 D：E-22 的材质全扫
+  -> 观察 E-22：会模糊的材质透光都不超过 0.29，其中 `.hudWindow` 最高
+  -> 决策：底材取 `.hudWindow`，材质原样使用，删掉 `plateOpacity`
+  -> 验证条件：真机上底板有模糊，桌面颜色透上来，文字可读
   -> 回填位置：validation/case-control-center-parity.md
 ```
 

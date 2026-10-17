@@ -91,17 +91,17 @@
 | `Glass.tint(_:)` | macOS 26.0 及以上 | 给玻璃着色 | 着色会改变亮度 | `E-06` |
 | `GlassEffectContainer` | macOS 26.0 及以上 | 让相邻玻璃合并 | 间距小于容器 spacing 时两块玻璃会合并 | `E-06` |
 | `Material`（`.regularMaterial` 等） | macOS 10.15 及以上 | 降级底材 | 与 Liquid Glass 不是同一种合成 | `E-10` |
-| `NSVisualEffectView` | macOS 10.14 及以上 | 老的毛玻璃 | 要包一层 `NSViewRepresentable`，外观联动差 | — |
+| `NSVisualEffectView` | macOS 10.14 及以上 | 面板底材 | 要包一层 `NSViewRepresentable` | `E-23` |
 | 自绘模糊 | 任意 | 自己画 | 拿不到桌面像素，做不到 | — |
 
 ## 8. 候选方案对比
 
 | 方案 | 成本 | 风险 | 成熟度 | 可维护性 | 结论 |
 | --- | --- | --- | --- | --- | --- |
-| `glassEffect(.regular)` | 低，一处调用 | 低 | 新，macOS 26 起 | 高，一行切换 | 采用。模糊到位，是三档能模糊的底材里填充最轻的 |
-| `glassEffect(.clear)` | 低 | 高。不模糊，正文与背景内容撞在一起 | 新 | 高 | 不采用，见 `E-13` |
+| `glassEffect(.regular)` | 低，一处调用 | 低 | 新，macOS 26 起 | 高，一行切换 | 部分采用。顶栏板用它，是三档能模糊的底材里填充最轻的。内容区底板改走 `NSVisualEffectView` |
+| `glassEffect(.clear)` | 低 | 高。不模糊，正文与背景内容撞在一起 | 新 | 高 | 卡片用它，见 `E-13` |
 | `Material` 系列 | 低 | 低 | 老 | 高 | 降级路径 |
-| `NSVisualEffectView` | 中，要包一层 | 中。与应用外观联动差 | 老 | 中 | 不采用 |
+| `NSVisualEffectView` | 中，要包一层 | 低。Apple 给的语义材质就是给面板用的 | 老，接口稳定 | 中 | 采用，取 `.hudWindow`，见 `E-23` |
 | 自绘模糊加半透明填充 | 高 | 高。拿不到桌面像素 | — | 低 | 不采用 |
 | 不透明填充 | 最低 | 低 | — | 高 | 不采用，与目标不符 |
 
