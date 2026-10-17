@@ -10,12 +10,21 @@
 
 面板是两块玻璃板。
 顶栏板取 `Glass.regular`，圆角 23 点。
-内容区底板取 `.ultraThinMaterial` 加 `plateOpacity = 1.0`，不带边框。
+内容区底板取系统的语义材质 `.hudWindow`，走 `NSVisualEffectView`，不带边框。
 卡片叠在底板上，取 `Glass.clear`，填充取色值乘 `MacTheme.tintedCardOpacity`。
 
+底板用系统材质是 Apple 的官方做法。
+AppKit 头文件把这条规则写死了：`AppearanceBased`、`Light`、`Dark`、`MediumLight`、`UltraDark`
+这一组都标了废弃，注释是「You should instead choose an appropriate semantic material.」；
+剩下的材质按所属的界面元素命名并说明。
+浮在桌面上的面板对应 `.hudWindow`，说明是
+「The material used as the background of heads-up display (HUD) windows.」
+SwiftUI 的 `Material` 没有面板这一档，所以底板走 `NSVisualEffectView`。
+材质原样使用：不乘不透明度倍率，不加着色。
+
 底板取不到控制中心的重量。
-控制中心的底板是 `0.95·桌面 + 0.4`，公开接口与私有接口都没有这一档。
-`plateOpacity` 同时控制模糊与填充，取 1.0 是选模糊不选齐平。
+控制中心的底板是 `0.95·桌面 + 0.4`，语义材质里没有这一档。
+`.hudWindow` 是语义材质里最透的一档，实测 `0.25·桌面 + 149`。
 理由见 [conclusion.md](conclusion.md) 第 1 节与 `E-16` 到 `E-22`。
 
 不用接口。
@@ -40,13 +49,13 @@
 ```text
 AppDelegate.applicationDidFinishLaunching
   -> GlassSurfaceMode.applyEnvironmentOverride()
-     -> 读 COVIO_GLASS_SURFACE 与 COVIO_PLATE_OPACITY
+     -> 读 COVIO_GLASS_SURFACE 与 COVIO_PLATE_MATERIAL
 
 HubView.body
   -> plates
      -> GlassEffectContainer(spacing: 0)
         -> topBarPlate.glassSurface(23, mode: .glass)        顶栏板
-        -> contentPlate.glassSurface(28, mode: .ultraThin)   内容区底板
+        -> contentPlate.glassSurface(28, mode: .system)      内容区底板
            -> MacCard.glassSurface(cardRadius)               卡片，叠在底板上
            -> BentoWidgetCard.glassSurface(bentoCardRadius)
            -> EmptyHomeView.glassSurface(bentoCardRadius)
@@ -65,16 +74,16 @@ HubView.body
 
 ### 2.2 底材切换
 
-1. 应用启动时读 `COVIO_GLASS_SURFACE`、`COVIO_PLATE_MODE` 与 `COVIO_PLATE_OPACITY`。
+1. 应用启动时读 `COVIO_GLASS_SURFACE`、`COVIO_PLATE_MODE` 与 `COVIO_PLATE_MATERIAL`。
 2. 底材取值是 `glass`、`clear`、`material`、`ultraThin` 或 `system`。
-3. `COVIO_PLATE_OPACITY` 取 0 到 1，控制底板的填充倍率。
+3. `COVIO_PLATE_MATERIAL` 取 `NSVisualEffectView.Material` 的名字，只在 `.system` 下生效。
 4. 取值无效时保持默认值。
 5. 只在 DEBUG 构建生效。
 
 ### 2.3 降级
 
 `.glassEffect` 在无边框透明面板里画不出来时，改 `GlassSurfaceMode` 的默认值。
-`.ultraThin` 与 `.material` 两条路不依赖 Liquid Glass。
+`.system`、`.ultraThin` 与 `.material` 三条路不依赖 Liquid Glass。
 
 ## 3. 文件位置
 
@@ -122,11 +131,11 @@ HubView.body
 | 填充盖住模糊 | 卡片是实心色块 | 检查填充是不是不透明 |
 | 卡片边缘发闷 | 没有亮边 | 检查有没有自绘描边压在上面 |
 | 环境变量拼错 | 底材不切换 | 日志里有一条「玻璃底材被环境变量改成 …」。没有这条就是没生效 |
-| 深色下对比度不足 | 文字看不清 | 提高填充透明度，或改用更厚的材质令牌 |
+| 深色下对比度不足 | 文字看不清 | 换更厚的语义材质，或提高填充透明度 |
 
 ## 8. 验收标准
 
-1. 用户在真机上目视确认面板的表现可以接受。**已达成（2026-10-17）。**
+1. 用户在真机上目视确认面板的表现可以接受。
 2. 面板是一层铺满内容区的底板加一块顶栏板，卡片叠在底板上。
 3. 深色与浅色外观下都能看到模糊。
 4. 五个底材取值都能起，界面不崩。
@@ -134,6 +143,7 @@ HubView.body
 6. `docs/design/workbench-architecture.md` 第 6 节的版式表与实现一致。
 
 第 1 条的口径已放宽：控制中心的效果复现不出，验收改为「用户接受毛玻璃效果」。
+底板改成语义材质 `.hudWindow` 以后，第 1 条要重新确认。
 
 ## 9. 实施计划
 
@@ -144,12 +154,13 @@ HubView.body
 | 阶段 2 | 删掉内容区底板 | 已完成，后被阶段 3b 推翻 |
 | 阶段 3 | 玻璃下放到每张卡片，填充换半透明 | 已完成 |
 | 阶段 3b | 底板加回内容区，玻璃分两层 | 已完成 |
-| 阶段 3c | 底材换 `.ultraThin`，`plateOpacity` 定 1.0 | 已完成 |
-| 阶段 4 | 真机验收 | 已完成。用户确认接受（2026-10-17） |
+| 阶段 3c | 底材换 `.ultraThin`，`plateOpacity` 定 1.0 | 已完成，后被阶段 3d 取代 |
+| 阶段 3d | 底板改用系统的语义材质 `.hudWindow`，删掉 `plateOpacity` | 已完成 |
+| 阶段 4 | 真机验收 | 进行中。底板换材质后重新确认 |
 | 阶段 5 | 按验收结果定取值，更新 ADR | 尚未执行 |
 | 阶段 6 | 按 `#115` 处理设计合同 | 尚未执行 |
 
-阶段 1 到 3c 的代码在分支 `feature/shell-match-preview`。
+阶段 1 到 3d 的代码在分支 `feature/shell-match-preview`。
 阶段 5 与 6 完成前不合入主干。
 
 ## 10. 回滚条件
