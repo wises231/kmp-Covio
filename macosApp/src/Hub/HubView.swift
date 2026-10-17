@@ -126,7 +126,7 @@ struct HubView: View {
         )
     }
 
-    /// 指针进出的上报。停留判定住在 `WorkbenchModel` 里，这里只转达。
+    /// 指针进出的上报。切换判定住在 `WorkbenchModel` 里，这里只转达。
     private func reportHover(_ destination: HubDestination, inside: Bool) {
         if inside { workbench.pointerEntered(destination) }
         else { workbench.pointerExited(destination) }

@@ -39,9 +39,9 @@ enum HubMotion {
     /// 指针移出 Hub 后收起的等待时间。
     static let pointerExitCollapseDelay: TimeInterval = ContractMotion.tokenMotionPointerExitCollapse.seconds
 
-    /// 指针停在页签栏某一项上多久才切换页签。
-    /// 合同没有这枚令牌，取值按「穿过不误切、停住就切」的手感定。
-    static let hoverDwell: TimeInterval = 0.2
+    /// 换页签后多久内，指针不再触发切换。
+    /// 合同没有这枚令牌，取值按「指针扫过顶栏只切一次」的手感定。
+    static let hoverCooldown: TimeInterval = 1.5
 
     /// 呼吸灯一次亮灭的时长。合同没有这枚令牌，取值按肉眼可见的缓慢呼吸定。
     static let pulse: TimeInterval = 1.2

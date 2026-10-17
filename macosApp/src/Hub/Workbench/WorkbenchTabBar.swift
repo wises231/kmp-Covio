@@ -58,7 +58,7 @@ struct WorkbenchTabBar: View {
     let onSelect: (String) -> Void
     let onReorder: (Int, Int) -> Void
     let onPageAction: () -> Void
-    /// 指针进出某个目的地。停留判定住在 `WorkbenchModel` 里，这里只转达。
+    /// 指针进出某个目的地。切换判定住在 `WorkbenchModel` 里，这里只转达。
     ///
     /// 顶栏上表示「去哪里」的两处 —— 首页入口与工作区页签 —— 都报。
     /// 搜索框与右端的动作按钮不报：它们表示「做什么」，滑过不该换页。

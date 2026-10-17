@@ -227,57 +227,75 @@ final class WorkbenchModelTests: XCTestCase {
         XCTAssertEqual(model.panes.map(\.id), before)
     }
 
-    // MARK: - 指针停留切换页签
+    // MARK: - 指针切换页签
 
-    /// 指针进入别的页签，计时开始，但还没到期。
-    func testHoveringAnotherPaneArmsTheDwell() {
+    /// 冷却早就走完了，进入就换，没有等待。
+    func testHoveringAnotherPaneSwitchesImmediately() {
         let model = model()
         let target = HubDestination.pane(id: PaneKind.clipboard.defaultId)
 
         model.pointerEntered(target)
 
-        XCTAssertEqual(model.pendingDestination, target)
-        XCTAssertEqual(model.destination, .home, "刚进入还没到期，不该换页")
+        XCTAssertEqual(model.destination, target)
+        XCTAssertNil(model.pendingDestination, "立刻换掉了，不该留下待切换")
     }
 
-    /// 停在已经选中的页签上不计时。否则滑块会白闪一次。
-    func testHoveringTheCurrentPaneArmsNothing() {
+    /// 停在已经选中的页签上什么都不做。否则滑块会白闪一次。
+    func testHoveringTheCurrentPaneDoesNothing() {
         let model = model()
         model.select(paneID: PaneKind.clipboard.defaultId)
 
         model.pointerEntered(.pane(id: PaneKind.clipboard.defaultId))
 
-        XCTAssertNil(model.pendingDestination, "停在已选中的页签上不该计时")
+        XCTAssertNil(model.pendingDestination, "停在已选中的页签上不该等")
     }
 
-    /// 停够时长就换过去，并把待切换清掉。
-    func testTheDwellSwitchesAfterTheDelay() async {
+    /// 冷却没走完，第二次切换先等着。
+    func testTheCooldownBlocksASecondSwitch() {
         let model = model()
-        let target = HubDestination.pane(id: PaneKind.clipboard.defaultId)
+        let first = HubDestination.pane(id: PaneKind.clipboard.defaultId)
+        let second = HubDestination.pane(id: PaneKind.files.defaultId)
 
-        model.pointerEntered(target)
-        await waitForDwell(model, to: target)
+        model.pointerEntered(first)
+        model.pointerEntered(second)
 
-        XCTAssertEqual(model.destination, target)
-        XCTAssertNil(model.pendingDestination, "到期后不该还留着待切换")
+        XCTAssertEqual(model.destination, first, "冷却里不该换第二次")
+        XCTAssertEqual(model.pendingDestination, second, "第二次应该排着")
+        XCTAssertNotNil(model.lastSwitchAt)
     }
 
-    /// 没停够就离开，待切换立刻取消。
-    func testLeavingTheTabCancelsThePendingDwell() async {
+    /// 冷却走完，排着的那一次自己换过去。
+    func testTheDeferredSwitchFiresWhenTheCooldownEnds() async {
         let model = model()
+        let second = HubDestination.pane(id: PaneKind.files.defaultId)
 
         model.pointerEntered(.pane(id: PaneKind.clipboard.defaultId))
-        model.pointerExited(.pane(id: PaneKind.clipboard.defaultId))
+        model.pointerEntered(second)
+        await waitForSwitch(model, to: second)
+
+        XCTAssertEqual(model.destination, second)
+        XCTAssertNil(model.pendingDestination, "换完不该还留着")
+    }
+
+    /// 没等到冷却走完就离开，排着的那一次取消。
+    func testLeavingTheTabCancelsTheDeferredSwitch() async {
+        let model = model()
+        let first = HubDestination.pane(id: PaneKind.clipboard.defaultId)
+        let second = HubDestination.pane(id: PaneKind.files.defaultId)
+
+        model.pointerEntered(first)
+        model.pointerEntered(second)
+        model.pointerExited(second)
 
         XCTAssertNil(model.pendingDestination, "离开该页签应该立刻取消")
 
-        await waitOutTheDwellWindow()
-        XCTAssertEqual(model.destination, .home, "离开后不该再换页")
+        await waitOutTheCooldownWindow()
+        XCTAssertEqual(model.destination, first, "离开后不该再换页")
     }
 
     /// 指针从 A 移到 B 时，事件顺序是 `enter(B)` 再到 `exit(A)`。
-    /// 那时正在计时的是 B，`exit(A)` 不该把它清掉。
-    func testLeavingAnotherTabKeepsThePendingDwell() {
+    /// 那时排着的是 B，`exit(A)` 不该把它清掉。
+    func testLeavingAnotherTabKeepsThePendingSwitch() {
         let model = model()
         let first = HubDestination.pane(id: PaneKind.clipboard.defaultId)
         let second = HubDestination.pane(id: PaneKind.files.defaultId)
@@ -286,35 +304,55 @@ final class WorkbenchModelTests: XCTestCase {
         model.pointerEntered(second)
         model.pointerExited(first)
 
-        XCTAssertEqual(model.pendingDestination, second, "exit(旧页签) 不该动新页签的计时")
+        XCTAssertEqual(model.pendingDestination, second, "exit(旧页签) 不该动新页签的等待")
     }
 
-    /// 连着进入两个页签，只换到最后停住的那一个。
-    func testHoveringASecondTabRearmsTheDwell() async {
+    /// 冷却里连着进入两个页签，只换到最后停住的那一个。
+    func testHoveringASecondTabRearmsTheSwitch() async {
         let model = model()
-        let second = HubDestination.pane(id: PaneKind.files.defaultId)
+        let third = HubDestination.pane(id: PaneKind.screenshots.defaultId)
 
         model.pointerEntered(.pane(id: PaneKind.clipboard.defaultId))
-        model.pointerEntered(second)
-        await waitForDwell(model, to: second)
+        model.pointerEntered(.pane(id: PaneKind.files.defaultId))
+        model.pointerEntered(third)
+        await waitForSwitch(model, to: third)
 
-        XCTAssertEqual(model.destination, second, "应该换到最后停住的那一个")
+        XCTAssertEqual(model.destination, third, "应该换到最后停住的那一个")
+    }
+
+    /// 冷却里点选别的页签，排着的那一次作废。用户已经用点选改过主意。
+    func testClickingCancelsTheDeferredSwitch() async {
+        let model = model()
+        let deferred = HubDestination.pane(id: PaneKind.files.defaultId)
+        let clicked = HubDestination.pane(id: PaneKind.screenshots.defaultId)
+
+        model.pointerEntered(.pane(id: PaneKind.clipboard.defaultId))
+        model.pointerEntered(deferred)
+        model.select(paneID: PaneKind.screenshots.defaultId)
+
+        XCTAssertEqual(model.destination, clicked)
+        XCTAssertNil(model.pendingDestination, "点选应该把排着的那一次清掉")
+
+        await waitOutTheCooldownWindow()
+        XCTAssertEqual(model.destination, clicked, "点选之后不该被指针抢回去")
     }
 
     /// 面板收起时取消待切换。收起后 AppKit 不发 `mouseExited`，不取消还会换一次。
-    func testCancelHoverDwellStopsTheSwitch() async {
+    func testCancelHoverSwitchStopsTheDeferredSwitch() async {
         let model = model()
+        let first = HubDestination.pane(id: PaneKind.clipboard.defaultId)
 
-        model.pointerEntered(.pane(id: PaneKind.clipboard.defaultId))
-        model.cancelHoverDwell()
+        model.pointerEntered(first)
+        model.pointerEntered(.pane(id: PaneKind.files.defaultId))
+        model.cancelHoverSwitch()
 
         XCTAssertNil(model.pendingDestination)
 
-        await waitOutTheDwellWindow()
-        XCTAssertEqual(model.destination, .home, "取消后不该再换页")
+        await waitOutTheCooldownWindow()
+        XCTAssertEqual(model.destination, first, "取消后不该再换页")
     }
 
-    /// 编辑模式里不计时。那时点选也不换页，停留不该是一条后门。
+    /// 编辑模式里不换。那时点选也不换页，指针不该是一条后门。
     func testHoveringIsIgnoredWhileEditing() async {
         let model = model()
         model.performPageAction()
@@ -322,37 +360,37 @@ final class WorkbenchModelTests: XCTestCase {
 
         model.pointerEntered(.pane(id: PaneKind.clipboard.defaultId))
 
-        XCTAssertNil(model.pendingDestination, "编辑模式里不该计时")
+        XCTAssertNil(model.pendingDestination, "编辑模式里不该换页")
 
-        await waitOutTheDwellWindow()
+        await waitOutTheCooldownWindow()
         XCTAssertEqual(model.destination, .home, "编辑模式里不该换页")
     }
 
-    /// 首页入口也是一个目的地，停留一样换过去。
+    /// 首页入口也是一个目的地，指针一样换过去。
     func testHoveringTheHomeEntryGoesBackHome() async {
         let model = model()
         model.select(paneID: PaneKind.clipboard.defaultId)
 
         model.pointerEntered(.home)
-        await waitForDwell(model, to: .home)
+        await waitForSwitch(model, to: .home)
 
         XCTAssertEqual(model.destination, .home)
     }
 
-    /// 等到停留到期。查状态，不查时长（实测 39）。
+    /// 等到换页发生。查状态，不查时长（实测 39）。
     ///
-    /// 超时给 3 秒。停留是 200 毫秒，机器再慢也不至于误报。
-    private func waitForDwell(_ model: WorkbenchModel, to destination: HubDestination) async {
-        let deadline = Date().addingTimeInterval(3)
+    /// 超时给 4 秒。冷却 1.5 秒，机器再慢也不至于误报。
+    private func waitForSwitch(_ model: WorkbenchModel, to destination: HubDestination) async {
+        let deadline = Date().addingTimeInterval(4)
         while model.destination != destination, Date() < deadline {
             // 让出主 actor，计时任务才跑得动。
             try? await Task.sleep(for: .milliseconds(20))
         }
     }
 
-    /// 等一个「不该发生」的有界窗口。停留时长的三倍。
-    private func waitOutTheDwellWindow() async {
-        try? await Task.sleep(for: .seconds(HubMotion.hoverDwell * 3))
+    /// 等一个「不该发生」的有界窗口。冷却时长再加一点余量。
+    private func waitOutTheCooldownWindow() async {
+        try? await Task.sleep(for: .seconds(HubMotion.hoverCooldown + 0.3))
     }
 
     // MARK: - 落盘
