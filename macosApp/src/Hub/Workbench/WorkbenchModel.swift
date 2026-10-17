@@ -6,6 +6,9 @@ import kmpDomain
 /// 持有工作台配置、当前目的地和编辑模式开关。视图只读它，改动都走这里的方法，
 /// 方法改完配置就落盘。
 ///
+/// 指针停留切换页签的判定也住在这里：它是改 `destination` 的一条路径，
+/// 与点选共用同一道门，编辑模式那一类规则不必写两遍。
+///
 /// **编辑模式不进 `HubStateMachine`。** 状态机的六个态由合同与
 /// `DesignContractTests` 逐字钉死。扩态是 `docs/design/workbench-architecture.md`
 /// 交给 ADR 的事，不该夹在界面对齐里做。
@@ -150,6 +153,71 @@ final class WorkbenchModel {
     /// 删一块组件。
     func removeWidget(id: String) {
         update(replacingWidgets(config.homeWidgets.filter { $0.id != id }))
+    }
+
+    // MARK: - 指针停留切换页签
+
+    /// 指针正停着、计时正在跑的那个目的地。nil 表示没有待切换。
+    private(set) var pendingDestination: HubDestination?
+
+    private var dwellTask: Task<Void, Never>?
+
+    /// 指针进入一个页签。停够 `HubMotion.hoverDwell` 才算数。
+    ///
+    /// 编辑模式里不计时：那时点选也不换页，停留不该是一条后门。
+    /// 停在已经选中的页签上也不计时，否则滑块会白闪一次。
+    func pointerEntered(_ destination: HubDestination) {
+        cancelDwellTask()
+        guard !isEditing, destination != self.destination else { return }
+        pendingDestination = destination
+        dwellTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(HubMotion.hoverDwell))
+            guard !Task.isCancelled else { return }
+            self?.fireDwell(destination)
+        }
+    }
+
+    /// 指针离开一个页签。只有离开正在计时的那一个才取消。
+    ///
+    /// 指针从 A 移到 B 时事件顺序是 `enter(B)` 再到 `exit(A)`。
+    /// 那时正在计时的是 B，`exit(A)` 不该动它。
+    func pointerExited(_ destination: HubDestination) {
+        guard pendingDestination == destination else { return }
+        cancelDwellTask()
+    }
+
+    /// 取消待切换。面板收起时调用。
+    ///
+    /// 面板被 `orderOut` 时 AppKit 不发 `mouseExited`，指针停在某个页签上的
+    /// 计时会继续跑。不取消的话，收起后还会切一次。
+    func cancelHoverDwell() {
+        cancelDwellTask()
+    }
+
+    /// 停留计时走完，换到那一页。
+    ///
+    /// 这里再查一次编辑模式：计时跑的两百毫秒里，用户可能已经按了编辑按钮。
+    private func fireDwell(_ destination: HubDestination) {
+        guard pendingDestination == destination else { return }
+        cancelDwellTask()
+        select(destination)
+    }
+
+    /// 换一个目的地。停留到期走这里，与点选同一条路。
+    ///
+    /// 首页不是工作区，`select(paneID:)` 管不到它，所以在这一层分开。
+    private func select(_ destination: HubDestination) {
+        guard !isEditing else { return }
+        switch destination {
+        case .home: self.destination = .home
+        case .pane(let id): select(paneID: id)
+        }
+    }
+
+    private func cancelDwellTask() {
+        dwellTask?.cancel()
+        dwellTask = nil
+        pendingDestination = nil
     }
 
     // MARK: - 落盘

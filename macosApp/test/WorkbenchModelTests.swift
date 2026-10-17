@@ -227,6 +227,134 @@ final class WorkbenchModelTests: XCTestCase {
         XCTAssertEqual(model.panes.map(\.id), before)
     }
 
+    // MARK: - 指针停留切换页签
+
+    /// 指针进入别的页签，计时开始，但还没到期。
+    func testHoveringAnotherPaneArmsTheDwell() {
+        let model = model()
+        let target = HubDestination.pane(id: PaneKind.clipboard.defaultId)
+
+        model.pointerEntered(target)
+
+        XCTAssertEqual(model.pendingDestination, target)
+        XCTAssertEqual(model.destination, .home, "刚进入还没到期，不该换页")
+    }
+
+    /// 停在已经选中的页签上不计时。否则滑块会白闪一次。
+    func testHoveringTheCurrentPaneArmsNothing() {
+        let model = model()
+        model.select(paneID: PaneKind.clipboard.defaultId)
+
+        model.pointerEntered(.pane(id: PaneKind.clipboard.defaultId))
+
+        XCTAssertNil(model.pendingDestination, "停在已选中的页签上不该计时")
+    }
+
+    /// 停够时长就换过去，并把待切换清掉。
+    func testTheDwellSwitchesAfterTheDelay() async {
+        let model = model()
+        let target = HubDestination.pane(id: PaneKind.clipboard.defaultId)
+
+        model.pointerEntered(target)
+        await waitForDwell(model, to: target)
+
+        XCTAssertEqual(model.destination, target)
+        XCTAssertNil(model.pendingDestination, "到期后不该还留着待切换")
+    }
+
+    /// 没停够就离开，待切换立刻取消。
+    func testLeavingTheTabCancelsThePendingDwell() async {
+        let model = model()
+
+        model.pointerEntered(.pane(id: PaneKind.clipboard.defaultId))
+        model.pointerExited(.pane(id: PaneKind.clipboard.defaultId))
+
+        XCTAssertNil(model.pendingDestination, "离开该页签应该立刻取消")
+
+        await waitOutTheDwellWindow()
+        XCTAssertEqual(model.destination, .home, "离开后不该再换页")
+    }
+
+    /// 指针从 A 移到 B 时，事件顺序是 `enter(B)` 再到 `exit(A)`。
+    /// 那时正在计时的是 B，`exit(A)` 不该把它清掉。
+    func testLeavingAnotherTabKeepsThePendingDwell() {
+        let model = model()
+        let first = HubDestination.pane(id: PaneKind.clipboard.defaultId)
+        let second = HubDestination.pane(id: PaneKind.files.defaultId)
+
+        model.pointerEntered(first)
+        model.pointerEntered(second)
+        model.pointerExited(first)
+
+        XCTAssertEqual(model.pendingDestination, second, "exit(旧页签) 不该动新页签的计时")
+    }
+
+    /// 连着进入两个页签，只换到最后停住的那一个。
+    func testHoveringASecondTabRearmsTheDwell() async {
+        let model = model()
+        let second = HubDestination.pane(id: PaneKind.files.defaultId)
+
+        model.pointerEntered(.pane(id: PaneKind.clipboard.defaultId))
+        model.pointerEntered(second)
+        await waitForDwell(model, to: second)
+
+        XCTAssertEqual(model.destination, second, "应该换到最后停住的那一个")
+    }
+
+    /// 面板收起时取消待切换。收起后 AppKit 不发 `mouseExited`，不取消还会换一次。
+    func testCancelHoverDwellStopsTheSwitch() async {
+        let model = model()
+
+        model.pointerEntered(.pane(id: PaneKind.clipboard.defaultId))
+        model.cancelHoverDwell()
+
+        XCTAssertNil(model.pendingDestination)
+
+        await waitOutTheDwellWindow()
+        XCTAssertEqual(model.destination, .home, "取消后不该再换页")
+    }
+
+    /// 编辑模式里不计时。那时点选也不换页，停留不该是一条后门。
+    func testHoveringIsIgnoredWhileEditing() async {
+        let model = model()
+        model.performPageAction()
+        XCTAssertTrue(model.isEditing, "首页上的动作按钮应该进编辑模式")
+
+        model.pointerEntered(.pane(id: PaneKind.clipboard.defaultId))
+
+        XCTAssertNil(model.pendingDestination, "编辑模式里不该计时")
+
+        await waitOutTheDwellWindow()
+        XCTAssertEqual(model.destination, .home, "编辑模式里不该换页")
+    }
+
+    /// 首页入口也是一个目的地，停留一样换过去。
+    func testHoveringTheHomeEntryGoesBackHome() async {
+        let model = model()
+        model.select(paneID: PaneKind.clipboard.defaultId)
+
+        model.pointerEntered(.home)
+        await waitForDwell(model, to: .home)
+
+        XCTAssertEqual(model.destination, .home)
+    }
+
+    /// 等到停留到期。查状态，不查时长（实测 39）。
+    ///
+    /// 超时给 3 秒。停留是 200 毫秒，机器再慢也不至于误报。
+    private func waitForDwell(_ model: WorkbenchModel, to destination: HubDestination) async {
+        let deadline = Date().addingTimeInterval(3)
+        while model.destination != destination, Date() < deadline {
+            // 让出主 actor，计时任务才跑得动。
+            try? await Task.sleep(for: .milliseconds(20))
+        }
+    }
+
+    /// 等一个「不该发生」的有界窗口。停留时长的三倍。
+    private func waitOutTheDwellWindow() async {
+        try? await Task.sleep(for: .seconds(HubMotion.hoverDwell * 3))
+    }
+
     // MARK: - 落盘
 
     /// 接了落盘之后，改动写进文件，重建模型还能读回来。
