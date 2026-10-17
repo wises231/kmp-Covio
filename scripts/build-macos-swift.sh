@@ -24,6 +24,10 @@ fi
 
 cd "$ROOT"
 
+# 本机有证书时把签名身份固定成证书。没有就保持工程默认的 ad-hoc。
+# 不固定的话每次构建换一个 cdhash，系统会把新构建当成新应用重新要权限。
+bash "$ROOT/scripts/setup-local-signing.sh"
+
 xcodebuild \
   -project "$PROJECT" \
   -scheme "$SCHEME" \

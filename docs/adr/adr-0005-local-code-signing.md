@@ -73,6 +73,16 @@ CODE_SIGN_STYLE = Manual
 
 导入成功后删掉临时目录里的 `covio.key` 与 `covio.p12`。私钥已在登录钥匙串里，临时文件是多余的副本。
 
+## 新 worktree 的签名身份
+
+`Signing.local.xcconfig` 不进仓库，所以每个 worktree 各要一份。
+
+`scripts/setup-local-signing.sh` 负责补上。本机有证书、且该 worktree 还没有这个文件时，脚本写入它。四种情况不写：不是 macOS、工程没有 `Signing.xcconfig`、文件已存在、本机没有这张证书。
+
+`scripts/build-macos-swift.sh` 与 `scripts/test-macos-swift.sh` 会先调用脚本，所以用脚本构建的 worktree 自动获得固定身份。
+
+Xcode 图形界面里构建走 `Covio.xcscheme` 的 Build 预动作，也会调用脚本。因此每个 worktree 的第一次构建都会补上这个文件，不需要手动步骤。
+
 ## 后果
 
 ### 正面

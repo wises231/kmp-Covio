@@ -21,6 +21,24 @@
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
+      <PreActions>
+         <ExecutionAction
+            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
+            <ActionContent
+               title = "Set up local signing"
+               scriptText = "&quot;${SRCROOT}/../scripts/setup-local-signing.sh&quot;&#10;">
+               <EnvironmentBuildable>
+                  <BuildableReference
+                     BuildableIdentifier = "primary"
+                     BlueprintIdentifier = "C00000000000000000000004"
+                     BuildableName = "Covio.app"
+                     BlueprintName = "Covio"
+                     ReferencedContainer = "container:Covio.xcodeproj">
+                  </BuildableReference>
+               </EnvironmentBuildable>
+            </ActionContent>
+         </ExecutionAction>
+      </PreActions>
    </BuildAction>
    <TestAction
       buildConfiguration = "Debug"
