@@ -1,5 +1,36 @@
 import AppKit
 
+/// 面板的外观。默认跟随系统。
+///
+/// 面板原先固定深色，理由是「控制中心在浅色与深色系统外观下都是深色的」。
+/// 真机复核（2026-10-17）推翻了这条：系统在浅色外观时，控制中心是浅底板加深色文字，
+/// 与控制中心同时截的图里，`Wi-Fi`、`蓝牙`、`显示器` 都是深色字。
+/// 固定深色会让工作台在浅色系统下变成深底板加白字，与控制中心正好相反。
+///
+/// 所以现在返回 `nil`，面板跟随系统外观。合同的浅色与深色两套取值都生效：
+/// 浅色下 `text-primary` 是 `#1D1D1F`、`text-secondary` 是 `#6E6E73`，
+/// 深色下是 `#F5F5F7` 与 `#AEAEB2`。
+///
+/// 注意 `Color(nsColor:)` 的解析时机：面板在**第一次渲染之前**就设好外观时，
+/// 动态颜色按那套取值解析，实测有效。运行中途改 `appearance` 不会重解析。
+///
+/// `token/color/widget-tint-*` 的深色取值与浅色完全相同，都是浅底。
+/// 组件卡片靠 `MacTheme.tintedCardOpacity` 把这个值压淡，见那里的说明。
+///
+/// 调试构建可以用 `COVIO_APPEARANCE=light` 或 `=dark` 覆盖，用来复核两套取值下的表现。
+enum HubAppearance {
+    @MainActor static var panel: NSAppearance? {
+        #if DEBUG
+        switch ProcessInfo.processInfo.environment["COVIO_APPEARANCE"] {
+        case "light": return NSAppearance(named: .aqua)
+        case "dark": return NSAppearance(named: .darkAqua)
+        default: break
+        }
+        #endif
+        return nil
+    }
+}
+
 /// 无边框浮层面板的共同配置。
 ///
 /// 设置顺序有硬性要求。`isFloatingPanel = true` 会把 `level` 重置为 `.floating`（3）。
@@ -21,6 +52,9 @@ class ShellPanel: NSPanel {
             backing: .buffered,
             defer: false
         )
+
+        // 外观跟随系统。理由见 [HubAppearance]。
+        appearance = HubAppearance.panel
 
         // 顺序不能换。先 isFloatingPanel，再 level。
         isFloatingPanel = true

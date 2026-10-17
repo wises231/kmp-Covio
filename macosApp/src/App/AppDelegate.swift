@@ -21,6 +21,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         // 调试构建可以用环境变量换玻璃底材，便于同一次构建对照截图。
         GlassSurfaceMode.applyEnvironmentOverride()
+        MacTheme.applyEnvironmentOverride()
 
         // 测试进程不是真实实例，不参与单实例仲裁。
         // 真实应用在跑时仲裁会失败，那会把整个测试套件终止掉。

@@ -84,13 +84,16 @@ struct HubView: View {
 
     // MARK: - 玻璃板
 
-    /// 顶栏板加内容区：上面是胶囊形的玻璃板，下面是直接浮在桌面上的卡片。
+    /// 顶栏板加内容区。
     ///
-    /// 控制中心没有统一背板。顶栏是一块独立玻璃板，下面的内容只有一个个模块，
-    /// 模块背后没有容器。所以这里不画背景、不描边、不加投影 —— 三样都由 Liquid Glass
-    /// 或卡片自己画。
+    /// 控制中心是两层：先一层面板级的模糊底板，把桌面与工作区分开；模块再叠在
+    /// 底板上面，自己用 clear 玻璃，只加一层薄薄的高光，不再重复模糊。
     ///
-    /// 外面仍套一层 `GlassEffectContainer`：顶栏板还是玻璃。
+    /// 真机对照：把一个带文字的窗口摆在面板下面，控制中心打开后整片面板区域的
+    /// 文字都被抹平，模块之间与模块周围也一样。模糊来自底板，不是来自模块。
+    ///
+    /// 这里照做。顶栏板是一块独立的胶囊，直接压在桌面上，所以它自己走 regular。
+    /// 内容区的底板走 regular，里面的卡片走 clear。
     private var plates: some View {
         GlassEffectContainer(spacing: 0) {
             VStack(spacing: HubMetrics.plateGap) {
@@ -115,13 +118,26 @@ struct HubView: View {
             onReorder: { workbench.movePane(from: $0, to: $1) },
             onPageAction: { workbench.performPageAction() }
         )
-        .glassSurface(cornerRadius: HubMetrics.tabBarPlateRadius)
+        .glassSurface(
+            cornerRadius: HubMetrics.tabBarPlateRadius,
+            tint: GlassSurfaceMode.plateTint,
+            mode: GlassSurfaceMode.topBarMode
+        )
     }
 
-    /// 内容区没有底板，各张卡片自己浮在桌面上，卡与卡的缝里露出桌面。
+    /// 内容区有一块模糊底板，卡片叠在底板上。
+    ///
+    /// 底板与顶栏板都直接压在桌面上，都不加着色：底材走 `.ultraThin`，
+    /// 桌面透上来的量由底材自己定，见 [GlassSurfaceMode.plateTintOpacity]。
+    /// 卡片不带着色：卡片自己有色相。
     private var contentArea: some View {
         contentColumn
             .frame(height: contentAreaHeight)
+            .glassSurface(
+                cornerRadius: HubMetrics.contentPlateRadius,
+                tint: GlassSurfaceMode.plateTint,
+                mode: GlassSurfaceMode.plateMode
+            )
     }
 
     /// 内容区的高度：总高减去顶栏板与中间的缝。
