@@ -379,7 +379,7 @@ final class WorkbenchModelTests: XCTestCase {
 
     /// 等到换页发生。查状态，不查时长（实测 39）。
     ///
-    /// 超时给 4 秒。冷却 1.5 秒，机器再慢也不至于误报。
+    /// 超时给 4 秒，远大于冷却时长，机器再慢也不至于误报。
     private func waitForSwitch(_ model: WorkbenchModel, to destination: HubDestination) async {
         let deadline = Date().addingTimeInterval(4)
         while model.destination != destination, Date() < deadline {
