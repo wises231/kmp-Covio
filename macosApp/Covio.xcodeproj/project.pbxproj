@@ -10,6 +10,7 @@
 		C00000000000000000000006 /* Covio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Covio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C00000000000000000000007 /* CovioTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CovioTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0000000000000000000000A /* kmpDomain.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = kmpDomain.framework; path = ../build/kmp-framework/kmpDomain.framework; sourceTree = SOURCE_ROOT; };
+		C00000000000000000000023 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -45,6 +46,7 @@
 				C00000000000000000000008 /* src */,
 				C00000000000000000000009 /* test */,
 				C0000000000000000000000A /* kmpDomain.framework */,
+				C00000000000000000000023 /* Signing.xcconfig */,
 				C00000000000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -262,6 +264,7 @@
 /* Begin XCBuildConfiguration section */
 		C00000000000000000000018 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C00000000000000000000023 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = arm64;
@@ -286,6 +289,7 @@
 		};
 		C00000000000000000000019 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C00000000000000000000023 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = arm64;
@@ -308,8 +312,6 @@
 		C0000000000000000000001A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_HARDENED_RUNTIME = NO;
@@ -333,8 +335,6 @@
 		C0000000000000000000001B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_HARDENED_RUNTIME = NO;
@@ -358,8 +358,6 @@
 		C0000000000000000000001C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -383,8 +381,6 @@
 		C0000000000000000000001D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
