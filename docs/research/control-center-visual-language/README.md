@@ -4,13 +4,13 @@
 
 | 项目 | 内容 |
 | --- | --- |
-| 文档版本 | `1.1` |
+| 文档版本 | `1.2` |
 | 状态 | 结论已定，可评审 |
 | 日期 | `2026-10-17` |
 | 适用对象 | Covio 界面研发与设计评审人员 |
 | 当前验证环境 | Apple Silicon Mac，macOS 27.0.1（26A434），3456 × 2234 像素，2 像素每点 |
-| 当前结论 | 控制中心的效果复现不出。工作台按公开 Liquid Glass 的毛玻璃效果落地：面板是一层 `.ultraThinMaterial` 底板加一块 `Glass.regular` 顶栏板，卡片叠在底板上 |
-| 验证状态 | 真机已落地，用户已确认视觉效果（2026-10-17）。`V02`、`V05` 到 `V10` 待执行 |
+| 当前结论 | 控制中心的效果复现不出。工作台按 Apple 的官方做法落地：面板是一层系统语义材质 `.hudWindow` 的底板加一块 `Glass.regular` 顶栏板，卡片叠在底板上 |
+| 验证状态 | 真机已落地。`V12` 待重做（底板换材质），`V02`、`V05` 到 `V10` 待执行 |
 
 ## 前因
 
@@ -40,8 +40,8 @@ macOS 26 起 SwiftUI 提供 `glassEffect`，是公开 API 里最接近的一条�
 ## 结果
 
 **控制中心的效果无法复现。** 公开接口与私有接口都试过，都到不了。
-工作台按公开 Liquid Glass 的毛玻璃效果落地，底板取 `.ultraThinMaterial` 加 `plateOpacity = 1.0`。
-用户已在真机上确认接受这个效果（2026-10-17）。
+工作台按 Apple 的官方做法落地：底板取系统的语义材质 `.hudWindow`，走 `NSVisualEffectView`，材质原样使用。
+用户已在真机上确认接受（2026-10-17），底板换材质后要重新确认。
 
 控制中心的模块由四件事定义。
 一是铺满整个面板的模糊底板，模块内部与模块之间的缝都被抹平。
@@ -52,7 +52,9 @@ macOS 26 起 SwiftUI 提供 `glassEffect`，是公开 API 里最接近的一条�
 第一版改法用 `Glass.clear`，它几乎不模糊，背后窗口的文字会压住正文。
 第二版改成 `Glass.regular`。
 第三版把玻璃从每张卡片挪到面板级的底板，卡片叠在底板上。
-底板的重量取不到控制中心的水平：模糊与填充由同一个旋钮定，公开材质里没有「满量程模糊加近零填充」这一档。
+第四版把底板换成系统的语义材质：AppKit 头文件把「specific look」那一组标了废弃，
+要求改用语义材质，也就是按所属界面元素命名的那一组。
+底板的重量取不到控制中心的水平：模糊与填充由材质一起给出，语义材质里没有「满量程模糊加近零填充」这一档。
 根因、决策表和限制见 [conclusion.md](conclusion.md)。
 证据索引和逻辑链见 [evidence.md](evidence.md)。
 
@@ -69,10 +71,10 @@ macOS 26 起 SwiftUI 提供 `glassEffect`，是公开 API 里最接近的一条�
 ## 实现预期的手段
 
 面板是两块玻璃板：顶栏板与内容区底板。
-底板取 `.ultraThinMaterial` 加 `plateOpacity = 1.0`，不带边框。
+底板取系统的语义材质 `.hudWindow`，走 `NSVisualEffectView`，材质原样使用，不带边框。
 顶栏板取 `Glass.regular`，保留镜面亮边，圆角 23 点。
 卡片叠在底板上，取 `Glass.clear`，填充取色值乘 `MacTheme.tintedCardOpacity`。
-`GlassSurfaceMode` 保留五个取值，调试构建用 `COVIO_GLASS_SURFACE` 环境变量切换。
+`GlassSurfaceMode` 保留五个取值，调试构建用 `COVIO_GLASS_SURFACE` 与 `COVIO_PLATE_MATERIAL` 环境变量切换。
 推荐方案、流程、失败模式和实施计划见 [solution.md](solution.md)。
 验证目标、范围、矩阵和风险见 [validation/README.md](validation/README.md)。
 实际验证记录见 [validation/case-control-center-parity.md](validation/case-control-center-parity.md)。
