@@ -6,6 +6,9 @@ import kmpDomain
 /// 持有工作台配置、当前目的地和编辑模式开关。视图只读它，改动都走这里的方法，
 /// 方法改完配置就落盘。
 ///
+/// 指针切换页签的判定也住在这里：它是改 `destination` 的一条路径，
+/// 与点选共用同一道门，编辑模式那一类规则不必写两遍。
+///
 /// **编辑模式不进 `HubStateMachine`。** 状态机的六个态由合同与
 /// `DesignContractTests` 逐字钉死。扩态是 `docs/design/workbench-architecture.md`
 /// 交给 ADR 的事，不该夹在界面对齐里做。
@@ -20,6 +23,10 @@ final class WorkbenchModel {
             guard destination != oldValue else { return }
             // 换页就退出编辑模式。页签与卡片是两个页面的东西，一起编辑会串。
             isEditing = false
+            // 换页签就重新起算冷却。指针还停在别的项上时，那一次待切换作废：
+            // 用户已经用点选改过主意。
+            lastSwitchAt = Date()
+            cancelHoverSwitch()
         }
     }
     /// 编辑模式。顶栏右端那个按钮切换它。
@@ -150,6 +157,81 @@ final class WorkbenchModel {
     /// 删一块组件。
     func removeWidget(id: String) {
         update(replacingWidgets(config.homeWidgets.filter { $0.id != id }))
+    }
+
+    // MARK: - 指针切换页签
+
+    /// 指针正停着、冷却还没走完的那个目的地。nil 表示没有待切换。
+    private(set) var pendingDestination: HubDestination?
+
+    /// 上一次换页签的时刻。指针切换按冷却窗口放行。
+    private(set) var lastSwitchAt: Date?
+
+    private var cooldownTask: Task<Void, Never>?
+
+    /// 指针进入一个页签。冷却已经走完就立刻切，没走完就等它走完再切。
+    ///
+    /// 编辑模式里不切：那时点选也不换页，指针不该是一条后门。
+    /// 停在已经选中的页签上也不切，否则滑块会白闪一次。
+    func pointerEntered(_ destination: HubDestination) {
+        cancelHoverSwitch()
+        guard !isEditing, destination != self.destination else { return }
+        let remaining = cooldownRemaining()
+        guard remaining > 0 else {
+            select(destination)
+            return
+        }
+        pendingDestination = destination
+        cooldownTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(remaining))
+            guard !Task.isCancelled else { return }
+            self?.fireSwitch(destination)
+        }
+    }
+
+    /// 指针离开一个页签。只有离开正在等的那一个才取消。
+    ///
+    /// 指针从 A 移到 B 时事件顺序是 `enter(B)` 再到 `exit(A)`。
+    /// 那时正在等的是 B，`exit(A)` 不该动它。
+    func pointerExited(_ destination: HubDestination) {
+        guard pendingDestination == destination else { return }
+        cancelHoverSwitch()
+    }
+
+    /// 取消待切换。面板收起时调用。
+    ///
+    /// 面板被 `orderOut` 时 AppKit 不发 `mouseExited`，指针停在某个页签上的
+    /// 等待会继续跑。不取消的话，收起后还会切一次。
+    func cancelHoverSwitch() {
+        cooldownTask?.cancel()
+        cooldownTask = nil
+        pendingDestination = nil
+    }
+
+    /// 冷却走完，换到那一页。
+    ///
+    /// 这里再查一次编辑模式：等的那段时间里，用户可能已经按了编辑按钮。
+    private func fireSwitch(_ destination: HubDestination) {
+        guard pendingDestination == destination else { return }
+        cancelHoverSwitch()
+        select(destination)
+    }
+
+    /// 冷却还剩多久。没换过页签、或者冷却已经走完，返回 0。
+    private func cooldownRemaining() -> TimeInterval {
+        guard let lastSwitchAt else { return 0 }
+        return max(0, HubMotion.hoverCooldown - Date().timeIntervalSince(lastSwitchAt))
+    }
+
+    /// 换一个目的地。指针切换走这里，与点选同一条路。
+    ///
+    /// 首页不是工作区，`select(paneID:)` 管不到它，所以在这一层分开。
+    private func select(_ destination: HubDestination) {
+        guard !isEditing else { return }
+        switch destination {
+        case .home: self.destination = .home
+        case .pane(let id): select(paneID: id)
+        }
     }
 
     // MARK: - 落盘

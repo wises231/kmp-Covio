@@ -116,13 +116,20 @@ struct HubView: View {
             onHome: { workbench.destination = .home },
             onSelect: { workbench.select(paneID: $0) },
             onReorder: { workbench.movePane(from: $0, to: $1) },
-            onPageAction: { workbench.performPageAction() }
+            onPageAction: { workbench.performPageAction() },
+            onHover: reportHover
         )
         .glassSurface(
             cornerRadius: HubMetrics.tabBarPlateRadius,
             tint: GlassSurfaceMode.plateTint,
             mode: GlassSurfaceMode.topBarMode
         )
+    }
+
+    /// 指针进出的上报。切换判定住在 `WorkbenchModel` 里，这里只转达。
+    private func reportHover(_ destination: HubDestination, inside: Bool) {
+        if inside { workbench.pointerEntered(destination) }
+        else { workbench.pointerExited(destination) }
     }
 
     /// 内容区有一块模糊底板，卡片叠在底板上。

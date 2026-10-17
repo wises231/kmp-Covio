@@ -227,6 +227,172 @@ final class WorkbenchModelTests: XCTestCase {
         XCTAssertEqual(model.panes.map(\.id), before)
     }
 
+    // MARK: - 指针切换页签
+
+    /// 冷却早就走完了，进入就换，没有等待。
+    func testHoveringAnotherPaneSwitchesImmediately() {
+        let model = model()
+        let target = HubDestination.pane(id: PaneKind.clipboard.defaultId)
+
+        model.pointerEntered(target)
+
+        XCTAssertEqual(model.destination, target)
+        XCTAssertNil(model.pendingDestination, "立刻换掉了，不该留下待切换")
+    }
+
+    /// 停在已经选中的页签上什么都不做。否则滑块会白闪一次。
+    func testHoveringTheCurrentPaneDoesNothing() {
+        let model = model()
+        model.select(paneID: PaneKind.clipboard.defaultId)
+
+        model.pointerEntered(.pane(id: PaneKind.clipboard.defaultId))
+
+        XCTAssertNil(model.pendingDestination, "停在已选中的页签上不该等")
+    }
+
+    /// 冷却没走完，第二次切换先等着。
+    func testTheCooldownBlocksASecondSwitch() {
+        let model = model()
+        let first = HubDestination.pane(id: PaneKind.clipboard.defaultId)
+        let second = HubDestination.pane(id: PaneKind.files.defaultId)
+
+        model.pointerEntered(first)
+        model.pointerEntered(second)
+
+        XCTAssertEqual(model.destination, first, "冷却里不该换第二次")
+        XCTAssertEqual(model.pendingDestination, second, "第二次应该排着")
+        XCTAssertNotNil(model.lastSwitchAt)
+    }
+
+    /// 冷却走完，排着的那一次自己换过去。
+    func testTheDeferredSwitchFiresWhenTheCooldownEnds() async {
+        let model = model()
+        let second = HubDestination.pane(id: PaneKind.files.defaultId)
+
+        model.pointerEntered(.pane(id: PaneKind.clipboard.defaultId))
+        model.pointerEntered(second)
+        await waitForSwitch(model, to: second)
+
+        XCTAssertEqual(model.destination, second)
+        XCTAssertNil(model.pendingDestination, "换完不该还留着")
+    }
+
+    /// 没等到冷却走完就离开，排着的那一次取消。
+    func testLeavingTheTabCancelsTheDeferredSwitch() async {
+        let model = model()
+        let first = HubDestination.pane(id: PaneKind.clipboard.defaultId)
+        let second = HubDestination.pane(id: PaneKind.files.defaultId)
+
+        model.pointerEntered(first)
+        model.pointerEntered(second)
+        model.pointerExited(second)
+
+        XCTAssertNil(model.pendingDestination, "离开该页签应该立刻取消")
+
+        await waitOutTheCooldownWindow()
+        XCTAssertEqual(model.destination, first, "离开后不该再换页")
+    }
+
+    /// 指针从 A 移到 B 时，事件顺序是 `enter(B)` 再到 `exit(A)`。
+    /// 那时排着的是 B，`exit(A)` 不该把它清掉。
+    func testLeavingAnotherTabKeepsThePendingSwitch() {
+        let model = model()
+        let first = HubDestination.pane(id: PaneKind.clipboard.defaultId)
+        let second = HubDestination.pane(id: PaneKind.files.defaultId)
+
+        model.pointerEntered(first)
+        model.pointerEntered(second)
+        model.pointerExited(first)
+
+        XCTAssertEqual(model.pendingDestination, second, "exit(旧页签) 不该动新页签的等待")
+    }
+
+    /// 冷却里连着进入两个页签，只换到最后停住的那一个。
+    func testHoveringASecondTabRearmsTheSwitch() async {
+        let model = model()
+        let third = HubDestination.pane(id: PaneKind.screenshots.defaultId)
+
+        model.pointerEntered(.pane(id: PaneKind.clipboard.defaultId))
+        model.pointerEntered(.pane(id: PaneKind.files.defaultId))
+        model.pointerEntered(third)
+        await waitForSwitch(model, to: third)
+
+        XCTAssertEqual(model.destination, third, "应该换到最后停住的那一个")
+    }
+
+    /// 冷却里点选别的页签，排着的那一次作废。用户已经用点选改过主意。
+    func testClickingCancelsTheDeferredSwitch() async {
+        let model = model()
+        let deferred = HubDestination.pane(id: PaneKind.files.defaultId)
+        let clicked = HubDestination.pane(id: PaneKind.screenshots.defaultId)
+
+        model.pointerEntered(.pane(id: PaneKind.clipboard.defaultId))
+        model.pointerEntered(deferred)
+        model.select(paneID: PaneKind.screenshots.defaultId)
+
+        XCTAssertEqual(model.destination, clicked)
+        XCTAssertNil(model.pendingDestination, "点选应该把排着的那一次清掉")
+
+        await waitOutTheCooldownWindow()
+        XCTAssertEqual(model.destination, clicked, "点选之后不该被指针抢回去")
+    }
+
+    /// 面板收起时取消待切换。收起后 AppKit 不发 `mouseExited`，不取消还会换一次。
+    func testCancelHoverSwitchStopsTheDeferredSwitch() async {
+        let model = model()
+        let first = HubDestination.pane(id: PaneKind.clipboard.defaultId)
+
+        model.pointerEntered(first)
+        model.pointerEntered(.pane(id: PaneKind.files.defaultId))
+        model.cancelHoverSwitch()
+
+        XCTAssertNil(model.pendingDestination)
+
+        await waitOutTheCooldownWindow()
+        XCTAssertEqual(model.destination, first, "取消后不该再换页")
+    }
+
+    /// 编辑模式里不换。那时点选也不换页，指针不该是一条后门。
+    func testHoveringIsIgnoredWhileEditing() async {
+        let model = model()
+        model.performPageAction()
+        XCTAssertTrue(model.isEditing, "首页上的动作按钮应该进编辑模式")
+
+        model.pointerEntered(.pane(id: PaneKind.clipboard.defaultId))
+
+        XCTAssertNil(model.pendingDestination, "编辑模式里不该换页")
+
+        await waitOutTheCooldownWindow()
+        XCTAssertEqual(model.destination, .home, "编辑模式里不该换页")
+    }
+
+    /// 首页入口也是一个目的地，指针一样换过去。
+    func testHoveringTheHomeEntryGoesBackHome() async {
+        let model = model()
+        model.select(paneID: PaneKind.clipboard.defaultId)
+
+        model.pointerEntered(.home)
+        await waitForSwitch(model, to: .home)
+
+        XCTAssertEqual(model.destination, .home)
+    }
+
+    /// 等到换页发生。查状态，不查时长（实测 39）。
+    ///
+    /// 超时给 4 秒，远大于冷却时长，机器再慢也不至于误报。
+    private func waitForSwitch(_ model: WorkbenchModel, to destination: HubDestination) async {
+        let deadline = Date().addingTimeInterval(4)
+        while model.destination != destination, Date() < deadline {
+            // 让出主 actor，计时任务才跑得动。
+            try? await Task.sleep(for: .milliseconds(20))
+        }
+    }
+
+    /// 等一个「不该发生」的有界窗口。冷却时长再加一点余量。
+    private func waitOutTheCooldownWindow() async {
+        try? await Task.sleep(for: .seconds(HubMotion.hoverCooldown + 0.3))
+    }
+
     // MARK: - 落盘
 
     /// 接了落盘之后，改动写进文件，重建模型还能读回来。
