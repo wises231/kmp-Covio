@@ -13,6 +13,29 @@ enum MacTheme {
     static let canvas = color(ContractColors.tokenColorCanvas)
     /// 卡片与窗口表面。
     static let surface = color(ContractColors.tokenColorSurface)
+    /// 卡片材质填充。半透明，压在玻璃模糊上面，桌面能透过来。
+    ///
+    /// 合同 `token/color/material-thin`。控制中心的模块就是这样：模糊打底，
+    /// 上面一层半透明填充。不透明的 `surface` 会把模糊整个盖住。
+    static let material = color(ContractColors.tokenColorMaterialThin)
+    /// 着色卡片的填充透明度。
+    ///
+    /// 首页的彩色卡片用色值乘这个透明度，叠在玻璃上面，给每张卡片一个身份色
+    /// （`token/color/widget-tint-*`：琥珀、薄荷、天蓝、杏、玫瑰、石板）。
+    ///
+    /// 这个数是实测定的，不是合同的值。合同里最淡的一档是 `0.62`。
+    ///
+    /// 控制中心的模块几乎不加填充。按整块矩形取平均，模块内只比模块缝亮 16 到 34 级。
+    /// 工作台在 `0.45` 下卡片比底板缝亮 46 到 50 级，面板内部自己就有一倍的反差，
+    /// 读起来是「灰板上摆白板」。见 `#124` 证据 7。
+    ///
+    /// 取 `0.1` 让色相还看得见，同时卡片与底板的差落到控制中心的量级。
+    ///
+    /// 合同里 `widget-tint-*` 的深色取值与浅色完全相同，都是浅底。面板走深色外观以后，
+    /// 这个值就成了压在暗底板上的一层亮填充。要再压淡，得先给这六个令牌补深色取值。
+    ///
+    /// 调试构建可以用 `COVIO_CARD_TINT` 覆盖，真机对照用它扫值。
+    @MainActor static var tintedCardOpacity: CGFloat = 0.1
     /// 抬起的表面。
     static let elevated = color(ContractColors.tokenColorElevated)
     /// 分隔线与控件描边。
@@ -104,5 +127,16 @@ enum MacTheme {
         let blue = CGFloat((value >> (hasAlpha ? 8 : 0)) & 0xFF) / 255
         let alpha = hasAlpha ? CGFloat(value & 0xFF) / 255 : 1
         return NSColor(srgbRed: red, green: green, blue: blue, alpha: alpha)
+    }
+
+    /// 从环境变量取卡片填充的覆盖值。取值不在 0 到 1 之间时保持原样。
+    @MainActor static func applyEnvironmentOverride() {
+        #if DEBUG
+        if let raw = ProcessInfo.processInfo.environment["COVIO_CARD_TINT"],
+           let value = Double(raw) {
+            tintedCardOpacity = min(max(CGFloat(value), 0), 1)
+            NSLog("Covio 卡片填充被环境变量改成 \(tintedCardOpacity)。")
+        }
+        #endif
     }
 }

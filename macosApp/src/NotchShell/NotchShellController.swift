@@ -1,4 +1,5 @@
 import AppKit
+import Observation
 import SwiftUI
 
 /// Notch Shell 的控制器。
@@ -16,21 +17,20 @@ final class NotchShellController {
     private(set) var state: HubState = .hidden
     /// 内容区状态。来源是合同 `states.notchOutputHub.states`。M1 固定为 collapsed。
     private(set) var outputState: HubOutputState = .collapsed
-    /// 当前页签。设置页比占位页高，所以换页签要重排面板。
-    var selection: HubTab = .now {
-        didSet {
-            guard selection != oldValue else { return }
-            refreshLayout()
-        }
-    }
+    /// 工作台状态。当前页、页签列表、首页组件、编辑模式都住在这里。
+    ///
+    /// 页内容高度随页与编辑模式变，所以它一变就要重排面板。见 `observeWorkbench()`。
+    let workbench = WorkbenchModel()
 
     /// Hub 外壳的共享状态。搜索文字与设置分节住在这里。
     ///
     /// 由控制器持有，所以面板收起再展开时搜索文字与分节不丢。
     let chrome = HubChromeModel()
 
-    /// 当前页签需要的内容高度。
-    private var contentHeight: CGFloat { HubMetrics.contentHeight(for: selection) }
+    /// 当前页需要的内容高度。编辑模式多一条提示条，也要算进去。
+    private var contentHeight: CGFloat {
+        HubMetrics.contentHeight(for: HubPage.current(workbench), editing: workbench.isEditing)
+    }
     /// 当前面板所在的屏幕几何。
     private(set) var geometry: ScreenGeometry?
     /// 系统是否要求减弱动态效果。
@@ -39,6 +39,8 @@ final class NotchShellController {
     private var machine = HubStateMachine()
     private var hotZonePanels: [HotZonePanel] = []
     private var hubPanel: HubPanel?
+    /// 菜单栏上的品牌胶囊窗口。收起态由它显示。
+    private var capsulePanel: MenuBarCapsulePanel?
     private var expandTimer: Timer?
     private var collapseTimer: Timer?
     private var observers: [NSObjectProtocol] = []
@@ -75,8 +77,10 @@ final class NotchShellController {
     func start() {
         reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
         makeHubPanel()
+        makeCapsulePanel()
         rebuildHotZones()
         observeSystemChanges()
+        observeWorkbench()
         applyVisibility()
     }
 
@@ -89,6 +93,8 @@ final class NotchShellController {
         hotZonePanels.removeAll()
         hubPanel?.orderOut(nil)
         hubPanel = nil
+        capsulePanel?.orderOut(nil)
+        capsulePanel = nil
     }
 
     // MARK: - 外部入口
@@ -111,8 +117,26 @@ final class NotchShellController {
         send(.pointerEnteredHotZone)
     }
 
+    /// 请求收起。
+    ///
+    /// 编辑模式里第一次请求先退出编辑，不收起面板。拖动卡片时指针常会划出面板，
+    /// 直接收起会把编辑到一半的布局丢掉。
     func requestCollapse() {
+        if workbench.isEditing {
+            workbench.isEditing = false
+            return
+        }
         send(.collapseRequested)
+    }
+
+    /// 指针进入面板。抽成方法是为了让测试能直接驱动这条路径。
+    func pointerEnteredHub() {
+        send(.pointerEnteredHub)
+    }
+
+    /// 指针离开面板。抽成方法是为了让测试能直接驱动这条路径。
+    func pointerExitedHub() {
+        send(.pointerExitedHub)
     }
 
     // MARK: - 状态机
@@ -149,7 +173,11 @@ final class NotchShellController {
         case .pointerExitedHub:
             guard state != .exit else { break }
             outputState = .collapsed
-            startCollapseTimer()
+            // 编辑模式里不排收起计时。拖一块卡时指针会短暂划出面板，
+            // 那不算「用户想走」。收起的入口只剩 Escape 与点胶囊。
+            if !workbench.isEditing {
+                startCollapseTimer()
+            }
 
         case .expandFinished:
             // 展开结束时指针可能已经在面板里。
@@ -229,6 +257,23 @@ final class NotchShellController {
         if !hubVisible {
             hubPanel?.orderOut(nil)
         }
+        placeCapsule()
+    }
+
+    /// 把胶囊放到指针所在屏幕的菜单栏上。
+    ///
+    /// 胶囊与挂帘的开合无关：打样里展开时胶囊也在。所以它不受 `hubVisible` 影响，
+    /// 只受菜单栏可见性影响（全屏 Space 里菜单栏会藏起来）。
+    private func placeCapsule() {
+        guard let capsulePanel else { return }
+        guard let screenGeometry = ScreenGeometry.current(location: pointerLocation()) ?? geometry,
+              screenGeometry.isMenuBarVisible
+        else {
+            capsulePanel.orderOut(nil)
+            return
+        }
+        capsulePanel.place(on: screenGeometry)
+        capsulePanel.orderFrontRegardless()
     }
 
     private func relocateIfNeeded() {
@@ -241,6 +286,20 @@ final class NotchShellController {
     private var pointerIsInsideHubPanel: Bool {
         guard let hubPanel else { return false }
         return hubPanel.frame.contains(pointerLocation())
+    }
+
+    /// 热区报的「离开」要不要转给状态机。
+    ///
+    /// 挂帘面板一露出来就盖住热区：面板是 960 × 547，热区只是刘海那一条
+    /// 186 × 32，横向纵向都被包住。热区随后收到的「离开」是面板挡出来的，
+    /// 不是用户走开。照发的话状态机按 `.hover + .pointerExitedHotZone → .hidden`
+    /// 把刚展开的面板收回去，热区重新露出来又收到「进入」，两边来回弹。
+    ///
+    /// 实测：指针停在热区不动，3 秒采样 24 次，开 11 次关 13 次。
+    ///
+    /// 面板可见时，进出由面板自己的跟踪区报，热区不再插话。
+    static func shouldReportHotZoneExit(hubVisible: Bool, pointerInsideHub: Bool) -> Bool {
+        !(hubVisible && pointerInsideHub)
     }
 
     // MARK: - 计时
@@ -278,12 +337,12 @@ final class NotchShellController {
     private func makeHubPanel() {
         let initial = ScreenGeometry.current(location: pointerLocation())?
             .expandedRect(contentHeight: contentHeight)
-            ?? CGRect(x: 0, y: 0, width: HubMetrics.cardWidth, height: contentHeight)
+            ?? CGRect(x: 0, y: 0, width: HubMetrics.panelWidth, height: contentHeight)
         let panel = HubPanel(rect: initial)
 
         let host = PointerTrackingHost(rootView: hubContentView())
-        host.onPointerEnter = { [weak self] in self?.send(.pointerEnteredHub) }
-        host.onPointerExit = { [weak self] in self?.send(.pointerExitedHub) }
+        host.onPointerEnter = { [weak self] in self?.pointerEnteredHub() }
+        host.onPointerExit = { [weak self] in self?.pointerExitedHub() }
         panel.contentView = host
         // Escape 先清搜索：用户在搜索时按 Escape 想关掉结果，不是收起整个面板。
         panel.onCancel = { [weak self] in
@@ -304,6 +363,43 @@ final class NotchShellController {
         return HubContentRoot(controller: self, initialGeometry: snapshot, runtime: runtime)
     }
 
+    /// 建菜单栏胶囊窗口。
+    ///
+    /// 它同时是收起态的样子和展开的入口：指针进胶囊等于进热区，点胶囊等于切换。
+    private func makeCapsulePanel() {
+        let panel = MenuBarCapsulePanel()
+        panel.onPointerEnter = { [weak self] in
+            guard let self else { return }
+            self.capsulePanel?.setHovered(true)
+            self.send(.pointerEnteredHotZone)
+        }
+        panel.onPointerExit = { [weak self] in
+            self?.capsulePanel?.setHovered(false)
+        }
+        panel.onClick = { [weak self] in
+            self?.toggle()
+        }
+        capsulePanel = panel
+    }
+
+    /// 盯着工作台里影响面板高度的几个值。它们一变就重排面板。
+    ///
+    /// `withObservationTracking` 只报一次，所以回调里要重新挂一次。
+    /// 改这些值的都是主 actor 上的代码，回调直接跳回主 actor 再重排。
+    private func observeWorkbench() {
+        withObservationTracking {
+            _ = workbench.destination
+            _ = workbench.isEditing
+            _ = workbench.homeRows
+        } onChange: { [weak self] in
+            Task { @MainActor in
+                guard let self else { return }
+                self.refreshLayout()
+                self.observeWorkbench()
+            }
+        }
+    }
+
     /// 重建热区面板。显示器变化与全屏 Space 切换时调用。
     private func rebuildHotZones() {
         hotZonePanels.forEach { $0.orderOut(nil) }
@@ -314,7 +410,16 @@ final class NotchShellController {
             let panel = HotZonePanel(rect: geometry.hotZoneRect)
             let host = PointerTrackingHost(rootView: Color.clear)
             host.onPointerEnter = { [weak self] in self?.send(.pointerEnteredHotZone) }
-            host.onPointerExit = { [weak self] in self?.send(.pointerExitedHotZone) }
+            host.onPointerExit = { [weak self] in
+                guard let self else { return }
+                // 面板盖住热区时那次「离开」是假的，别让它把面板收回去。
+                let report = Self.shouldReportHotZoneExit(
+                    hubVisible: self.hubPanel?.isVisible ?? false,
+                    pointerInsideHub: self.pointerIsInsideHubPanel
+                )
+                guard report else { return }
+                self.send(.pointerExitedHotZone)
+            }
             panel.contentView = host
             panel.orderFrontRegardless()
             hotZonePanels.append(panel)
@@ -331,6 +436,10 @@ final class NotchShellController {
 
     /// 刷新全部几何。显示器配置或菜单栏可见性变化后调用。
     func refreshLayout() {
+        // 页签名字按合同取，语言变了要重算。
+        if let language = runtime?.language, language != workbench.language {
+            workbench.language = language
+        }
         geometry = ScreenGeometry.current(location: pointerLocation())
         if state == .hidden {
             rebuildHotZones()

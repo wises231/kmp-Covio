@@ -182,7 +182,7 @@ data class PaneInstance(
 data class WorkbenchConfig(
     @SerialName("schemaVersion") val schemaVersion: Int = WORKBENCH_SCHEMA_VERSION,
     @SerialName("panes") val panes: List<PaneInstance> = defaultPanes(),
-    @SerialName("homeWidgets") val homeWidgets: List<WidgetInstance> = emptyList(),
+    @SerialName("homeWidgets") val homeWidgets: List<WidgetInstance> = defaultWidgets(),
 ) {
     /** tab bar 只画可见的工作区。 */
     val visiblePanes: List<PaneInstance> get() = panes.filterNot { it.isHidden }
@@ -279,6 +279,24 @@ data class WorkbenchConfig(
 fun defaultPanes(): List<PaneInstance> = PaneKind.entries
     .filter { it.isBuiltin }
     .map { PaneInstance.builtin(it) }
+
+/**
+ * 首页默认的六块组件，按需求文档第 6 节的顺序与档位。
+ *
+ * 空首页只有一块提示，用户第一次打开会以为坏了。所以默认摆满，
+ * 用户不想要哪块就在编辑模式里删掉。
+ *
+ * [WidgetInstance.kind] 是字符串：组件目录还没定，模型不提前认识每一种组件。
+ * 这里的六个键由宿主的组件目录解释，认不出的键宿主显示占位卡片。
+ */
+fun defaultWidgets(): List<WidgetInstance> = listOf(
+    WidgetInstance(id = "w-clock", kind = "w-clock", size = WidgetSize.WIDE),
+    WidgetInstance(id = "w-battery", kind = "w-battery", size = WidgetSize.SMALL),
+    WidgetInstance(id = "w-transfer", kind = "w-transfer", size = WidgetSize.WIDE),
+    WidgetInstance(id = "w-actions", kind = "w-actions", size = WidgetSize.TALL),
+    WidgetInstance(id = "w-shots", kind = "w-shots", size = WidgetSize.LARGE),
+    WidgetInstance(id = "w-devices", kind = "w-devices", size = WidgetSize.SMALL),
+)
 
 private fun normalizedPanes(panes: List<PaneInstance>): List<PaneInstance> {
     val reservedIds = PaneKind.entries.filter { it.isBuiltin }.mapTo(HashSet()) { it.defaultId }

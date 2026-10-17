@@ -1,4 +1,5 @@
 import XCTest
+import kmpDomain
 @testable import Covio
 
 /// 把 Swift 侧的常量与设计合同对起来。
@@ -25,25 +26,30 @@ final class DesignContractTests: XCTestCase {
 
     // MARK: - 页签
 
-    /// 六个页签都要在合同的文案表里有条目，顺序也要对。
+    /// 页签与模型的 `PaneKind` 一一对应，合同里也要有文案。
     ///
-    /// 顺序没有机器可读的权威，用下面的字面量守住，防止被改乱。
-    func testTabsMatchContract() throws {
+    /// 页签列表现在由 `WorkbenchConfig` 给，所以这里的枚举是 `PaneKind` 的镜像。
+    /// 两边对不上时，配置里存的键会找不到视图。
+    func testTabsMatchPaneKinds() throws {
         let copy = try XCTUnwrap(try contractJSON()["copy"] as? [String: Any])
-        XCTAssertEqual(HubTab.allCases.count, 6, "页签应该有 6 个")
+        XCTAssertEqual(HubTab.allCases.count, PaneKind.entries.count, "页签数应等于 PaneKind 的取值数")
 
         for tab in HubTab.allCases {
-            let slug = tab.rawValue.lowercased()
-            XCTAssertNotNil(copy["copy/hub/tab/\(slug)"], "合同缺少文案键 copy/hub/tab/\(slug)")
+            XCTAssertEqual(
+                tab.paneKind.key,
+                tab.rawValue,
+                "\(tab.rawValue) 与 PaneKind 的键不一致"
+            )
+            XCTAssertNotNil(copy["copy/hub/tab/\(tab.rawValue)"], "合同缺少文案键 copy/hub/tab/\(tab.rawValue)")
             XCTAssertNotNil(
-                copy["copy/hub/tab/\(slug)/summary"],
-                "合同缺少文案键 copy/hub/tab/\(slug)/summary"
+                copy["copy/hub/tab/\(tab.rawValue)/summary"],
+                "合同缺少文案键 copy/hub/tab/\(tab.rawValue)/summary"
             )
         }
 
         XCTAssertEqual(
             HubTab.allCases.map(\.rawValue),
-            ["Now", "Clipboard", "Files", "Screenshots", "Devices", "Settings"]
+            ["now", "clipboard", "files", "screenshots", "devices", "settings", "board"]
         )
     }
 
@@ -53,7 +59,7 @@ final class DesignContractTests: XCTestCase {
             XCTAssertFalse(tab.title.zhHans.isEmpty, "\(tab.rawValue) 缺中文标题")
             XCTAssertFalse(tab.summary.en.isEmpty, "\(tab.rawValue) 缺英文说明")
             XCTAssertFalse(tab.summary.zhHans.isEmpty, "\(tab.rawValue) 缺中文说明")
-            XCTAssertFalse(tab.symbolName.isEmpty, "\(tab.rawValue) 缺图标")
+            XCTAssertFalse(tab.glyph.isEmpty, "\(tab.rawValue) 缺图标")
         }
     }
 
@@ -68,29 +74,49 @@ final class DesignContractTests: XCTestCase {
         return (width, height)
     }
 
-    /// 竖向导航栏的尺寸。合同 `component/tab-bar` 的 `nativeSize` 是 200 × 370。
+    /// 顶栏的尺寸。合同 `component/tab-bar` 的 `nativeSize` 是 960 × 46。
     ///
-    /// 高度也按各段相加核对一遍，见 `HubMetricsTests`。
-    func testNavRailSizeMatchesContract() throws {
+    /// 宽度等于面板宽度：顶栏横跨整个面板，内边距由顶栏自己留。
+    func testTabBarSizeMatchesContract() throws {
         let (width, height) = try nativeSize("component/tab-bar", in: try contractJSON())
-        XCTAssertEqual(HubMetrics.navRailWidth, CGFloat(width))
-        XCTAssertEqual(HubMetrics.navRailHeight, CGFloat(height))
+        XCTAssertEqual(HubMetrics.tabBarWidth, CGFloat(width))
+        XCTAssertEqual(HubMetrics.tabBarHeight, CGFloat(height))
     }
 
-    /// 胶囊里的页标题。合同 `component/page-title` 的 `nativeSize` 是 420 × 40。
+    /// 页标题行。合同 `component/page-title` 的 `nativeSize` 是 912 × 24。
     ///
-    /// 高度等于胶囊高度：标题填满胶囊。
-    func testCapsuleTitleMatchesContract() throws {
+    /// 宽度等于内容列宽度，所以面板内边距一变这里就要跟着变。
+    func testPageHeadingMatchesContract() throws {
         let (width, height) = try nativeSize("component/page-title", in: try contractJSON())
-        XCTAssertEqual(HubMetrics.capsuleTitleWidth, CGFloat(width))
-        XCTAssertEqual(HubMetrics.toolbarCapsuleHeight, CGFloat(height))
+        XCTAssertEqual(HubMetrics.contentColumnWidth, CGFloat(width))
+        XCTAssertEqual(HubMetrics.pageHeadingHeight, CGFloat(height))
     }
 
-    /// 合同给的是命中区，不是图形本身。`composeMapping.behavior` 说明图形是 22 点。
+    /// bento 网格。合同 `component/bento-grid` 的 `nativeSize` 是 912 × 420。
+    ///
+    /// 高度等于四行加三条间距，所以这里同时钉住行高与间距。
+    func testBentoGridMatchesContract() throws {
+        let (width, height) = try nativeSize("component/bento-grid", in: try contractJSON())
+        XCTAssertEqual(HubMetrics.contentColumnWidth, CGFloat(width))
+        XCTAssertEqual(HubMetrics.bentoGridHeight(rows: HubMetrics.bentoColumns), CGFloat(height))
+    }
+
+    /// 组件卡。合同 `component/widget-card` 的 `nativeSize` 是 219 × 96。
+    ///
+    /// 一列一格，所以宽等于列宽，高等于行高。
+    func testWidgetCardMatchesContract() throws {
+        let (width, height) = try nativeSize("component/widget-card", in: try contractJSON())
+        XCTAssertEqual(HubMetrics.bentoColumnWidth, CGFloat(width), accuracy: 0.001)
+        XCTAssertEqual(HubMetrics.bentoRowHeight, CGFloat(height))
+    }
+
+    /// 合同给的是命中区，不是图形本身。
     func testTrayIconHitTargetMatchesContract() throws {
         let (width, height) = try nativeSize("component/tray-icon", in: try contractJSON())
         XCTAssertEqual(HubMetrics.trayIconHitTarget, CGFloat(width))
         XCTAssertEqual(HubMetrics.trayIconHitTarget, CGFloat(height))
+        // 胶囊不是正方形，高度单独取自合同 `swiftMapping.behavior` 的 20 点。
+        XCTAssertLessThan(HubMetrics.menuBarCapsuleHeight, CGFloat(height))
     }
 
     /// 合同 `accessibilityRules` 的原文：不小于 24 点，主控件尽量 44 点。

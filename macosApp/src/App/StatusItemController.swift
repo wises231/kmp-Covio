@@ -1,9 +1,12 @@
 import AppKit
+import kmpDomain
 
-/// 菜单栏状态项。菜单栏图标是 macOS 的次级入口。
+/// 菜单栏状态项。挂帘的次级入口。
 ///
-/// 图标与无障碍名称来自设计合同 `states.menuBarAndNotchHub.statusItemStates`
-/// 的 DEFAULT 项：SF Symbol `menubar.rectangle`，文案键 `copy/status-item/default`。
+/// 主入口是菜单栏上的品牌胶囊（`MenuBarCapsulePanel`）。这个状态项留着，
+/// 是为了在胶囊窗口万一没上屏时，仍然有地方打开挂帘、进设置、退出应用。
+///
+/// 行为来自设计合同 `component/tray-icon.swiftMapping`：左键开合挂帘，右键开菜单。
 @MainActor
 final class StatusItemController: NSObject, NSMenuDelegate {
     private let shell: NotchShellController
@@ -33,6 +36,10 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         button.toolTip = ContractCopy.copyStatusItemDefault.text
         // 合同 `component/tray-icon` 的 accessibilityRules 要求交互目标不小于 24 点。
         button.setAccessibilityLabel(ContractCopy.copyStatusItemDefault.text)
+        // 装了 `menu` 之后左键只会弹菜单。所以这里不装，改成自己接左右键。
+        button.target = self
+        button.action = #selector(handleClick)
+        button.sendAction(on: [.leftMouseUp, .rightMouseUp])
     }
 
     private func configureMenu() {
@@ -66,8 +73,6 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         )
         quitItem.target = self
         menu.addItem(quitItem)
-
-        statusItem.menu = menu
     }
 
     func tearDown() {
@@ -78,16 +83,40 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     /// 合同的 `component/tray-icon` 变体里 DEFAULT 对应的 SF Symbol。
     private static let defaultSymbolName = "menubar.rectangle"
 
+    // MARK: - 点击
+
+    /// 左键开合挂帘，右键弹菜单。合同 `component/tray-icon.swiftMapping` 的写法。
+    @objc private func handleClick() {
+        let event = NSApp.currentEvent
+        let wantsMenu = event?.type == .rightMouseUp
+            || event?.modifierFlags.contains(.control) == true
+        if wantsMenu {
+            presentMenu()
+        } else {
+            shell.toggle()
+        }
+    }
+
+    /// 弹出菜单。
+    ///
+    /// `performClick` 会一直跑到菜单关闭才返回，所以返回后马上摘掉 `menu` 是安全的。
+    /// 不摘的话左键下次也会弹菜单。
+    private func presentMenu() {
+        statusItem.menu = menu
+        statusItem.button?.performClick(nil)
+        statusItem.menu = nil
+    }
+
     // MARK: - 菜单动作
 
-    /// 显示挂帘。挂帘本体属于 M3，这里先打开 Hub 的截图页。
+    /// 打开截图工作区。
     @objc private func showShelf() {
-        shell.selection = .screenshots
+        shell.workbench.destination = .pane(id: PaneKind.screenshots.defaultId)
         shell.show()
     }
 
     @objc private func openSettings() {
-        shell.selection = .settings
+        shell.workbench.destination = .pane(id: PaneKind.settings.defaultId)
         shell.show()
     }
 

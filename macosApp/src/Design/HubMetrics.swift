@@ -1,6 +1,6 @@
 import CoreGraphics
 
-/// Hub 的几何参数。
+/// 挂帘面板的几何参数。
 ///
 /// 来源有两处：
 /// - `docs/covio-design-contract.json` 给组件的 `nativeSize`。
@@ -8,8 +8,9 @@ import CoreGraphics
 ///
 /// 冲突时以合同为准。`DesignContractTests` 会逐值比对。
 ///
-/// 卡片的组成是「左栏导航栏 + 右栏（胶囊 + 页内容）」。
-/// 高度按各段相加，不写死一个数：少算一段会把底部裁掉。
+/// 面板的组成是「顶栏 46 + 分隔线 1 + 内容列」。内容列自带 24 点内边距，
+/// 里面是「页标题行 + 主体」。高度按各段相加，不写死一个数：
+/// 少算一段会把底部裁掉。
 enum HubMetrics {
     /// Hub 最小宽度 720 点。
     static let minWidth: CGFloat = 720
@@ -20,150 +21,286 @@ enum HubMetrics {
     /// Hub 最大高度是屏幕高度减 120 点。
     static let verticalScreenMargin: CGFloat = 120
 
-    /// Hub 边框 1 点。
-    static let borderWidth: CGFloat = 1
+    // MARK: - 面板
 
-    /// 卡片宽度 960 点。与合同 `component/window-bar` 同宽。
-    static let cardWidth: CGFloat = 960
+    /// 面板宽度 960 点。合同 `component/tab-bar` 的 `nativeSize.width`。
+    static let panelWidth: CGFloat = 960
 
-    // MARK: - 卡片内边距与栏间距
+    /// 面板内边距 24 点。合同 `token/space/6`。
+    static let panelPadding: CGFloat = MacTheme.space6
 
-    /// 卡片四边内边距。合同 `token/space/4`。
-    static let cardPadding: CGFloat = MacTheme.space4
+    /// 内容列宽度。等于面板宽度减去两边内边距。
+    ///
+    /// 960 − 24 × 2 = 912。合同 `component/page-title` 的 `nativeSize.width`。
+    static var contentColumnWidth: CGFloat { panelWidth - panelPadding * 2 }
 
-    /// 左栏与右栏之间的间距。
-    static let columnGap: CGFloat = MacTheme.space4
+    // MARK: - 玻璃板
 
-    /// 右栏里胶囊与页内容之间的间距。合同 `token/space/3`。
+    /// 两块玻璃板之间的间隙 11 点。
+    ///
+    /// 控制中心的比例：间距 ÷ 模块边长 = 0.23。单位高度取顶栏的 46，
+    /// 46 × 0.23 ≈ 10.6，取 11。依据是官方宣传图的逐像素测量。
+    ///
+    /// 这条取代了原来那条 1 点的分隔线：两块板分开之后，缝本身就是分界。
+    static let plateGap: CGFloat = 11
+
+    /// 顶栏板与菜单栏之间的缝 11 点。
+    ///
+    /// 控制中心最上面那个模块离菜单栏也有一段。取与板间距同值，整个组合的
+    /// 节奏才一致。
+    ///
+    /// 它算进面板窗口的高度，但不进卡片的 frame：进了的话挂帘收起时会先露出
+    /// 一条空缝，再露出顶栏板。
+    static let plateTopInset: CGFloat = 11
+
+    /// 顶栏板的圆角 23 点。小模块用胶囊，圆角 = 高度 ÷ 2 = 46 ÷ 2。
+    static let tabBarPlateRadius: CGFloat = tabBarHeight / 2
+
+    /// 内容区底板的圆角 23 点。
+    ///
+    /// 控制中心的面板是一块圆角矩形，实测圆角约 22 点，面板高约 558 点。
+    /// 取 23 与顶栏板同值：两块板属于同一族。
+    ///
+    /// 卡片在底板上面，圆角 16 点，比底板小 —— 内层的圆角要小于外层。
+    static let contentPlateRadius: CGFloat = 23
+
+    // MARK: - 顶栏
+
+    /// 顶栏高度 46 点。合同 `component/tab-bar` 的 `nativeSize.height`。
+    static let tabBarHeight: CGFloat = 46
+
+    /// 顶栏宽度。与面板同宽，内边距由顶栏自己留。
+    static var tabBarWidth: CGFloat { panelWidth }
+
+    /// 顶栏横向内边距。
+    static let tabBarHPadding: CGFloat = MacTheme.space6
+
+    /// 顶栏里各件之间的间距。
+    static let tabBarItemGap: CGFloat = MacTheme.space2
+
+    /// 首页入口按钮。合同 `component/button` 的命中区下限是 24 点。
+    static let homeEntryWidth: CGFloat = 36
+    static let homeEntryHeight: CGFloat = 30
+
+    /// 搜索框。
+    static let searchFieldWidth: CGFloat = 170
+    static let searchFieldHeight: CGFloat = 30
+
+    /// 一条页签的高度。选中滑块也用它。
+    static let tabHeight: CGFloat = 30
+
+    /// 页签之间的间距。
+    static let tabGap: CGFloat = 4
+
+    /// 页签的横向内边距。
+    static let tabHPadding: CGFloat = MacTheme.space3
+
+    /// 拖动换位时，跨过多少点算换一条页签。
+    ///
+    /// 页签宽度随文字变，这里用一个估值。与打样的 `tabStepPx()` 一致。
+    static let tabReorderStep: CGFloat = 84
+
+    /// 右端动作按钮的横向内边距。
+    static let actionHPadding: CGFloat = MacTheme.space3
+
+    /// 顶栏里除页签区之外各件的宽度之和。
+    ///
+    /// 页签区占剩下的宽度，所以这个和必须小于内容列宽度。
+    static var tabBarFixedWidth: CGFloat {
+        homeEntryWidth + searchFieldWidth + actionButtonMinWidth
+            + tabBarItemGap * 3
+    }
+
+    /// 动作按钮的最小宽度。四段文案最长是「设置」，两个字。
+    static let actionButtonMinWidth: CGFloat = 52
+
+    // MARK: - 内容列
+
+    /// 内容列里各段之间的间距。
     static let pageGap: CGFloat = MacTheme.space3
 
-    /// 右栏宽度。等于卡片宽度减去两边内边距、左栏与栏间距。
-    static var contentColumnWidth: CGFloat {
-        cardWidth - cardPadding * 2 - navRailWidth - columnGap
+    /// 页标题行的行高。合同 `component/page-title` 的 `nativeSize.height`。
+    static let pageHeadingHeight: CGFloat = 24
+
+    /// 页标题与主体之间的间距。
+    static let pageHeadingGap: CGFloat = 10
+
+    /// 搜索结果一条的高度。
+    ///
+    /// 结果列表现在排在内容列里，内边距由内容列给，所以直接用设置行的行高，
+    /// 不再像左栏时代那样减掉一层。
+    static let searchRowHeight: CGFloat = MacControlSize.settingRowHeight
+
+    // MARK: - bento 网格
+
+    /// 网格列数。
+    static let bentoColumns = 4
+
+    /// 一块卡片最多跨几行。档位只有 1×1、2×1、1×2、2×2 四种，所以上限是 2。
+    static let bentoMaxRows = 2
+
+    /// 网格行高 96 点。
+    static let bentoRowHeight: CGFloat = 96
+
+    /// 卡片之间的间距 12 点。合同 `token/space/3`。
+    static let bentoGap: CGFloat = MacTheme.space3
+
+    /// 卡片圆角 16 点。合同 `token/radius/large`。
+    static let bentoCardRadius: CGFloat = 16
+
+    /// 卡片内边距 14 点。
+    static let bentoCardPadding: CGFloat = 14
+
+    /// 卡片右上角删除钮的直径。
+    static let bentoDeleteSize: CGFloat = 20
+
+    /// 卡片右下角缩放手柄的边长。合同要求命中区不小于 24 点。
+    static let bentoResizeSize: CGFloat = 26
+
+    /// 列宽。(912 − 12 × 3) / 4 = 219 点。合同 `component/widget-card` 的 `nativeSize.width`。
+    static var bentoColumnWidth: CGFloat {
+        (contentColumnWidth - bentoGap * CGFloat(bentoColumns - 1)) / CGFloat(bentoColumns)
     }
 
-    // MARK: - 左栏：导航栏
+    /// 一列跨到下一列的步长。
+    static var bentoColumnStep: CGFloat { bentoColumnWidth + bentoGap }
 
-    /// 导航栏宽度。来源是合同 `components["component/tab-bar"].nativeSize`。
-    static let navRailWidth: CGFloat = 200
+    /// 一行跨到下一行的步长。
+    static var bentoRowStep: CGFloat { bentoRowHeight + bentoGap }
 
-    /// 导航栏高度。合同给的是 370，这里按各段相加算出同一个数。
-    /// `HubMetricsTests` 会核对两边相等。
-    static var navRailHeight: CGFloat { navRailComposition }
-
-    /// 导航栏上下内边距。
-    static let railPadding: CGFloat = MacTheme.space3
-    /// 搜索框行高。
-    static let railSearchHeight: CGFloat = 26
-    /// 呼吸灯行高。
-    static let railStatusHeight: CGFloat = 20
-    /// 导航项与底部每一行的高度。
-    static let railItemHeight: CGFloat = 28
-    /// 搜索栏、导航项、底部组之间的间距。
-    static let railSectionGap: CGFloat = MacTheme.space3
-    /// 底部组各行之间的间距。
-    static let railRowGap: CGFloat = MacTheme.space2
-
-    /// 导航栏底部的行数：设置、语言、退出。
-    static let railBottomRowCount = 3
-
-    /// 导航栏高度按各段相加。
-    static var navRailComposition: CGFloat {
-        railPadding * 2
-            + railSearchHeight
-            + railSectionGap
-            + CGFloat(HubTab.allCases.count) * railItemHeight
-            + railSectionGap
-            + railStatusHeight
-            + CGFloat(railBottomRowCount) * railItemHeight
-            + CGFloat(railBottomRowCount) * railRowGap
+    /// 一块跨 `columns` 列的卡片宽度。中间那几条间距也算进来。
+    static func bentoCardWidth(columns: Int) -> CGFloat {
+        guard columns > 1 else { return bentoColumnWidth }
+        return bentoColumnWidth * CGFloat(columns) + bentoGap * CGFloat(columns - 1)
     }
 
-    // MARK: - 右栏：胶囊与页内容
+    /// 一块跨 `rows` 行的卡片高度。
+    static func bentoCardHeight(rows: Int) -> CGFloat {
+        guard rows > 1 else { return bentoRowHeight }
+        return bentoRowHeight * CGFloat(rows) + bentoGap * CGFloat(rows - 1)
+    }
 
-    /// 顶部胶囊高度。来源是合同 `components["component/toolbar"].nativeSize.height`。
-    static let toolbarCapsuleHeight: CGFloat = 40
+    /// 网格高度。零行时是零。
+    static func bentoGridHeight(rows: Int) -> CGFloat {
+        guard rows > 0 else { return 0 }
+        return CGFloat(rows) * bentoRowHeight + CGFloat(rows - 1) * bentoGap
+    }
 
-    /// 胶囊里标题区的宽度。来源是合同 `components["component/page-title"].nativeSize.width`。
+    /// 首页没有组件时那块提示的高度。
+    static let emptyHomeHeight: CGFloat = 160
+
+    /// 默认的首页行数。六块默认组件装箱后是四行。
     ///
-    /// 合同的 `nativeSize.height` 也是 40，与胶囊等高：标题填满胶囊的高度。
-    static let capsuleTitleWidth: CGFloat = 420
+    /// 只用于预览与测试的默认参数。真机上由 `BentoPacker` 按实际组件算。
+    static let defaultHomeRows = 4
 
-    /// 搜索结果一行的行高。要满足合同 `accessibilityRules` 的 24 点下限。
-    static let searchRowHeight: CGFloat = MacControlSize.settingRowHeight - MacTheme.space4
+    // MARK: - 编辑模式
 
-    /// 占位页的内容高度。占位页只有标题与提示，不需要更多。
-    static let placeholderPageContentHeight: CGFloat = 180
+    /// 编辑提示条的高度。按钮 28 点加上下内边距 8 点。
+    static let editBannerHeight: CGFloat = 44
 
-    /// 设置页的内容高度。六个分节共用，内容超出时页内滚动。
-    static let settingsPageContentHeight: CGFloat = 500
+    // MARK: - 页内容
 
-    /// 截图页的内容高度：晾衣线区域加上下内边距。
+    /// 占位页的主体高度。占位页只有一张说明卡。
+    static let placeholderBodyHeight: CGFloat = 180
+
+    /// 设置页的主体高度。六个分节共用，内容超出时页内滚动。
+    static let settingsBodyHeight: CGFloat = 500
+
+    /// 截图页的主体高度：晾衣线区域。上下内边距由内容列给。
     ///
-    /// 晾衣线区域与独立工具栏面板一样高，都用 `ShelfLayout` 的值。
     /// `ScreenshotsTabTests` 逐段核对这个和。
-    static var screenshotsPageContentHeight: CGFloat {
-        ScreenshotsTabView.areaHeight + MacTheme.space3 * 2
-    }
+    static var screenshotsBodyHeight: CGFloat { ScreenshotsTabView.areaHeight }
 
-    /// 剪切板页的内容高度：列表区、提示条与上下内边距。
+    /// 剪切板页的主体高度：列表区、提示条与它们之间的间距。
     ///
     /// 提示条可能出现也可能不出现，所以按它出现算，宁可多留一点也不裁掉。
-    static var clipboardPageContentHeight: CGFloat {
-        ClipboardTabView.listHeight
-            + MacTheme.space3 * 2
-            + ClipboardTabView.noticeGap
-            + ClipboardTabView.noticeHeight
+    static var clipboardBodyHeight: CGFloat {
+        ClipboardTabView.listHeight + ClipboardTabView.noticeGap + ClipboardTabView.noticeHeight
     }
 
-    /// 文件页的内容高度：列表区、提示条与上下内边距。
+    /// 文件页的主体高度：列表区、提示条与它们之间的间距。
     ///
     /// 与剪切板页同理：提示条可能不出现，按它出现算，宁可多留一点也不裁掉。
-    static var filesPageContentHeight: CGFloat {
-        FilesTabView.listHeight
-            + MacTheme.space3 * 2
-            + FilesTabView.noticeGap
-            + FilesTabView.noticeHeight
+    static var filesBodyHeight: CGFloat {
+        FilesTabView.listHeight + FilesTabView.noticeGap + FilesTabView.noticeHeight
     }
 
-    /// 某个页签的右栏内容高度，不含胶囊。
-    static func pageContentHeight(for tab: HubTab) -> CGFloat {
-        switch tab {
-        case .now, .devices: placeholderPageContentHeight
-        case .settings: settingsPageContentHeight
-        case .screenshots: screenshotsPageContentHeight
-        case .clipboard: clipboardPageContentHeight
-        case .files: filesPageContentHeight
+    /// 某个页面的主体高度，不含页标题行。
+    static func bodyHeight(for page: HubPage) -> CGFloat {
+        switch page {
+        case .home(let rows):
+            rows > 0 ? bentoGridHeight(rows: rows) : emptyHomeHeight
+        case .pane(let tab):
+            switch tab {
+            case .now, .devices, .board: placeholderBodyHeight
+            case .settings: settingsBodyHeight
+            case .screenshots: screenshotsBodyHeight
+            case .clipboard: clipboardBodyHeight
+            case .files: filesBodyHeight
+            }
         }
     }
 
-    /// 卡片内部高度。左栏与右栏取高者。
-    static func interiorHeight(for tab: HubTab) -> CGFloat {
-        max(navRailHeight, toolbarCapsuleHeight + pageGap + pageContentHeight(for: tab))
+    /// 内容列里页标题行加主体的高度。
+    ///
+    /// 首页没有页标题行：打样的首页直接从网格开始。
+    static func pageContentHeight(for page: HubPage) -> CGFloat {
+        switch page {
+        case .home: bodyHeight(for: page)
+        case .pane: pageHeadingHeight + pageHeadingGap + bodyHeight(for: page)
+        }
     }
 
-    /// 某个页签的卡片高度。面板窗口的高度由它决定。
-    static func contentHeight(for tab: HubTab) -> CGFloat {
-        interiorHeight(for: tab) + cardPadding * 2
+    /// 两块玻璃板加起来的高度：顶栏板、板间距、内容板。
+    ///
+    /// 内容板里面是内容列的内边距与页内容。编辑模式在内容列顶部多一条提示条，
+    /// 提示条下面留一段间距。
+    ///
+    /// 与菜单栏之间那条缝不在这里，见 [plateTopInset]。卡片按这个高度排，
+    /// 面板窗口按 [contentHeight] 排。
+    static func plateStackHeight(for page: HubPage, editing: Bool = false) -> CGFloat {
+        let chrome = tabBarHeight + plateGap + panelPadding * 2
+        let banner = editing ? editBannerHeight + pageGap : 0
+        return chrome + banner + pageContentHeight(for: page)
     }
 
-    // MARK: - 屏幕
+    /// 某个页面的面板高度。面板窗口的高度由它决定。
+    ///
+    /// 等于两块板的高度加上与菜单栏之间的缝。内边距已经算在 `plateStackHeight`
+    /// 里，所以这里不再加一次。
+    ///
+    /// `HubView` 的卡片 frame 用 `plateStackHeight`，窗口 frame 用这个值。
+    /// 两边不一致会把内容裁掉。
+    static func contentHeight(for page: HubPage, editing: Bool = false) -> CGFloat {
+        plateTopInset + plateStackHeight(for: page, editing: editing)
+    }
 
-    /// 菜单栏图标的命中区。来源是合同 `components["component/tray-icon"].nativeSize`。
+    // MARK: - 菜单栏
+
+    /// 菜单栏项的命中区。来源是合同 `component/tray-icon` 的 `nativeSize`。
     static let trayIconHitTarget: CGFloat = 44
 
     /// 合同 `accessibilityRules`：交互目标不小于 24 点，主控件尽量 44 点。
     static let minHitTarget: CGFloat = 24
     static let preferredHitTarget: CGFloat = 44
 
+    /// 收起态胶囊的高度。合同 `component/tray-icon` 的 `swiftMapping.behavior`。
+    static let menuBarCapsuleHeight: CGFloat = 20
+
+    /// 胶囊四周留的悬停余量。窗口比胶囊大一圈，指针滑到边上也算进来了。
+    static let menuBarCapsuleHoverInset: CGFloat = 6
+
     /// 非刘海屏的热区尺寸。热区在菜单栏下方，所以做得又窄又薄。
     static let notchlessHotZoneWidth: CGFloat = 200
     static let notchlessHotZoneHeight: CGFloat = 6
 
-    /// Hub 宽度。以卡片宽度为基准，限制在最小宽度与屏幕宽度减 80 之间。
+    // MARK: - 屏幕
+
+    /// Hub 宽度。以面板宽度为基准，限制在最小宽度与屏幕宽度减 80 之间。
     static func hubWidth(screenWidth: CGFloat) -> CGFloat {
         let maximum = max(minWidth, screenWidth - horizontalScreenMargin)
-        return min(max(cardWidth, minWidth), maximum)
+        return min(max(panelWidth, minWidth), maximum)
     }
 
     /// Hub 的最大高度。
@@ -173,11 +310,11 @@ enum HubMetrics {
 
     /// 展开态的面板高度。
     ///
-    /// 不给 `contentHeight` 时用占位页的高度。
+    /// 不给 `contentHeight` 时用首页的高度。
     static func expandedHeight(
         safeAreaTop: CGFloat,
         screenHeight: CGFloat,
-        contentHeight: CGFloat = HubMetrics.contentHeight(for: .now)
+        contentHeight: CGFloat = HubMetrics.contentHeight(for: .home(rows: defaultHomeRows))
     ) -> CGFloat {
         let chrome = safeAreaTop + contentHeight
         return min(chrome, hubMaxHeight(screenHeight: screenHeight))

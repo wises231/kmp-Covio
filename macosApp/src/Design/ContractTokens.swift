@@ -101,6 +101,18 @@ enum ContractColors {
     static let tokenColorWarningFill = ContractColor(key: "token/color/warning-fill", lightHex: "#FF9F0A", darkHex: "#FF9F0A")
     /// `token/color/warning-text` — Warning text.
     static let tokenColorWarningText = ContractColor(key: "token/color/warning-text", lightHex: "#8A4B00", darkHex: "#FFB340")
+    /// `token/color/widget-tint-amber` — 组件卡片底色 1。现在。
+    static let tokenColorWidgetTintAmber = ContractColor(key: "token/color/widget-tint-amber", lightHex: "#FFF2BD", darkHex: "#FFF2BD")
+    /// `token/color/widget-tint-apricot` — 组件卡片底色 5。快捷操作。
+    static let tokenColorWidgetTintApricot = ContractColor(key: "token/color/widget-tint-apricot", lightHex: "#FFF1DD", darkHex: "#FFF1DD")
+    /// `token/color/widget-tint-mint` — 组件卡片底色 2。电量。
+    static let tokenColorWidgetTintMint = ContractColor(key: "token/color/widget-tint-mint", lightHex: "#E5F8EA", darkHex: "#E5F8EA")
+    /// `token/color/widget-tint-rose` — 组件卡片底色 4。最近截图。
+    static let tokenColorWidgetTintRose = ContractColor(key: "token/color/widget-tint-rose", lightHex: "#FFE8EA", darkHex: "#FFE8EA")
+    /// `token/color/widget-tint-sky` — 组件卡片底色 3。传输。
+    static let tokenColorWidgetTintSky = ContractColor(key: "token/color/widget-tint-sky", lightHex: "#DDE7F8", darkHex: "#DDE7F8")
+    /// `token/color/widget-tint-slate` — 组件卡片底色 6。设备。
+    static let tokenColorWidgetTintSlate = ContractColor(key: "token/color/widget-tint-slate", lightHex: "#E9EDF5", darkHex: "#E9EDF5")
     /// `token/color/window-chrome` — Window title-bar and chrome fill.
     static let tokenColorWindowChrome = ContractColor(key: "token/color/window-chrome", lightHex: "#F5F5F7", darkHex: "#2C2C2E")
     /// `token/color/window-close` — macOS close window button.
@@ -153,6 +165,12 @@ enum ContractColors {
         tokenColorWarningBg,
         tokenColorWarningFill,
         tokenColorWarningText,
+        tokenColorWidgetTintAmber,
+        tokenColorWidgetTintApricot,
+        tokenColorWidgetTintMint,
+        tokenColorWidgetTintRose,
+        tokenColorWidgetTintSky,
+        tokenColorWidgetTintSlate,
         tokenColorWindowChrome,
         tokenColorWindowClose,
         tokenColorWindowMinimize,
@@ -186,6 +204,8 @@ enum ContractDimensions {
     static let tokenRadiusMaterial: CGFloat = 12
     /// `token/radius/medium` — Buttons and status labels.
     static let tokenRadiusMedium: CGFloat = 12
+    /// `token/radius/panel` — 挂帘面板的圆角。
+    static let tokenRadiusPanel: CGFloat = 22
     /// `token/radius/pill` — Pill buttons and status labels.
     static let tokenRadiusPill: CGFloat = 999
     /// `token/radius/popover` — Popover, alert, and dialog corner radius.
@@ -223,6 +243,7 @@ enum ContractDimensions {
         "token/radius/large": tokenRadiusLarge,
         "token/radius/material": tokenRadiusMaterial,
         "token/radius/medium": tokenRadiusMedium,
+        "token/radius/panel": tokenRadiusPanel,
         "token/radius/pill": tokenRadiusPill,
         "token/radius/popover": tokenRadiusPopover,
         "token/radius/small": tokenRadiusSmall,

@@ -1,5 +1,6 @@
 import AppKit
 import XCTest
+import kmpDomain
 @testable import Covio
 
 /// `NotchShellController` 的端到端状态测试。
@@ -68,10 +69,10 @@ final class NotchShellControllerTests: XCTestCase {
         XCTAssertEqual(controller.hotZoneRects.count, NSScreen.screens.count)
         // 面板先按展开矩形建好，但不在屏幕上。
         XCTAssertFalse(controller.isHubPanelOnScreen)
-        // 窄屏上面板比 cardWidth 窄，所以比展开矩形，不比 cardWidth。
+        // 窄屏上面板比 panelWidth 窄，所以比展开矩形，不比 panelWidth。
         let expectedWidth = try hubPanelRect().width
         XCTAssertEqual(controller.hubPanelFrame?.width, expectedWidth)
-        XCTAssertLessThanOrEqual(expectedWidth, HubMetrics.cardWidth)
+        XCTAssertLessThanOrEqual(expectedWidth, HubMetrics.panelWidth)
     }
 
     /// 非刘海屏降级热区：每块屏幕的热区都必须落在该屏幕内，且贴在该屏幕顶部。
@@ -204,9 +205,93 @@ final class NotchShellControllerTests: XCTestCase {
         controller.start()
         defer { controller.stop() }
 
-        controller.selection = .screenshots
-        XCTAssertEqual(controller.selection, .screenshots)
+        controller.workbench.select(paneID: PaneKind.screenshots.defaultId)
         XCTAssertEqual(controller.state, .hidden)
+    }
+
+    /// 编辑模式里不排收起计时。拖卡片时指针划出面板不算「用户想走」。
+    func testEditingKeepsThePanelOpenWhenThePointerLeaves() throws {
+        let controller = try controllerWithPointerInsideHub()
+        controller.start()
+        defer { controller.stop() }
+
+        controller.workbench.isEditing = true
+        controller.show()
+        waitUntil("展开后应该进入 ACTIVE") { controller.state == .active }
+
+        // 指针离开面板。非编辑态下这里会排一个收起计时。
+        controller.pointerExitedHub()
+        XCTAssertNotEqual(controller.state, .exit, "编辑模式里不该开始收起")
+    }
+
+    /// 编辑模式里第一次请求收起先退出编辑，面板不动。
+    func testCollapseRequestLeavesEditingFirst() throws {
+        let controller = try controllerWithPointerInsideHub()
+        controller.start()
+        defer { controller.stop() }
+
+        controller.workbench.isEditing = true
+        controller.show()
+        waitUntil("展开后应该进入 ACTIVE") { controller.state == .active }
+
+        controller.requestCollapse()
+        XCTAssertFalse(controller.workbench.isEditing)
+        XCTAssertEqual(controller.state, .active, "第一次请求只退出编辑，不收起面板")
+
+        controller.requestCollapse()
+        XCTAssertEqual(controller.state, .exit, "第二次请求才真的收起")
+    }
+
+    // MARK: - 热区的假离开
+
+    /// 面板盖住热区时那次「离开」不能上报。
+    ///
+    /// 这条挂过：面板一展开就盖住热区（面板 960 × 547 包住热区那一条 186 × 32），
+    /// 热区收到「离开」，状态机把刚展开的面板收回去，热区重新露出来又收到「进入」。
+    /// 指针停着不动，面板每秒开关四次。真机实测 3 秒采样 24 次：开 11 次关 13 次。
+    func testTheHotZoneStaysQuietWhileThePanelCoversIt() {
+        XCTAssertFalse(
+            NotchShellController.shouldReportHotZoneExit(hubVisible: true, pointerInsideHub: true),
+            "面板盖着热区，这次「离开」是面板挡出来的，上报会把刚展开的面板收回去"
+        )
+    }
+
+    /// 面板收起后热区的「离开」是真离开，要上报。
+    func testTheHotZoneReportsARealExit() {
+        XCTAssertTrue(
+            NotchShellController.shouldReportHotZoneExit(hubVisible: false, pointerInsideHub: false),
+            "面板不在屏幕上，指针离开热区就是走开了，不上报会留下一个收不掉的挂帘"
+        )
+    }
+
+    /// 面板可见但指针已经在面板外：这次「离开」要上报。
+    func testTheHotZoneReportsAnExitFromOutsideThePanel() {
+        XCTAssertTrue(
+            NotchShellController.shouldReportHotZoneExit(hubVisible: true, pointerInsideHub: false),
+            "指针在面板外，热区报的离开是真的"
+        )
+    }
+
+    /// 面板没上屏时，矩形盖着热区也不算数。
+    ///
+    /// 面板窗口建好就一直存在，`orderOut` 只是不显示，矩形照样包含热区那一片。
+    /// 只看矩形不看可见性的话，收起态下热区永远不报离开。
+    func testTheHotZoneReportsAnExitWhileThePanelIsOffScreen() {
+        XCTAssertTrue(
+            NotchShellController.shouldReportHotZoneExit(hubVisible: false, pointerInsideHub: true),
+            "面板没上屏，矩形盖着热区也不算数"
+        )
+    }
+
+    // MARK: - 菜单栏胶囊
+
+    /// 宿主进程里应该有一个胶囊窗口，层级与热区一致，且不接受键盘。
+    func testHostApplicationShowsTheMenuBarCapsule() throws {
+        let capsules = NSApp.windows.compactMap { $0 as? MenuBarCapsulePanel }
+        XCTAssertEqual(capsules.count, 1, "宿主进程里应该只有一个胶囊窗口")
+        let capsule = try XCTUnwrap(capsules.first)
+        XCTAssertEqual(capsule.level, .statusBar)
+        XCTAssertFalse(capsule.canBecomeKey, "胶囊不该抢走 Hub 的键盘")
     }
 
     // MARK: - 宿主进程

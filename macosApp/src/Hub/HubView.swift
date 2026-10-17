@@ -1,13 +1,18 @@
 import AppKit
 import SwiftUI
+import kmpDomain
 
 /// Hub 面板的根视图。
 ///
 /// 面板窗口的尺寸是固定的展开尺寸。展开与收起只改内容的高度，
 /// 所以视觉上是一条从顶部垂下来的窗帘。
 ///
-/// 卡片分两栏：左边是悬浮导航栏，右边是顶部胶囊加页内容。
-/// 两栏之间留 `HubMetrics.columnGap`，卡片内边距是 `HubMetrics.cardPadding`。
+/// 面板是两块独立的玻璃板：上面是胶囊形的顶栏 46 点，下面是圆角矩形的内容板。
+/// 两块板之间留一条 11 点的缝，缝里露出桌面。顶栏板与菜单栏之间再留一条同宽的缝。
+/// 板与板之间没有投影 —— 层次由 Liquid Glass 的镜面亮边给。
+///
+/// 内容板自带 24 点内边距，里面是「页标题行 + 主体」。
+/// 首页没有页标题行，直接从组件网格开始。
 ///
 /// 这个视图不持有控制器，只接收值。这样它可以被预览与测试。
 struct HubView: View {
@@ -16,15 +21,10 @@ struct HubView: View {
     let reduceMotion: Bool
     let hubState: HubState
     let outputState: HubOutputState
-    @Binding var selection: HubTab
+    @Bindable var workbench: WorkbenchModel
     /// 外壳的共享状态。搜索文字与设置分节住在这里。
     @Bindable var chrome: HubChromeModel
     let runtime: AppRuntime?
-
-    /// 切换界面语言。默认什么都不做，预览与测试不必接。
-    var onLanguage: (AppLanguage) -> Void = { _ in }
-    /// 退出应用。退出不可逆，所以只在这里转达，判断在调用方。
-    var onQuit: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 0) {
@@ -32,25 +32,36 @@ struct HubView: View {
             Color.clear
                 .frame(height: geometry.panelTopInset)
 
-            card
-                .frame(height: isExpanded ? cardHeight : 0)
+            // 顶栏板与菜单栏之间的缝。排在卡片外面：进了卡片的话，挂帘收起时会
+            // 先露出一条空缝，再露出顶栏板。
+            Color.clear
+                .frame(height: HubMetrics.plateTopInset)
+
+            plates
+                .frame(height: isExpanded ? plateStackHeight : 0)
                 .opacity(cardOpacity)
                 .clipped()
 
             Spacer(minLength: 0)
         }
         .frame(
-            width: geometry.expandedRect(contentHeight: cardHeight).width,
-            height: geometry.expandedRect(contentHeight: cardHeight).height,
+            width: geometry.expandedRect(contentHeight: panelHeight).width,
+            height: geometry.expandedRect(contentHeight: panelHeight).height,
             alignment: .top
         )
         .animation(curtainAnimation, value: isExpanded)
     }
 
-    /// 内容高度由页签决定。设置页比占位页高。
+    /// 两块玻璃板加起来的高度。卡片的 frame 用它。
+    private var plateStackHeight: CGFloat {
+        HubMetrics.plateStackHeight(for: HubPage.current(workbench), editing: workbench.isEditing)
+    }
+
+    /// 面板窗口的高度：两块板加上与菜单栏之间的缝。
+    ///
     /// 面板窗口的高度由控制器按同一个值设置，两边必须一致。
-    private var cardHeight: CGFloat {
-        HubMetrics.contentHeight(for: selection)
+    private var panelHeight: CGFloat {
+        HubMetrics.contentHeight(for: HubPage.current(workbench), editing: workbench.isEditing)
     }
 
     /// 减弱动态效果时只改透明度，不做位移。
@@ -69,122 +80,189 @@ struct HubView: View {
     }
 
     /// 当前界面语言。运行时缺失时（预览、测试）跟随系统。
-    private var language: AppLanguage { runtime?.language ?? CopyLocale.language }
+    private var language: AppLanguage { runtime?.language ?? workbench.language }
 
-    /// 引擎在跑。导航栏底部的呼吸灯用它。
-    private var isActive: Bool { runtime?.config.enabled ?? false }
+    // MARK: - 玻璃板
 
-    private var card: some View {
-        // 导航栏与胶囊都是玻璃。放进同一个容器，两块的边缘才会互相融合。
-        GlassEffectContainer(spacing: MacTheme.space2) {
-            HStack(alignment: .top, spacing: HubMetrics.columnGap) {
-                HubNavRail(
-                    selection: $selection,
-                    chrome: chrome,
-                    language: language,
-                    isActive: isActive,
-                    reduceMotion: reduceMotion,
-                    onLanguage: onLanguage,
-                    onQuit: onQuit
-                )
-
-                VStack(alignment: .leading, spacing: HubMetrics.pageGap) {
-                    capsule
-                    pageContent
-                        .frame(
-                            width: HubMetrics.contentColumnWidth,
-                            height: HubMetrics.pageContentHeight(for: selection),
-                            alignment: .topLeading
-                        )
-                        // 搜索结果浮在页内容上方。搜索框在左栏，结果贴在右栏看。
-                        .overlay(alignment: .topLeading) { searchResults }
-                }
-                .frame(width: HubMetrics.contentColumnWidth, alignment: .topLeading)
+    /// 顶栏板加内容区。
+    ///
+    /// 控制中心是两层：先一层面板级的模糊底板，把桌面与工作区分开；模块再叠在
+    /// 底板上面，自己用 clear 玻璃，只加一层薄薄的高光，不再重复模糊。
+    ///
+    /// 真机对照：把一个带文字的窗口摆在面板下面，控制中心打开后整片面板区域的
+    /// 文字都被抹平，模块之间与模块周围也一样。模糊来自底板，不是来自模块。
+    ///
+    /// 这里照做。顶栏板是一块独立的胶囊，直接压在桌面上，所以它自己走 regular。
+    /// 内容区的底板走 regular，里面的卡片走 clear。
+    private var plates: some View {
+        GlassEffectContainer(spacing: 0) {
+            VStack(spacing: HubMetrics.plateGap) {
+                topBarPlate
+                contentArea
             }
         }
-        .padding(HubMetrics.cardPadding)
-        .frame(width: HubMetrics.cardWidth, height: cardHeight, alignment: .top)
-        .background(.regularMaterial)
-        .clipShape(cardShape)
-        .overlay(cardShape.strokeBorder(Color.primary.opacity(0.12), lineWidth: HubMetrics.borderWidth))
-        .shadow(color: .black.opacity(0.28), radius: 18, y: 8)
         // 高亮行从环境里取，六个设置页不必各自拿一遍模型。
         .environment(\.highlightedSettingsRow, chrome.highlightedRowID)
     }
 
-    /// 搜索框有字的时候显示结果。
-    @ViewBuilder
-    private var searchResults: some View {
-        if !chrome.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            SettingsSearchResults(chrome: chrome, language: language) { hit in
-                selection = .settings
-                chrome.reveal(hit)
-            }
-        }
+    private var topBarPlate: some View {
+        WorkbenchTabBar(
+            panes: workbench.panes,
+            destination: workbench.destination,
+            isEditing: workbench.isEditing,
+            searchText: $chrome.searchText,
+            language: language,
+            pageAction: workbench.pageAction,
+            onHome: { workbench.destination = .home },
+            onSelect: { workbench.select(paneID: $0) },
+            onReorder: { workbench.movePane(from: $0, to: $1) },
+            onPageAction: { workbench.performPageAction() }
+        )
+        .glassSurface(
+            cornerRadius: HubMetrics.tabBarPlateRadius,
+            tint: GlassSurfaceMode.plateTint,
+            mode: GlassSurfaceMode.topBarMode
+        )
     }
 
-    private var cardShape: RoundedRectangle {
-        RoundedRectangle(cornerRadius: MacTheme.cardRadius, style: .continuous)
+    /// 内容区有一块模糊底板，卡片叠在底板上。
+    ///
+    /// 底板与顶栏板都直接压在桌面上，都不加着色：底板走系统给的语义材质
+    /// （`.hudWindow`），顶栏板走 Liquid Glass。桌面透上来的量由底材自己定，
+    /// 见 [GlassSurfaceMode.plateMaterial] 与 [GlassSurfaceMode.plateTintOpacity]。
+    /// 卡片不带着色：卡片自己有色相。
+    private var contentArea: some View {
+        contentColumn
+            .frame(height: contentAreaHeight)
+            .glassSurface(
+                cornerRadius: HubMetrics.contentPlateRadius,
+                tint: GlassSurfaceMode.plateTint,
+                mode: GlassSurfaceMode.plateMode
+            )
     }
 
-    // MARK: - 顶部胶囊
-
-    /// 设置页的胶囊只放六个分节：内容列放不下页标题加六个分节。
-    /// 选中的分节本身就是标题，所以设置页不再另放标题。
-    @ViewBuilder
-    private var capsule: some View {
-        if selection == .settings {
-            HubToolbarCapsule(title: nil, summary: nil) {
-                SettingsSectionSegments(section: $chrome.settingsSection, language: language)
-            }
-        } else {
-            HubToolbarCapsule(
-                title: selection.title.text(for: language),
-                summary: selection.summary.text(for: language)
-            ) {
-                capsuleActions
-            }
-        }
+    /// 内容区的高度：总高减去顶栏板与中间的缝。
+    ///
+    /// 给固定高度，滚动区域才有确定的高度。
+    private var contentAreaHeight: CGFloat {
+        plateStackHeight - HubMetrics.tabBarHeight - HubMetrics.plateGap
     }
 
-    /// 胶囊右侧的动作。没有动作的页签留空。
-    @ViewBuilder
-    private var capsuleActions: some View {
-        if let runtime {
-            switch selection {
-            case .screenshots:
-                ScreenshotsCapsuleActions(shelf: runtime.shelf, language: language)
-            case .clipboard:
-                ClipboardCapsuleActions(clipboard: runtime.clipboard, language: language)
-            case .files:
-                FilesCapsuleActions(workspace: runtime.workspace, language: language)
-            default:
-                EmptyView()
+    // MARK: - 内容列
+
+    private var contentColumn: some View {
+        ScrollView(.vertical) {
+            VStack(alignment: .leading, spacing: HubMetrics.pageGap) {
+                if workbench.isEditing {
+                    EditBanner(
+                        paneCount: workbench.visiblePaneCount,
+                        widgetCount: workbench.homeWidgets.count,
+                        language: language
+                    ) { workbench.isEditing = false }
+                }
+
+                if isSearching {
+                    SettingsSearchResults(chrome: chrome, language: language) { hit in
+                        workbench.destination = .pane(id: PaneKind.settings.defaultId)
+                        chrome.reveal(hit)
+                    }
+                } else {
+                    pageContent
+                }
             }
+            .padding(HubMetrics.panelPadding)
+            .frame(width: HubMetrics.panelWidth, alignment: .topLeading)
         }
+        .scrollIndicators(.never)
+        .frame(maxHeight: .infinity, alignment: .top)
+    }
+
+    /// 搜索框有字的时候整列换成结果，与打样一致。
+    private var isSearching: Bool {
+        !chrome.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     // MARK: - 页内容
 
     @ViewBuilder
     private var pageContent: some View {
-        HubTabContent(
-            tab: selection,
-            chrome: chrome,
-            hubState: hubState,
-            outputState: outputState,
-            language: language,
-            runtime: runtime
+        switch workbench.destination {
+        case .home:
+            homeContent
+        case .pane(let id):
+            HubTabContent(
+                tab: workbench.tab(for: workbench.destination),
+                paneID: id,
+                workbench: workbench,
+                chrome: chrome,
+                hubState: hubState,
+                outputState: outputState,
+                language: language,
+                runtime: runtime
+            )
+        }
+    }
+
+    @ViewBuilder
+    private var homeContent: some View {
+        if workbench.homeWidgets.isEmpty {
+            EmptyHomeView(isEditing: workbench.isEditing, language: language)
+        } else {
+            BentoGrid(
+                widgets: workbench.homeWidgets,
+                isEditing: workbench.isEditing,
+                language: language,
+                runtime: runtime,
+                onMove: { workbench.moveWidget(from: $0, to: $1) },
+                onResize: { id, size in workbench.resizeWidget(id: id, to: size) },
+                onDelete: { workbench.removeWidget(id: $0) }
+            )
+        }
+    }
+}
+
+/// 首页为空时的提示。
+struct EmptyHomeView: View {
+    let isEditing: Bool
+    let language: AppLanguage
+
+    var body: some View {
+        VStack(spacing: MacTheme.space2) {
+            Text(ContractCopy.copyHubHomeEmptyTitle.text(for: language))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(MacTheme.textPrimary)
+            Text(hint)
+                .font(.system(size: 11))
+                .foregroundStyle(MacTheme.textSecondary)
+        }
+        .frame(width: HubMetrics.contentColumnWidth, height: HubMetrics.emptyHomeHeight)
+        .background(
+            MacTheme.material,
+            in: RoundedRectangle(cornerRadius: HubMetrics.bentoCardRadius, style: .continuous)
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: HubMetrics.bentoCardRadius, style: .continuous)
+                .strokeBorder(MacTheme.divider, lineWidth: 1)
+        )
+        .glassSurface(cornerRadius: HubMetrics.bentoCardRadius)
+    }
+
+    private var hint: String {
+        let copy = isEditing
+            ? ContractCopy.copyHubHomeEmptyHintEditing
+            : ContractCopy.copyHubHomeEmptyHint
+        return copy.text(for: language)
     }
 }
 
 /// 页签内容的分发。
 ///
-/// 设置页、截图页、剪切板页与文件页已经有真实内容。其余两个页签还是占位。
+/// 设置页、截图页、剪切板页与文件页已经有真实内容。其余页签还是占位。
 /// 运行时缺失时（预览、测试）一律显示占位。
 struct HubTabContent: View {
     let tab: HubTab
+    let paneID: String
+    let workbench: WorkbenchModel
     let chrome: HubChromeModel
     let hubState: HubState
     let outputState: HubOutputState
@@ -192,6 +270,41 @@ struct HubTabContent: View {
     let runtime: AppRuntime?
 
     var body: some View {
+        VStack(alignment: .leading, spacing: HubMetrics.pageGap) {
+            if let heading = workbench.heading(for: .pane(id: paneID)) {
+                PaneHeading(title: heading.title, summary: heading.summary) {
+                    headingActions
+                }
+            }
+
+            body(width: HubMetrics.contentColumnWidth)
+                .frame(
+                    width: HubMetrics.contentColumnWidth,
+                    height: HubMetrics.bodyHeight(for: .pane(tab)),
+                    alignment: .topLeading
+                )
+        }
+    }
+
+    /// 页标题行右端的动作。原来在顶部胶囊里，胶囊没了就搬到这里。
+    @ViewBuilder
+    private var headingActions: some View {
+        if let runtime {
+            switch tab {
+            case .screenshots:
+                ScreenshotsHeadingActions(shelf: runtime.shelf, language: language)
+            case .clipboard:
+                ClipboardHeadingActions(clipboard: runtime.clipboard, language: language)
+            case .files:
+                FilesHeadingActions(workspace: runtime.workspace, language: language)
+            default:
+                EmptyView()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func body(width: CGFloat) -> some View {
         if let runtime, tab == .settings {
             SettingsTabView(runtime: runtime, section: chrome.settingsSection, chrome: chrome)
         } else if let runtime, tab == .screenshots {
@@ -217,8 +330,7 @@ struct HubTabContent: View {
 
 /// 页签内容的占位。
 ///
-/// 三个还没落地的页签显示模块说明，证明页签切换生效。
-/// 页标题与说明在顶部胶囊里，所以这里只剩提示语。
+/// 还没落地的页签显示模块说明，证明页签切换生效。
 /// `#if DEBUG` 的那段是插桩 HUD，对应风险清单 R2：
 /// 手工验证面板行为时常显 `hubState`、内容态与前台应用。
 struct HubPlaceholderView: View {

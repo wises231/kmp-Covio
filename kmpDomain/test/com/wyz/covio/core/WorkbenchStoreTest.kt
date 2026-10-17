@@ -46,7 +46,12 @@ class WorkbenchStoreTest {
                 listOf("now", "clipboard", "files", "screenshots", "devices", "settings"),
                 config.panes.map { it.id },
             )
-            assertTrue(config.homeWidgets.isEmpty())
+            // 首页默认放六块组件，与打样的 `defaultWidgets()` 一致。
+            // 空列表会让真机首次启动的首页是空的，与打样对不上。
+            assertEquals(
+                listOf("w-clock", "w-battery", "w-transfer", "w-actions", "w-shots", "w-devices"),
+                config.homeWidgets.map { it.id },
+            )
             assertFalse(path.exists, "读的时候不该建文件")
         }
 

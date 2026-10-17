@@ -30,11 +30,15 @@ struct MacCard<Content: View>: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(MacTheme.space4)
-        .background(MacTheme.surface, in: RoundedRectangle(cornerRadius: MacTheme.cardRadius, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: MacTheme.cardRadius, style: .continuous)
-                .strokeBorder(MacTheme.divider, lineWidth: 1)
-        )
+        // 填充写在前、玻璃加在后：玻璃模糊压在卡片底下，桌面透过来。
+        // 用不透明的 `surface` 会把模糊整个盖住。
+        .background(MacTheme.material, in: shape)
+        .overlay(shape.strokeBorder(MacTheme.divider, lineWidth: 1))
+        .glassSurface(cornerRadius: MacTheme.cardRadius)
+    }
+
+    private var shape: RoundedRectangle {
+        RoundedRectangle(cornerRadius: MacTheme.cardRadius, style: .continuous)
     }
 }
 

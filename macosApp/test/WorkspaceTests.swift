@@ -311,24 +311,24 @@ final class WorkspaceTests: XCTestCase {
 
     // MARK: - 页高
 
-    /// 文件页高按各段相加，与剪切板页的算法一致。
+    /// 文件页的主体高按各段相加，与剪切板页的算法一致。
     func testTheFilesPageHeightIsTheSumOfItsParts() {
+        // 页自己的上下内边距没了：内边距现在由内容列统一给。
         let expected = FilesTabView.listHeight
-            + MacTheme.space3 * 2
             + FilesTabView.noticeGap
             + FilesTabView.noticeHeight
-        XCTAssertEqual(HubMetrics.pageContentHeight(for: .files), expected)
+        XCTAssertEqual(HubMetrics.bodyHeight(for: .pane(.files)), expected)
         XCTAssertGreaterThan(
-            HubMetrics.pageContentHeight(for: .files),
-            HubMetrics.placeholderPageContentHeight
+            HubMetrics.bodyHeight(for: .pane(.files)),
+            HubMetrics.placeholderBodyHeight
         )
     }
 
-    /// 卡片不超过 Hub 的最大高度，否则面板会被屏幕裁掉。
+    /// 面板不超过 Hub 的最大高度，否则面板会被屏幕裁掉。
     func testTheFilesCardStaysWithinTheHubLimit() {
         for height in [CGFloat(900), 1_080, 1_200] {
             XCTAssertLessThan(
-                HubMetrics.contentHeight(for: .files) + 60,
+                HubMetrics.contentHeight(for: .pane(.files)) + 60,
                 HubMetrics.hubMaxHeight(screenHeight: height),
                 "屏幕高 \(height) 时文件页放不下"
             )

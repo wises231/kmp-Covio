@@ -1,4 +1,5 @@
 import AppKit
+import kmpDomain
 
 /// 应用代理。装配 Notch Shell、菜单栏图标与全局快捷键。
 ///
@@ -18,6 +19,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // LSUIElement 已经让进程成为代理应用。这里显式再设一次，防止从 Xcode 直接运行时不一致。
         NSApp.setActivationPolicy(.accessory)
 
+        // 调试构建可以用环境变量换玻璃底材，便于同一次构建对照截图。
+        GlassSurfaceMode.applyEnvironmentOverride()
+        MacTheme.applyEnvironmentOverride()
+
         // 测试进程不是真实实例，不参与单实例仲裁。
         // 真实应用在跑时仲裁会失败，那会把整个测试套件终止掉。
         if !LaunchEnvironment.isRunningTests() {
@@ -36,6 +41,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let runtime = AppRuntime()
         self.runtime = runtime
         shell.runtime = runtime
+        // 工作台配置落盘。文件不存在时 `load()` 给默认值，所以首次启动就有六块组件。
+        shell.workbench.attach(
+            store: WorkbenchStore.companion.create(path: AppPaths.workbenchFile.path)
+        )
         // 测试进程里不启动运行时。`start()` 会连真实的存储与系统设置：
         // 它打开真实的截图接管并改写 `com.apple.screencapture`，还会写真实 `shelf.json`。
         // 界面装配照旧，所以 `testHostApplicationRunsTheShell` 仍然有效。

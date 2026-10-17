@@ -1,22 +1,39 @@
 import Foundation
+import kmpDomain
 
-/// Hub 的六个页签。
+/// 工作区页面的种类。
+///
+/// 模型那一侧的种类是 Kotlin 的 `PaneKind`。它在 Swift 里是一个类，不能穷举 switch，
+/// 所以宿主镜像一个同形的枚举，两边靠 `rawValue`（等于 `PaneKind.key`）互转。
 ///
 /// 文案键与顺序由 `DesignContractTests` 守住。
-///
-/// 设计合同 `components["component/tab-bar"]` 的 `nativeSize` 是 960 × 52，
-/// 与 `HubMetrics.tabBarWidth` / `tabBarHeight` 一致。
-enum HubTab: String, CaseIterable, Identifiable, Sendable {
-    case now = "Now"
-    case clipboard = "Clipboard"
-    case files = "Files"
-    case screenshots = "Screenshots"
-    case devices = "Devices"
-    case settings = "Settings"
+enum HubTab: String, CaseIterable, Sendable {
+    case now
+    case clipboard
+    case files
+    case screenshots
+    case devices
+    case settings
+    /// 用户自建的工作区。没有模块页面，只显示组件网格。
+    case board
 
-    var id: String { rawValue }
+    init(kind: PaneKind) {
+        self = HubTab(rawValue: kind.key) ?? .board
+    }
 
-    /// 页签标题。
+    var paneKind: PaneKind {
+        switch self {
+        case .now: PaneKind.now
+        case .clipboard: PaneKind.clipboard
+        case .files: PaneKind.files
+        case .screenshots: PaneKind.screenshots
+        case .devices: PaneKind.devices
+        case .settings: PaneKind.settings
+        case .board: PaneKind.board
+        }
+    }
+
+    /// 页签标题。用户改过名的工作区用配置里的名字，不用这一条。
     var title: LocalizedCopy {
         switch self {
         case .now: ContractCopy.copyHubTabNow
@@ -25,10 +42,11 @@ enum HubTab: String, CaseIterable, Identifiable, Sendable {
         case .screenshots: ContractCopy.copyHubTabScreenshots
         case .devices: ContractCopy.copyHubTabDevices
         case .settings: ContractCopy.copyHubTabSettings
+        case .board: ContractCopy.copyHubTabBoard
         }
     }
 
-    /// 模块说明。
+    /// 页标题行里的说明。
     var summary: LocalizedCopy {
         switch self {
         case .now: ContractCopy.copyHubTabNowSummary
@@ -37,20 +55,23 @@ enum HubTab: String, CaseIterable, Identifiable, Sendable {
         case .screenshots: ContractCopy.copyHubTabScreenshotsSummary
         case .devices: ContractCopy.copyHubTabDevicesSummary
         case .settings: ContractCopy.copyHubTabSettingsSummary
+        case .board: ContractCopy.copyHubTabBoardSummary
         }
     }
 
-    /// 页签图标。图标和文字同时显示。
+    /// 页签上的图标。
     ///
-    /// 合同没有给页签图标的名字，这里用通用 SF Symbol。
-    var symbolName: String {
+    /// 用字符而不是 SF Symbol。模型里 `PaneInstance.icon` 存的就是一个字符，
+    /// 打样的图标选择器给的也是字符，两边的取值必须一致。
+    var glyph: String {
         switch self {
-        case .now: "power"
-        case .clipboard: "doc.on.clipboard"
-        case .files: "folder"
-        case .screenshots: "camera.viewfinder"
-        case .devices: "laptopcomputer.and.iphone"
-        case .settings: "gearshape"
+        case .now: "◉"
+        case .clipboard: "▤"
+        case .files: "▢"
+        case .screenshots: "▣"
+        case .devices: "▭"
+        case .settings: "⚙"
+        case .board: "◇"
         }
     }
 }

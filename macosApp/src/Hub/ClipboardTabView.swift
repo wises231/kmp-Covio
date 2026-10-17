@@ -5,7 +5,7 @@ import kmpDomain
 /// 剪切板页签。
 ///
 /// 一行一条记录。左边是类型图标与内容摘要，右边是这一条的动作。
-/// 模块级动作（暂停记录、全部清除）在顶部胶囊里，见 `ClipboardCapsuleActions`。
+/// 模块级动作（暂停记录、全部清除）在页标题行右端，见 `ClipboardHeadingActions`。
 /// 权限与快捷键冲突的提示留在页内，因为它属于内容。
 ///
 /// 图片条的摘要用 OCR 结果。识别还没回来时显示文件名。
@@ -24,8 +24,7 @@ struct ClipboardTabView: View {
                 MacAlert(message: notice, kind: .warning)
             }
         }
-        .padding(.horizontal, MacTheme.space4)
-        .padding(.vertical, MacTheme.space3)
+        // 内边距由内容列给，这里不再加一层。
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
@@ -115,7 +114,7 @@ struct ClipboardTabView: View {
 /// 剪切板页的胶囊动作：暂停记录、全部清除、条数。
 ///
 /// 这三个动作原先在页内容底部。搬到胶囊后列表可以更高。
-struct ClipboardCapsuleActions: View {
+struct ClipboardHeadingActions: View {
     let clipboard: ClipboardRuntime
     let language: AppLanguage
 
