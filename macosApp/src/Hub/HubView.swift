@@ -127,8 +127,9 @@ struct HubView: View {
 
     /// 内容区有一块模糊底板，卡片叠在底板上。
     ///
-    /// 底板与顶栏板都直接压在桌面上，都不加着色：底材走 `.ultraThin`，
-    /// 桌面透上来的量由底材自己定，见 [GlassSurfaceMode.plateTintOpacity]。
+    /// 底板与顶栏板都直接压在桌面上，都不加着色：底板走系统给的语义材质
+    /// （`.hudWindow`），顶栏板走 Liquid Glass。桌面透上来的量由底材自己定，
+    /// 见 [GlassSurfaceMode.plateMaterial] 与 [GlassSurfaceMode.plateTintOpacity]。
     /// 卡片不带着色：卡片自己有色相。
     private var contentArea: some View {
         contentColumn
