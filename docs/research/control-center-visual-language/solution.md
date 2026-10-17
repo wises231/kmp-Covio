@@ -1,0 +1,182 @@
+# 推荐架构、接口与实施计划
+
+> 本文件承载推荐架构、接口契约、流程、资源策略、安全、失败模式、验收和实施计划。
+
+主题索引见 [README.md](README.md)。结论与决策表见 [conclusion.md](conclusion.md)。
+
+## 1. 推荐架构
+
+### 1.1 路径选择
+
+面板是两块玻璃板。
+顶栏板取 `Glass.regular`，圆角 23 点。
+内容区底板取系统的语义材质 `.hudWindow`，走 `NSVisualEffectView`，不带边框。
+卡片叠在底板上，取 `Glass.clear`，填充取色值乘 `MacTheme.tintedCardOpacity`。
+
+底板用系统材质是 Apple 的官方做法。
+AppKit 头文件把这条规则写死了：`AppearanceBased`、`Light`、`Dark`、`MediumLight`、`UltraDark`
+这一组都标了废弃，注释是「You should instead choose an appropriate semantic material.」；
+剩下的材质按所属的界面元素命名并说明。
+浮在桌面上的面板对应 `.hudWindow`，说明是
+「The material used as the background of heads-up display (HUD) windows.」
+SwiftUI 的 `Material` 没有面板这一档，所以底板走 `NSVisualEffectView`。
+材质原样使用：不乘不透明度倍率，不加着色。
+
+底板取不到控制中心的重量。
+控制中心的底板是 `0.95·桌面 + 0.4`，语义材质里没有这一档。
+`.hudWindow` 是语义材质里最透的一档，实测 `0.25·桌面 + 149`。
+理由见 [conclusion.md](conclusion.md) 第 1 节与 `E-16` 到 `E-22`。
+
+不用接口。
+本方案没有跨进程通信，没有网络，没有持久化格式。
+接口契约、请求字段、响应字段、操作列表和错误码五节因此省略。
+省略的理由：本方案是纯绘制改动，没有对外契约。
+
+### 1.2 组件
+
+| 组件 | 职责 | 环境 | 启动方式 |
+| --- | --- | --- | --- |
+| `GlassSurfaceMode` | 保存当前底材与底板取值，读环境变量 | 应用进程 | 应用启动时调用 |
+| `glassSurface(cornerRadius:tint:interactive:mode:)` | 给视图套一块玻璃 | 应用进程 | 视图构建时调用 |
+| `MacCard` | 设置页的分组卡片 | 应用进程 | 视图构建时调用 |
+| `BentoWidgetCard` | 首页网格卡片 | 应用进程 | 视图构建时调用 |
+| `EmptyHomeView` | 首页为空时的提示块 | 应用进程 | 视图构建时调用 |
+| `HubView` | 面板根视图。顶栏板与内容区底板 | 应用进程 | 视图构建时调用 |
+| `WorkbenchTabBar` | 顶栏板的内容 | 应用进程 | 视图构建时调用 |
+
+### 1.3 调用路径
+
+```text
+AppDelegate.applicationDidFinishLaunching
+  -> GlassSurfaceMode.applyEnvironmentOverride()
+     -> 读 COVIO_GLASS_SURFACE 与 COVIO_PLATE_MATERIAL
+
+HubView.body
+  -> plates
+     -> GlassEffectContainer(spacing: 0)
+        -> topBarPlate.glassSurface(23, mode: .glass)        顶栏板
+        -> contentPlate.glassSurface(28, mode: .system)      内容区底板
+           -> MacCard.glassSurface(cardRadius)               卡片，叠在底板上
+           -> BentoWidgetCard.glassSurface(bentoCardRadius)
+           -> EmptyHomeView.glassSurface(bentoCardRadius)
+```
+
+## 2. 关键流程
+
+### 2.1 绘制顺序
+
+1. 底板先铺满整个内容区。模糊与填充都来自这一层。
+2. 卡片叠在底板上。卡片的底材是 `.clear`，不重复模糊。
+3. 卡片只带一点点色相，靠亮边与底板区分。
+
+顺序不能反。
+`.clear` 单独压在桌面上时，背后窗口的文字会原样透上来。
+
+### 2.2 底材切换
+
+1. 应用启动时读 `COVIO_GLASS_SURFACE`、`COVIO_PLATE_MODE` 与 `COVIO_PLATE_MATERIAL`。
+2. 底材取值是 `glass`、`clear`、`material`、`ultraThin` 或 `system`。
+3. `COVIO_PLATE_MATERIAL` 取 `NSVisualEffectView.Material` 的名字，只在 `.system` 下生效。
+4. 取值无效时保持默认值。
+5. 只在 DEBUG 构建生效。
+
+### 2.3 降级
+
+`.glassEffect` 在无边框透明面板里画不出来时，改 `GlassSurfaceMode` 的默认值。
+`.system`、`.ultraThin` 与 `.material` 三条路不依赖 Liquid Glass。
+
+## 3. 文件位置
+
+| 文件 | 内容 |
+| --- | --- |
+| `macosApp/src/Design/GlassSurface.swift` | 底材枚举与 `glassSurface` 修饰器 |
+| `macosApp/src/Design/MacTheme.swift` | 令牌到 SwiftUI 的映射。材质填充与着色透明度 |
+| `macosApp/src/Design/HubMetrics.swift` | 板间距、顶栏高、圆角 |
+| `macosApp/src/Hub/HubView.swift` | 面板根视图。顶栏板与内容区 |
+| `macosApp/src/Hub/HubComponents.swift` | `MacCard` |
+| `macosApp/src/Hub/Workbench/BentoWidgetCard.swift` | 首页网格卡片 |
+| `macosApp/src/App/AppDelegate.swift` | 启动时读环境变量 |
+| `docs/design/workbench-architecture.md` | 第 6 节版式表 |
+
+## 4. 安全设计
+
+本方案不引入新的安全边界。
+
+1. 不做网络请求。
+2. 不读写用户文件。
+3. 不申请新权限。
+4. 环境变量只在 DEBUG 构建读取。
+5. 玻璃要读桌面内容，这一步由 WindowServer 完成。应用拿不到原始像素。
+
+## 5. 合规设计
+
+1. 只用公开 API。`glassEffect` 是 macOS 26 起的公开接口。
+2. 不调用私有接口。
+3. 不修改系统设置。
+4. 玻璃不可用时退回公开的 `Material`。
+
+## 6. 可靠性设计
+
+1. 底材枚举有四个取值，任一取值都能起。
+2. 环境变量无效时不改默认值。
+3. 玻璃不可用时改一处默认值即可降级。
+4. 令牌取不到时 `MacTheme.nsColor` 返回洋红色，错误一眼可见。
+
+## 7. 失败模式
+
+| 失败 | 表现 | 处理 |
+| --- | --- | --- |
+| 玻璃画不出来 | 卡片没有模糊，也没有亮边 | 把默认底材改成 `.material` |
+| 玻璃把两块板合成一块 | 顶栏板与内容区糊在一起 | 把 `GlassEffectContainer` 的 spacing 设成 0 |
+| 填充盖住模糊 | 卡片是实心色块 | 检查填充是不是不透明 |
+| 卡片边缘发闷 | 没有亮边 | 检查有没有自绘描边压在上面 |
+| 环境变量拼错 | 底材不切换 | 日志里有一条「玻璃底材被环境变量改成 …」。没有这条就是没生效 |
+| 深色下对比度不足 | 文字看不清 | 换更厚的语义材质，或提高填充透明度 |
+
+## 8. 验收标准
+
+1. 用户在真机上目视确认面板的表现可以接受。
+2. 面板是一层铺满内容区的底板加一块顶栏板，卡片叠在底板上。
+3. 深色与浅色外观下都能看到模糊。
+4. 五个底材取值都能起，界面不崩。
+5. `bash scripts/test-all.sh` 全部通过。
+6. `docs/design/workbench-architecture.md` 第 6 节的版式表与实现一致。
+
+第 1 条的口径已放宽：控制中心的效果复现不出，验收改为「用户接受毛玻璃效果」。
+底板改成语义材质 `.hudWindow` 以后，第 1 条要重新确认。
+
+## 9. 实施计划
+
+| 阶段 | 内容 | 状态 |
+| --- | --- | --- |
+| 阶段 0 | 取样与实测控制中心 | 已完成 |
+| 阶段 1 | 底材枚举加默认值与环境变量开关 | 已完成 |
+| 阶段 2 | 删掉内容区底板 | 已完成，后被阶段 3b 推翻 |
+| 阶段 3 | 玻璃下放到每张卡片，填充换半透明 | 已完成 |
+| 阶段 3b | 底板加回内容区，玻璃分两层 | 已完成 |
+| 阶段 3c | 底材换 `.ultraThin`，`plateOpacity` 定 1.0 | 已完成，后被阶段 3d 取代 |
+| 阶段 3d | 底板改用系统的语义材质 `.hudWindow`，删掉 `plateOpacity` | 已完成 |
+| 阶段 4 | 真机验收 | 进行中。底板换材质后重新确认 |
+| 阶段 5 | 按验收结果定取值，更新 ADR | 尚未执行 |
+| 阶段 6 | 按 `#115` 处理设计合同 | 尚未执行 |
+
+阶段 1 到 3d 的代码在分支 `feature/shell-match-preview`。
+阶段 5 与 6 完成前不合入主干。
+
+## 10. 回滚条件
+
+1. 玻璃在无边框透明面板里画不出来，且材质降级也不可用。
+2. 用户目视确认表现不如改动前。
+3. `bash scripts/test-all.sh` 出现与本次改动相关的失败。
+4. 面板展开或收起的动效出现可见异常。
+
+回滚方式：把分支 `feature/shell-match-preview` 上的提交反向应用。
+
+## 11. 产品化条件
+
+1. 真机验收通过，用户签字确认。**已达成（2026-10-17）。**
+2. 深色与浅色外观都验证过。
+3. 减弱动态效果下验证过。
+4. 至少两台不同屏幕尺寸的机器上验证过。
+5. `docs/design/workbench-architecture.md` 与实现一致。
+6. 设计合同的去留已按 `#115` 定案。
