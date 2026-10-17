@@ -153,6 +153,9 @@ final class NotchShellController {
     private func react(to event: HubEvent, from previous: HubState) {
         // 目标状态自身的副作用。收起动画从进入 .exit 开始计时。
         if state == .exit, previous != .exit {
+            // 面板被 orderOut 时 AppKit 不发 mouseExited，指针停在某个页签上的
+            // 停留计时会继续跑。不取消的话，收起后还会切一次。
+            workbench.cancelHoverDwell()
             beginCollapse()
         }
 
