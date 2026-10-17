@@ -4,8 +4,8 @@
 
 | 项目 | 内容 |
 | --- | --- |
-| 状态 | 部分执行。`V01`、`V03`、`V04` 已完成，见 [Case 1](case-control-center-parity.md) |
-| 日期 | `2026-10-16` |
+| 状态 | 部分执行。`V01` 作废，`V03`、`V04`、`V11`、`V12` 通过，见 [Case 1](case-control-center-parity.md) |
+| 日期 | `2026-10-17` |
 | 目标环境 | Apple Silicon Mac，macOS 27.0.1，3456 × 2234 像素 |
 | 问题类别 | 平台视觉语言的复现 |
 | 主方案 | [主题索引](../README.md) |
@@ -16,24 +16,27 @@
 
 | 编号 | 案例 | 状态 | 记录 |
 | --- | --- | --- | --- |
-| Case 1 | 工作台与控制中心表现一致性 | 部分执行 | [case-control-center-parity.md](case-control-center-parity.md) |
+| Case 1 | 工作台面板的视觉验收 | 部分执行 | [case-control-center-parity.md](case-control-center-parity.md) |
 
 ## 2. 目标
 
-确认工作台的每个卡片与控制中心的内容按钮表现一致。
-确认内容区没有统一底板。
+确认用户在真机上接受工作台面板的表现。
+确认面板是一层底板加一块顶栏板，卡片叠在底板上。
 确认玻璃不可用时界面仍然可用。
+
+「与控制中心一致」已放宽为「用户接受公开 Liquid Glass 的毛玻璃效果」。
+控制中心的效果复现不出，见 [证据附录](../evidence.md) 的 `E-16` 到 `E-22`。
 
 ## 3. 范围
 
 ### 3.1 范围内
 
 1. 顶栏板的底材、圆角与亮边。
-2. 设置页卡片、首页网格卡片、首页空态提示块的底材与填充。
-3. 内容区有没有底板。
+2. 内容区底板的底材与填充倍率。
+3. 设置页卡片、首页网格卡片、首页空态提示块的底材与填充。
 4. 卡片之间的缝宽。
 5. 深色与浅色外观。
-6. 四个玻璃底材取值。
+6. 玻璃底材取值。
 7. 减弱动态效果。
 8. 编辑模式。
 9. 收起态与展开动效的回归。
@@ -48,19 +51,19 @@
 
 ## 4. 当前事实
 
-1. 代码在分支 `feature/shell-match-preview`，底材改动在 commit `6a65aea`。
+1. 代码在分支 `feature/shell-match-preview`。
 2. `bash scripts/test-all.sh` 在改动后通过过一次。494 个测试，0 失败。
-3. 玻璃底材的默认值是 `.glass`，走 `Glass.regular`。见 `E-13`。
-4. 内容区没有底板，四张卡片各自套了玻璃。
-5. 控制中心的实测取值见 [证据附录](../evidence.md) 的 `E-01` 到 `E-05`。
-6. 用户尚未目视确认。
+3. 内容区底板取 `.ultraThin` 加 `plateOpacity = 1.0`。顶栏板取 `Glass.regular`。卡片取 `Glass.clear`。
+4. 面板是两块板：顶栏板与内容区底板。卡片叠在底板上。
+5. 控制中心的实测取值见 [证据附录](../evidence.md) 的 `E-01` 到 `E-05` 与 `E-14` 到 `E-22`。
+6. 用户已目视确认接受（2026-10-17）。
 
 ## 5. 成功标准
 
-1. 用户目视确认卡片与控制中心的内容按钮表现一致。
-2. 卡片之间露出桌面，内容区没有统一背板。
+1. 用户目视确认接受面板的表现。**已达成。**
+2. 面板是一层底板加一块顶栏板，卡片叠在底板上。
 3. 深色与浅色外观下都能看到模糊。
-4. 四个底材取值都能起，界面不崩。
+4. 底材取值都能起，界面不崩。
 5. `bash scripts/test-all.sh` 全部通过。
 6. `docs/design/workbench-architecture.md` 第 6 节的版式表与实现一致。
 
@@ -86,17 +89,18 @@
 
 | 编号 | 场景 | 当前状态 | 结果文件 |
 | --- | --- | --- | --- |
-| V01 | 内容区没有底板，卡片之间露出桌面 | 通过 | `case-control-center-parity.md` |
+| V01 | 内容区没有底板，卡片之间露出桌面 | 作废。判据被 `E-14` 推翻 | `case-control-center-parity.md` |
 | V02 | 卡片与顶栏板的几何与控制中心对照 | 尚未执行 | `case-control-center-parity.md` |
 | V03 | 卡片内部能看到桌面的模糊 | 通过 | `case-control-center-parity.md` |
-| V04 | 四个底材取值都能起 | 通过 | `case-control-center-parity.md` |
-| V05 | 深色与浅色外观 | 尚未执行 | `case-control-center-parity.md` |
+| V04 | 底材取值都能起 | 通过 | `case-control-center-parity.md` |
+| V05 | 深色与浅色外观 | 部分执行 | `case-control-center-parity.md` |
 | V06 | 卡片边缘由系统绘制，没有自绘投影 | 尚未执行 | `case-control-center-parity.md` |
 | V07 | 顶栏板是胶囊，与菜单栏胶囊一致 | 尚未执行 | `case-control-center-parity.md` |
 | V08 | 编辑模式下的表现 | 尚未执行 | `case-control-center-parity.md` |
 | V09 | 减弱动态效果下的表现 | 尚未执行 | `case-control-center-parity.md` |
 | V10 | 收起态与展开动效的回归 | 尚未执行 | `case-control-center-parity.md` |
 | V11 | `bash scripts/test-all.sh` 通过 | 通过。494 个测试，0 失败 | `case-control-center-parity.md` |
+| V12 | 用户目视确认接受 | 通过（2026-10-17） | `case-control-center-parity.md` |
 
 ## 9. 证据要求
 
